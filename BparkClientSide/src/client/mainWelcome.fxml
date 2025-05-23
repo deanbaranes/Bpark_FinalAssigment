@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.MainWelcomeController" prefWidth="600" prefHeight="400" style="-fx-background-color: linear-gradient(to bottom right, #2c3e50, #3498db);">
+    <VBox alignment="CENTER" spacing="20.0" layoutX="100" layoutY="50" prefWidth="400" AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+
+        <Label text="Welcome to BPARK" textFill="white">
+            <font>
+                <Font name="Arial Bold" size="32" />
+            </font>
+        </Label>
+
+        <Label text="Please select your role:" textFill="white">
+            <font>
+                <Font name="Arial" size="16" />
+            </font>
+        </Label>
+
+        <HBox alignment="CENTER" spacing="30">
+            <Button fx:id="customerButton" text="Customer" onAction="#handleCustomer" prefWidth="140" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;" />
+            <Button fx:id="staffButton" text="Staff" onAction="#handleStaff" prefWidth="140" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;" />
+        </HBox>
+    </VBox>
+</AnchorPane>
