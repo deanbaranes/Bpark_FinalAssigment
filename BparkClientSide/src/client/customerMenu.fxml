@@ -4,26 +4,27 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.CustomerMenuController" prefWidth="600" prefHeight="400" style="-fx-background-color: linear-gradient(to right, #34495e, #2ecc71);">
-    <VBox alignment="CENTER" spacing="30.0" AnchorPane.topAnchor="40" AnchorPane.bottomAnchor="40" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.CustomerMenuController"
+            prefWidth="600" prefHeight="400"
+            stylesheets="@customerMenu.css"
+            styleClass="customer-background">
 
-        <Label text="Customer Access" textFill="white">
-            <font>
-                <Font name="Arial Bold" size="30" />
-            </font>
-        </Label>
+    <VBox alignment="CENTER" spacing="30.0"
+          AnchorPane.topAnchor="40" AnchorPane.bottomAnchor="40"
+          AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
 
-        <Label text="Please select how you would like to access the system:" textFill="white">
-            <font>
-                <Font name="Arial" size="16" />
-            </font>
-        </Label>
+        <Label text="Customer Access" styleClass="header-label" />
+
+        <Label text="Please select how you would like to access the system:" styleClass="subtext-label" />
 
         <HBox alignment="CENTER" spacing="40">
-            <Button fx:id="remoteButton" text="Remote Access" onAction="#handleRemoteAccess" prefWidth="180" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-size: 15;" />
-            <Button fx:id="kioskButton" text="On-site Access" onAction="#handleKioskAccess" prefWidth="180" style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-size: 15;" />
+            <Button fx:id="remoteButton" text="Remote Access" onAction="#handleRemoteAccess"
+                    prefWidth="180" styleClass="remote-button" />
+            <Button fx:id="kioskButton" text="On-site Access" onAction="#handleKioskAccess"
+                    prefWidth="180" styleClass="kiosk-button" />
         </HBox>
 
-        <Button fx:id="backButton" text="Back" onAction="#handleBack" prefWidth="140" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-size: 14;" />
+        <Button fx:id="backButton" text="Back" onAction="#handleBack"
+                prefWidth="140" styleClass="back-button" />
     </VBox>
 </AnchorPane>

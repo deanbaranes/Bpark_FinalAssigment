@@ -1,0 +1,37 @@
+/* customerMenu.css */
+
+.customer-background {
+    -fx-background-color: linear-gradient(to right, #34495e, #2ecc71);
+}
+
+.label {
+    -fx-text-fill: white;
+}
+
+.header-label {
+    -fx-font-size: 30;
+    -fx-font-family: "Arial Bold";
+}
+
+.subtext-label {
+    -fx-font-size: 16;
+    -fx-font-family: "Arial";
+}
+
+.remote-button {
+    -fx-background-color: #2980b9;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+}
+
+.kiosk-button {
+    -fx-background-color: #16a085;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+}
+
+.back-button {
+    -fx-background-color: #c0392b;
+    -fx-text-fill: white;
+    -fx-font-size: 14;
+}
