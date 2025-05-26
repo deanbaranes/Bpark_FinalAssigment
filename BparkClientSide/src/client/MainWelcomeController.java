@@ -39,23 +39,31 @@ public class MainWelcomeController {
 
     /**
      * Called when the staff button is clicked.
-     * Opens the staff GUI with ChatClient connection.
+     * Loads the management UI FXML and displays only the login screen section.
      */
     @FXML
     private void handleStaff() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("clientGUI.fxml"));
+            // Load the Managment_UI.fxml file
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Managment_UI.fxml"));
             Parent root = loader.load();
 
-            ClientController controller = loader.getController();
-            ChatClient client = new ChatClient("localhost", 5555, controller);
-            controller.setClient(client);
+            // Get the controller to control UI visibility
+            ManagmentUIController controller = loader.getController();
 
+            // Show only login screen components
+            controller.showLoginScreen();
+
+            // Switch the current stage to the management login screen
             Stage stage = (Stage) staffButton.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("BPARK - Staff Interface");
+            stage.setTitle("BPARK - Staff Login");
+            stage.show();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
     }
+
 }
