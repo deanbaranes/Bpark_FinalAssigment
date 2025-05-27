@@ -1,5 +1,5 @@
 package client;
-
+ 
 /**
  * Controller for the management (staff) interface.
  */

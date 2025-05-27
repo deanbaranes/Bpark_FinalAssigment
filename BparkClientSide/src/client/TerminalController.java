@@ -4,7 +4,7 @@ package client;
  * Controller for the terminal interface.
  */
 public class TerminalController implements BaseController {
-
+ 
     private ChatClient client;
 
     @Override

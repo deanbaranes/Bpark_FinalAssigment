@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
-
+ 
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.ManagementController"
             prefWidth="600" prefHeight="400">
     <Label text="Management Interface Loaded!" layoutX="180" layoutY="180"/>
