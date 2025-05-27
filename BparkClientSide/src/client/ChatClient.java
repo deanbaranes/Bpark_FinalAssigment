@@ -1,5 +1,5 @@
 package client;
-
+ 
 import ocsf.client.*;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -18,7 +18,8 @@ public class ChatClient extends AbstractClient {
     private MenuState currentState = MenuState.IDLE;
     private String selectedOrderId;
     private String selectedField;
-    private ClientController controller;
+    private BaseController controller;
+
 
     /**
      * Constructs a ChatClient.
@@ -37,7 +38,7 @@ public class ChatClient extends AbstractClient {
      * Sets the UI controller.
      * @param controller The controller instance.
      */
-    public void setController(ClientController controller) {
+    public void setController(BaseController controller) {
         this.controller = controller;
     }
 
@@ -66,7 +67,7 @@ public class ChatClient extends AbstractClient {
                 selectedOrderId = message.substring("ORDER_EXISTS:".length());
                 clientUI.display("Order #" + selectedOrderId + " found. Select a field to update.");
                 currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
-                controller.successfulFirstSubmit();
+               // controller.successfulFirstSubmit();
             } else {
                 clientUI.display(message);
             }

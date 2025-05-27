@@ -1,226 +1,245 @@
+// This file outlines the structure and behavior of the remote client app interface
+// by switching between screens within a single FXML using visibility.
+
 package client;
 
-import common.ChatIF;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
+
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
-/**
- * Controller class for handling user interface interactions in the client application.
- * Manages user inputs, button actions, and updates the UI in response to server communication.
- */
-public class ClientController implements ChatIF {
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Stack;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
-    @FXML private Button btnShowOrders;
-    @FXML private Button btnUpdateParkingSpace;
-    @FXML private Button btnUpdateOrderDate;
-    @FXML private Button btnBack;
-    @FXML private Button btnSubmitInput;
-    @FXML private Button btnExit;
-    @FXML private Button btnFirstSubmit;
-    @FXML private Button btnBackCheck;
-    @FXML private Button btnUpdate;
-    @FXML private TextArea consoleArea;
-    @FXML private TextField inputField;
+public class ClientController implements BaseController {
 
     private ChatClient client;
+    private final Stack<Pane> navigationStack = new Stack<>();
 
-    /**
-     * Initializes the controller and logs a welcome message.
-     */
+    // ===== MOCK DATA SECTION =====
+    private final String mockId = "123";
+    private final String mockCode = "abc";
+    private final String mockUsername = "Carmel";
+    private final String mockEmail = "user@example.com";
+    private final String mockPhone = "0501234567";
+    private final String mockCar1 = "12-345-67";
+    private final String mockCar2 = "89-012-34";
+    private final String mockCredit = "**** **** **** 1234";
+    private boolean hasExtended = false;
+    // =============================
+
+    @FXML private VBox mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
+            editInfoForm, activityMenu, historyView, reservationsView,
+            reservationForm, extendInfo;
+
+    @FXML private Button signInButton, showSpotsButton, personalInfoButton, activityButton,
+            scheduleButton, extendButton, logoutButton, editInfoButton,
+            submitButton, submitEditButton, historyButton, reservationsButton,
+            reserveSubmitButton;
+
+    @FXML private Button backButton;
+
+    @FXML private Label usernameLabel, emailLabel, phoneLabel,
+            car1Label, car2Label, creditCardLabel;
+
+    @FXML private TextField idField, editPhoneField, editEmailField,
+            dateField, timeField;
     @FXML
-    public void initialize() {
-        log("> Welcome! Please select an action.");
-    }
+    private PasswordField codeField;
 
-    /**
-     * Displays a message to the user in the console area.
-     * @param message The message to display.
-     */
     @Override
-    public void display(String message) {
-        Platform.runLater(() -> consoleArea.appendText("> " + message + "\n"));
-    }
-
-    /**
-     * Sets the ChatClient instance for communication with the server.
-     * @param client The ChatClient object.
-     */
     public void setClient(ChatClient client) {
         this.client = client;
-        client.setController(this);
-    }
-
-    /**
-     * Logs a message directly to the console area.
-     * @param msg The message to log.
-     */
-    private void log(String msg) {
-        consoleArea.appendText(msg + "\n");
-    }
-
-    /**
-     * Handles "Show Orders" button click by requesting all orders from the server.
-     */
-    @FXML
-    private void handleShowOrders() {
-        client.showOrders();
     }
 
     @FXML
-    private void handleExit() {
+    private void initialize() {
+        showOnly(mainMenu);
+    }
+
+    private void showOnly(Pane target) {
+        for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
+                editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
+            if (pane != null) {
+                pane.setVisible(false);
+                pane.setManaged(false);
+            }
+        }
+        target.setVisible(true);
+        target.setManaged(true);
+    }
+
+    private void navigateTo(Pane next) {
+        for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
+                editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
+            if (pane != null && pane.isVisible()) {
+                navigationStack.push(pane);
+                break;
+            }
+        }
+        showOnly(next);
+    }
+
+    @FXML private void handleSignInClick() { navigateTo(signInForm); }
+    @FXML private void handleShowSpotsClick() { navigateTo(spotsView); }
+    @FXML private void handlePersonalInfo() { navigateTo(personalInfoView); }
+    @FXML private void handleEditInfo() { navigateTo(editInfoForm); }
+    @FXML private void handleActivity() { navigateTo(activityMenu); }
+    @FXML private void handleHistory() { navigateTo(historyView); }
+    @FXML private void handleReservations() { navigateTo(reservationsView); }
+
+    @FXML
+    private void handleSubmitLogin() {
+        String id = idField.getText().trim();
+        String code = codeField.getText().trim();
+
+        if (id.isEmpty() || code.isEmpty()) {
+            showPopup("Please enter both ID and Subscriber Code.");
+            return;
+        }
+
+        if (id.equals(mockId) && code.equals(mockCode)) {
+            emailLabel.setText("Email: " + mockEmail);
+            phoneLabel.setText("Phone: " + mockPhone);
+            usernameLabel.setText("Username: " + mockUsername);
+            car1Label.setText("Primary Car: " + mockCar1);
+            car2Label.setText("Secondary Car: " + mockCar2);
+            creditCardLabel.setText("Credit Card: " + mockCredit);
+
+            navigationStack.clear();
+            showOnly(postLoginMenu);
+        } else {
+            showPopup("Invalid ID or Code.\nPlease try again.");
+        }
+    }
+
+    @FXML
+    private void handleSubmitEdit() {
+        String newPhone = editPhoneField.getText().trim();
+        String newEmail = editEmailField.getText().trim();
+
+        boolean phoneChanged = !newPhone.isEmpty();
+        boolean emailChanged = !newEmail.isEmpty();
+
+        if (!phoneChanged && !emailChanged) {
+            showPopup("Please edit at least one field.");
+            return;
+        }
+
+        StringBuilder errors = new StringBuilder();
+        if (phoneChanged && !newPhone.matches("\\d{10}")) {
+            errors.append("Phone number must be exactly 10 digits.\n");
+        }
+        if (emailChanged && !Pattern.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$", newEmail)) {
+            errors.append("Email must be in a valid format.\n");
+        }
+
+        if (!errors.isEmpty()) {
+            showPopup(errors.toString());
+            return;
+        }
+
+        if (phoneChanged) phoneLabel.setText("Phone: " + newPhone);
+        if (emailChanged) emailLabel.setText("Email: " + newEmail);
+
+        showPopup("Details updated successfully.\nYou can now click Back.");
+        showOnly(personalInfoView);
+    }
+
+    @FXML
+    private void handleSchedule() {
+        navigateTo(reservationForm);
+    }
+
+    @FXML
+    private void handleSubmitReservation() {
+        String dateInput = dateField.getText().trim();
+        String timeInput = timeField.getText().trim();
+
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnExit.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Welcome to BPARK");
-        } catch (Exception e) {
-            e.printStackTrace();
+            LocalDate date = LocalDate.parse(dateInput);
+            LocalDate now = LocalDate.now();
+            if (date.isBefore(now.plusDays(1)) || date.isAfter(now.plusDays(7))) {
+                showPopup("Date must be between 1 to 7 days from now.");
+                return;
+            }
+            LocalTime time = LocalTime.parse(timeInput, DateTimeFormatter.ofPattern("HH:mm"));
+           //MODIFY LATER AFTER IMPLEMENT CONNECTION TO DATABASE
+            String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            showPopup("Reservation confirmed.\nYour parking code is: " + code +
+                    "\nPlease note: If you do not arrive within 15 minutes of your reservation time, your reservation will be cancelled.");
+            showOnly(postLoginMenu);
+        } catch (DateTimeParseException e) {
+            showPopup("Please enter a valid date (yyyy-mm-dd) and time (hh:mm).\nExample: 2025-06-03 14:30");
         }
     }
 
-
-    /**
-     * Handles the initial click to start updating an order.
-     * Prepares the UI for order ID input.
-     */
     @FXML
-    private void handleFirstUpdateClick() {
-        client.setCurrentState(MenuState.CHECK_IF_EXISTS);
-        updateUIForOrderIdInput();
-        log("> Please enter the order ID and press Submit.");
-    }
-
-    /**
-     * Submits the user-provided order ID to the server.
-     */
-    @FXML
-    private void handleFirstSubmitUpdate() {
-        String input = inputField.getText().trim();
-        if (input.isEmpty()) {
-            log("> Input field is empty.");
-            return;
-        }
-        client.submitOrderId(input);
-        inputField.clear();
-    }
-
-    /**
-     * Handles the "Back" button click to return to the main menu.
-     */
-    @FXML
-    private void handleBackClick() {
-        resetToInitialState();
-        client.setCurrentState(MenuState.IDLE);
-    }
-
-    /**
-     * Handles the "Back" button during the order ID check stage.
-     */
-    @FXML
-    private void handleFirstBackClick() {
-        resetToInitialState();
-        client.setCurrentState(MenuState.IDLE);
-    }
-
-    /**
-     * Submits the new value for the selected field to the server.
-     */
-    @FXML
-    private void handleSubmitUpdate() {
-        String input = inputField.getText().trim();
-        if (input.isEmpty()) {
-            log("> Input field is empty.");
-            return;
-        }
-        client.submitFieldUpdate(input);
-        inputField.clear();
-    }
-
-    /**
-     * Handles the click to update the parking space field.
-     */
-    @FXML
-    private void handleUpdateParkingSpaceClick() {
-        client.selectFieldToUpdate("parking_space");
-        prepareInputForField("Parking Space");
-    }
-
-    /**
-     * Handles the click to update the order date field.
-     */
-    @FXML
-    private void handleUpdateOrderDateClick() {
-        client.selectFieldToUpdate("order_date");
-        prepareInputForField("Order Date (yyyy-MM-dd)");
-    }
-
-    /**
-     * Called when an order ID was successfully verified.
-     * Updates the UI to allow field selection.
-     */
-    public void successfulFirstSubmit() {
-        if (client.getCurrentState() == MenuState.UPDATE_ORDER_SELECT_FIELD) {
-            btnUpdateParkingSpace.setVisible(true);
-            btnUpdateOrderDate.setVisible(true);
-            btnBack.setVisible(true);
-            inputField.setVisible(false);
-            btnSubmitInput.setVisible(false);
-            btnBackCheck.setVisible(false);
-            btnFirstSubmit.setVisible(false);
-            inputField.clear();
-            log("> Please choose which field to update.");
+    private void handleExtend() {
+        if (hasExtended) {
+            showPopup("You have already extended this parking session.\nFurther extensions are not allowed.");
+        } else {
+            hasExtended = true;
+            showPopup("Parking time extended successfully.");
         }
     }
 
-    /**
-     * Prepares the UI for order ID input.
-     */
-    private void updateUIForOrderIdInput() {
-        btnUpdate.setVisible(false);
-        btnShowOrders.setVisible(false);
-        btnExit.setVisible(false);
-        btnBackCheck.setVisible(true);
-        inputField.setVisible(true);
-        btnFirstSubmit.setVisible(true);
-        consoleArea.setText("");
+    @FXML
+    private void handleExitApp() {
+        if (client != null) client.quit();
+        else System.exit(0);
     }
 
-    /**
-     * Prepares the UI for input of a new value for a selected field.
-     * @param fieldName The name of the field being updated.
-     */
-    private void prepareInputForField(String fieldName) {
-        consoleArea.setText("");
-        log("> You chose to update " + fieldName + ".");
-        log("> Enter the new value and press Submit.");
-        inputField.setVisible(true);
-        btnSubmitInput.setVisible(true);
+    @FXML
+    private void handleBack() {
+        if (!navigationStack.isEmpty()) {
+            Pane previous = navigationStack.pop();
+            showOnly(previous);
+        } else {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWelcome.fxml"));
+                Parent root = loader.load();
+                MainWelcomeController controller = loader.getController();
+                controller.showClientSubMenu();
+                Stage stage = (Stage) backButton.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("BPARK - Welcome");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    /**
-     * Resets the UI to the initial state of the application.
-     */
-    private void resetToInitialState() {
-        btnUpdate.setVisible(true);
-        btnShowOrders.setVisible(true);
-        btnExit.setVisible(true);
-        btnUpdateParkingSpace.setVisible(false);
-        btnUpdateOrderDate.setVisible(false);
-        btnBack.setVisible(false);
-        btnBackCheck.setVisible(false);
-        inputField.setVisible(false);
-        btnSubmitInput.setVisible(false);
-        btnFirstSubmit.setVisible(false);
-        inputField.clear();
-        consoleArea.setText("");
-        log("> Back to main actions.");
+    private void showPopup(String message) {
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        alert.setTitle("Notice");
+        alert.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+
+        Label content = new Label(message);
+        content.setWrapText(true);
+        content.setMaxWidth(300);
+        content.setMinHeight(100);
+        content.setStyle("-fx-text-alignment: center; -fx-alignment: center; -fx-font-size: 14px;");
+
+        VBox wrapper = new VBox(content);
+        wrapper.setAlignment(Pos.CENTER);
+        wrapper.setPrefSize(320, 150);
+
+        alert.getDialogPane().setContent(wrapper);
+        alert.showAndWait();
     }
+
+
 }
+
