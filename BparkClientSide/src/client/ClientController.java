@@ -1,10 +1,11 @@
-// This file outlines the structure and behavior of the remote client app interface
-// by switching between screens within a single FXML using visibility.
-
+/**
+ * ClientController manages the flow and UI of the remote client app.
+ * It switches between views using visibility toggles and handles user input,
+ * form submissions, and mock data logic until database integration.
+ */
 package client;
 
 import javafx.fxml.FXML;
-
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -25,6 +26,13 @@ import java.util.regex.Pattern;
 public class ClientController implements BaseController {
 
     private ChatClient client;
+
+    /**
+     * Stack to manage the user's navigation history across panes (screens).
+     * Each time the user navigates forward, the current pane is saved here.
+     * When 'Back' is clicked, the top pane from the stack is shown again.
+     * This allows navigating backward through previous screens.
+     */
     private final Stack<Pane> navigationStack = new Stack<>();
 
     // ===== MOCK DATA SECTION =====
@@ -39,6 +47,11 @@ public class ClientController implements BaseController {
     private boolean hasExtended = false;
     // =============================
 
+    /**
+     * A Pane in JavaFX is a layout container for organizing UI elements (buttons, labels, etc.).
+     * We use multiple panes to represent different "screens" within the same window.
+     * Only one pane is visible at a time to simulate switching between screens.
+     */
     @FXML private VBox mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
             editInfoForm, activityMenu, historyView, reservationsView,
             reservationForm, extendInfo;
@@ -46,28 +59,40 @@ public class ClientController implements BaseController {
     @FXML private Button signInButton, showSpotsButton, personalInfoButton, activityButton,
             scheduleButton, extendButton, logoutButton, editInfoButton,
             submitButton, submitEditButton, historyButton, reservationsButton,
-            reserveSubmitButton;
-
-    @FXML private Button backButton;
+            reserveSubmitButton, backButton;
 
     @FXML private Label usernameLabel, emailLabel, phoneLabel,
             car1Label, car2Label, creditCardLabel;
 
     @FXML private TextField idField, editPhoneField, editEmailField,
             dateField, timeField;
-    @FXML
-    private PasswordField codeField;
 
+    @FXML private PasswordField codeField;
+
+    /**
+     * Sets the ChatClient instance for server communication.
+     * @param client the ChatClient object
+     */
     @Override
     public void setClient(ChatClient client) {
         this.client = client;
     }
 
+    /**
+     * Initializes the controller by showing the main menu.
+     * Called automatically when the FXML is loaded.
+     */
     @FXML
     private void initialize() {
         showOnly(mainMenu);
     }
 
+    /**
+     * Makes only the given pane visible and hides all others.
+     * This is used to display a specific screen in the UI.
+     *
+     * @param target the pane to show
+     */
     private void showOnly(Pane target) {
         for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
                 editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
@@ -80,6 +105,15 @@ public class ClientController implements BaseController {
         target.setManaged(true);
     }
 
+    /**
+     * Navigates to the given pane by saving the current visible pane into the navigation stack.
+     * Use this method when you want the 'Back' button to return to the current screen.
+     *
+     * If you don't want to allow navigating back to a specific screen (e.g., after editing),
+     * use showOnly() instead of navigateTo().
+     *
+     * @param next the next pane to show
+     */
     private void navigateTo(Pane next) {
         for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
                 editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
@@ -91,6 +125,7 @@ public class ClientController implements BaseController {
         showOnly(next);
     }
 
+    /** Button handlers for navigation */
     @FXML private void handleSignInClick() { navigateTo(signInForm); }
     @FXML private void handleShowSpotsClick() { navigateTo(spotsView); }
     @FXML private void handlePersonalInfo() { navigateTo(personalInfoView); }
@@ -98,7 +133,12 @@ public class ClientController implements BaseController {
     @FXML private void handleActivity() { navigateTo(activityMenu); }
     @FXML private void handleHistory() { navigateTo(historyView); }
     @FXML private void handleReservations() { navigateTo(reservationsView); }
+    @FXML private void handleSchedule() { navigateTo(reservationForm); }
 
+    /**
+     * Handles login form submission.
+     * Checks mock ID and code, loads user data if successful, or shows error popup.
+     */
     @FXML
     private void handleSubmitLogin() {
         String id = idField.getText().trim();
@@ -124,6 +164,10 @@ public class ClientController implements BaseController {
         }
     }
 
+    /**
+     * Handles the submission of personal info edits.
+     * Validates input and shows appropriate messages.
+     */
     @FXML
     private void handleSubmitEdit() {
         String newPhone = editPhoneField.getText().trim();
@@ -157,11 +201,9 @@ public class ClientController implements BaseController {
         showOnly(personalInfoView);
     }
 
-    @FXML
-    private void handleSchedule() {
-        navigateTo(reservationForm);
-    }
-
+    /**
+     * Displays the reservation form.
+     */
     @FXML
     private void handleSubmitReservation() {
         String dateInput = dateField.getText().trim();
@@ -175,7 +217,7 @@ public class ClientController implements BaseController {
                 return;
             }
             LocalTime time = LocalTime.parse(timeInput, DateTimeFormatter.ofPattern("HH:mm"));
-           //MODIFY LATER AFTER IMPLEMENT CONNECTION TO DATABASE
+
             String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             showPopup("Reservation confirmed.\nYour parking code is: " + code +
                     "\nPlease note: If you do not arrive within 15 minutes of your reservation time, your reservation will be cancelled.");
@@ -185,6 +227,10 @@ public class ClientController implements BaseController {
         }
     }
 
+    /**
+     * Extends the current parking session if not extended already.
+     * Otherwise shows message that extension is not allowed.
+     */
     @FXML
     private void handleExtend() {
         if (hasExtended) {
@@ -195,12 +241,19 @@ public class ClientController implements BaseController {
         }
     }
 
+    /**
+     * Quits the app or disconnects the client.
+     */
     @FXML
     private void handleExitApp() {
         if (client != null) client.quit();
         else System.exit(0);
     }
 
+    /**
+     * Handles the back button. Navigates to the last screen if available.
+     * If the stack is empty, returns to the welcome screen.
+     */
     @FXML
     private void handleBack() {
         if (!navigationStack.isEmpty()) {
@@ -221,6 +274,10 @@ public class ClientController implements BaseController {
         }
     }
 
+    /**
+     * Utility method to show popup alerts in a consistent format.
+     * @param message the content of the popup
+     */
     private void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");
@@ -240,6 +297,4 @@ public class ClientController implements BaseController {
         alert.showAndWait();
     }
 
-
 }
-
