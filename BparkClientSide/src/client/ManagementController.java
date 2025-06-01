@@ -64,9 +64,12 @@ public class ManagementController {
     @FXML private Button btnbacktomain;
 
     private Stack<Runnable> screenHistory = new Stack<>();
-
+    /**
+     * Sets all UI components to invisible.
+     * Used before switching views to ensure only the relevant section is visible.
+     */
     public void setAllInvisible() {
-        // תפריט ראשי - Manager Menu
+        // Manager Menu
         labelwelcome.setVisible(false);
         btnback.setVisible(false);
         btnmemberdetails.setVisible(false);
@@ -119,6 +122,10 @@ public class ManagementController {
 
         
     }
+    /**
+     * Handles the action of viewing the Member Status Report.
+     * Updates the screen to show the relevant chart and saves the current state in history.
+     */
     @FXML
     private void handleViewMemberStatusReport() {
     	screenHistory.push(this::showManagerMenu); 
@@ -128,7 +135,10 @@ public class ManagementController {
         btnback.setVisible(true);
     }
 
-
+    /**
+     * Displays the login screen UI components.
+     * Also saves the current screen state to the history stack.
+     */
     public void showLoginScreen() {
         screenHistory.push(() -> {
             try {
@@ -175,7 +185,10 @@ public class ManagementController {
         }
         
     }
-
+    /**
+     * Displays the manager main menu after successful login.
+     * Also pushes the current state to the history stack for back navigation.
+     */
     public void showManagerMenu() {
         screenHistory.push(() -> {
             try {
@@ -206,7 +219,10 @@ public class ManagementController {
         btnback.setVisible(true);
         
     }
-
+    /**
+     * Handles the action of viewing member details.
+     * Updates UI to show the member details section.
+     */
     @FXML
     private void handleViewMemberDetails() {
     	screenHistory.push(this::showManagerMenu); 
@@ -218,6 +234,10 @@ public class ManagementController {
         console_memberdeatils.setVisible(true);
         btnback.setVisible(true);
     }
+    /**
+     * Handles the action of viewing parking details.
+     * Updates UI to show the parking details section.
+     */
     @FXML
     private void handleViewParkingDetails() {
     	screenHistory.push(this::showManagerMenu);
@@ -229,6 +249,10 @@ public class ManagementController {
         btnsearch_parkingdetails.setVisible(true);
         btnback.setVisible(true);
     }
+    /**
+     * Handles the action of registering a new member.
+     * Updates UI to show the registration form section.
+     */
     @FXML
     private void handleRegisterNewMember() {
     	screenHistory.push(this::showManagerMenu);
@@ -248,6 +272,10 @@ public class ManagementController {
         label_vehiclenumber_register.setVisible(true);
         btnback.setVisible(true);
     }
+    /**
+     * Handles the action of registering a new member.
+     * Updates UI to show the registration form section.
+     */
     @FXML
     private void handleViewParkingDuration() {
     	screenHistory.push(this::showManagerMenu);
@@ -259,11 +287,18 @@ public class ManagementController {
         parking_timechart.setVisible(true);
         btnback.setVisible(true);
     }
-
+    /**
+     * Handles the login submission action.
+     * Currently navigates directly to the manager menu without validation.
+     */
     @FXML
     private void handleLoginSubmit() {
         showManagerMenu(); 
     }
+    /**
+     * Handles the back button logic using a stack of previous screen states.
+     * Restores the previous screen by popping the last Runnable from the history stack.
+     */
     @FXML
     private void handleBack() {
         if (!screenHistory.isEmpty()) {
@@ -271,6 +306,10 @@ public class ManagementController {
             lastScreen.run();
         }
     }
+    /**
+     * Handles the back to main menu button.
+     * Navigates the user back to the main welcome screen (mainWelcome.fxml).
+     */
     @FXML
     private void handleBackToMainMenu() {
         try {
