@@ -1,7 +1,6 @@
 package client;
 
 import java.io.IOException;
-
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,14 +8,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
 import java.util.Stack;
 
-
-
-
 public class ManagementController {
-
     @FXML private TextField usernametextfield;
     @FXML private PasswordField passwordfeild;
     @FXML private Button btnloginsubmit;
