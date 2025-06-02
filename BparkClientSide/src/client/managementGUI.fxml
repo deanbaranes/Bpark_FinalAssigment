@@ -121,13 +121,14 @@
         <TextField fx:id="textfield_emil" layoutX="268.0" layoutY="217.0" visible="false" />
         <TextField fx:id="textfiled_phonenumber" layoutX="268.0" layoutY="258.0" visible="false" />
         <TextField fx:id="label_vehiclenumber_register" layoutX="268.0" layoutY="302.0" visible="false" />
+            <Button fx:id="btnsignup" layoutX="294.0" layoutY="347.0" mnemonicParsing="false" text="Sign up" visible="false" />
 
         <!-- Reports -->
-        <TextField fx:id="label_Enteryear" layoutX="150.0" layoutY="70.0" visible="false" />
-        <TextField layoutX="134.0" layoutY="111.0" visible="false" />
+        <TextField fx:id="label_Enteryear" layoutX="113.0" layoutY="69.0" visible="false" />
         <Label fx:id="label_enteryear" layoutX="38.0" layoutY="73.0" text="Enter year:" visible="false" />
-        <TextField fx:id="monthField" layoutX="150.0" layoutY="111.0" visible="false" />
-        <Label fx:id="label_entermoth" layoutX="36.0" layoutY="113.0" text="Enter month:" visible="false" />
+        <TextField fx:id="monthField" layoutX="366.0" layoutY="69.0" visible="false" />
+        <Label fx:id="label_entermoth" layoutX="285.0" layoutY="73.0" text="Enter month:" visible="false" />
+            <Button fx:id="btnsearchreport" layoutX="544.0" layoutY="69.0" mnemonicParsing="false" text="Search" visible="false" />
         <Text fx:id="memberStatusTitle" layoutX="172.0" layoutY="50.0" text="Members status report" visible="false">
           <font><Font size="30.0" /></font>
         </Text>

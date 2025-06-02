@@ -56,6 +56,8 @@ public class ManagementController {
     @FXML private javafx.scene.chart.LineChart<?, ?> chart_memberstatus;
     @FXML private Button btnback;
     @FXML private Button btnbacktomain;
+    @FXML private Button btnsignup;
+    @FXML private Button btnsearchreport;
 
     private Stack<Runnable> screenHistory = new Stack<>();
     /**
@@ -100,6 +102,7 @@ public class ManagementController {
         textfield_emil.setVisible(false);
         textfiled_phonenumber.setVisible(false);
         label_vehiclenumber_register.setVisible(false);
+        btnsignup.setVisible(false);
         
      // Parking Duration Report
         label_enteryear.setVisible(false);
@@ -107,6 +110,7 @@ public class ManagementController {
         label_Enteryear.setVisible(false);
         monthField.setVisible(false);
         parking_timechart.setVisible(false);
+        btnsearchreport.setVisible(false);
         
      // Member Status Report
         memberStatusTitle.setVisible(false);
@@ -265,6 +269,8 @@ public class ManagementController {
         textfiled_phonenumber.setVisible(true);
         label_vehiclenumber_register.setVisible(true);
         btnback.setVisible(true);
+        btnsignup.setVisible(true);
+
     }
     /**
      * Handles the action of registering a new member.
@@ -280,6 +286,7 @@ public class ManagementController {
         monthField.setVisible(true);
         parking_timechart.setVisible(true);
         btnback.setVisible(true);
+        btnsearchreport.setVisible(true);
     }
     /**
      * Handles the login submission action.
