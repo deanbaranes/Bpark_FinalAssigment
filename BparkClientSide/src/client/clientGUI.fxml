@@ -48,7 +48,7 @@
             <Button fx:id="extendButton" text="Extend Parking Time" onAction="#handleExtend"
                     GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="200"/>
         </GridPane>
-        <Button fx:id="logoutButton" text="Exit" onAction="#handleExitApp" prefWidth="100"/>
+        <Label fx:id="LogOutLabel" text="To log out and return to Main Menu press the 'back' button"/>
     </VBox>
 
     <!-- Personal Info -->
@@ -110,9 +110,10 @@
         <Button text="Extend Now" onAction="#handleExtend"/>
     </VBox>
 
-    <!-- Global Back Button -->
-    <HBox alignment="CENTER" AnchorPane.bottomAnchor="30" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+     <!-- Global Back Button -->
+    <VBox alignment="CENTER" spacing="10" AnchorPane.bottomAnchor="60" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
         <Button fx:id="backButton" text="Back" onAction="#handleBack" prefWidth="100"/>
-    </HBox>
+    	<Button fx:id="logoutButton" text="Exit" onAction="#handleExitApp" prefWidth="100"/>
+    </VBox>
 
 </AnchorPane>

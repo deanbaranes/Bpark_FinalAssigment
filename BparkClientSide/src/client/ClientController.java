@@ -62,7 +62,7 @@ public class ClientController implements BaseController {
             reserveSubmitButton, backButton;
 
     @FXML private Label usernameLabel, emailLabel, phoneLabel,
-            car1Label, car2Label, creditCardLabel;
+            car1Label, car2Label, creditCardLabel, LogOutLabel;
 
     @FXML private TextField idField, editPhoneField, editEmailField,
             dateField, timeField;
