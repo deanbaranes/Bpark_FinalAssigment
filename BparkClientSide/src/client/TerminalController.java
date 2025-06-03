@@ -12,6 +12,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
@@ -48,7 +49,7 @@ public class TerminalController implements BaseController {
     @FXML private PasswordField codeField;
 
     // === Text Areas and Texts ===
-    @FXML private TextArea parkingCodeTextArea;
+    @FXML private TextArea parkingCodeTextArea,spotsTextArea;
     @FXML private Text leaveCarText, parkingDelayText;
 
     // === Hyperlinks ===
@@ -103,6 +104,13 @@ public class TerminalController implements BaseController {
     @FXML
     private void handleShowSpotsClick() {
         navigateTo(spotsView);
+        try {
+			client.sendToServer("REQUEST_AVAILABLE_SPOTS");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
     }
 
     @FXML
@@ -138,6 +146,22 @@ public class TerminalController implements BaseController {
         });
     }
 
+    public void handleAvailableSpots(List<String> availableSpots) {
+        Platform.runLater(() -> {
+            StringBuilder builder = new StringBuilder();
+            if(availableSpots.isEmpty())
+            {
+            	spotsTextArea.setText("There are no available parking spots.");
+            }
+            else
+            {
+            	for (String spot : availableSpots) {
+                    builder.append(spot).append("\n");
+                }
+                spotsTextArea.setText(builder.toString());
+            }
+        });
+    }
 
     
     /*private void handleSubmitLogin() {

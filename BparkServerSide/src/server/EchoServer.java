@@ -1,6 +1,8 @@
 package server;
 
+
 import java.io.*;
+import java.util.List;
 
 import common.LoginRequest;
 import ocsf.server.*;
@@ -14,7 +16,7 @@ public class EchoServer extends AbstractServer {
 
     /** Default port to listen on. */
     final public static int DEFAULT_PORT = 5555;
-
+    private List<String> availableSpots;
     /**
      * Constructs an EchoServer on the specified port.
      * @param port The port number to listen on.
@@ -69,25 +71,37 @@ public class EchoServer extends AbstractServer {
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            } else {
-                try {
-                    client.sendToClient("Unrecognized command.");
-                } catch (IOException e) {
+                catch (IOException e) 
+                {
                     e.printStackTrace();
                 }
             }
+                else if (msg.equals("REQUEST_AVAILABLE_SPOTS")) 
+                {
+                    availableSpots = mysqlConnection.getAvailableSpots();
+                    try 
+                    {
+                        client.sendToClient(availableSpots);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+        		else 
+        		{
+	                try {
+	                    client.sendToClient("Unrecognized command.");
+	                } catch (IOException e) {
+	                    e.printStackTrace();
+	                }
+        		}
         } 
-        
         else if (msg instanceof LoginRequest) 
         {
             LoginRequest request = (LoginRequest) msg;
-
             boolean success = mysqlConnection.checkLogin(request.getFullName(), request.getSubscriptionCode());
-
-            try {
+            try 
+            {
                 client.sendToClient(success ? "LOGIN_SUCCESS" : "LOGIN_FAILURE");
             } catch (IOException e) {
                 e.printStackTrace();

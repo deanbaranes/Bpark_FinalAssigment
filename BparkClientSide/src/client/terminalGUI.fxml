@@ -33,6 +33,8 @@
     <VBox fx:id="spotsView" alignment="CENTER" spacing="20" visible="false" managed="false"
           AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label text="Available parking spots will be shown here." wrapText="true" maxWidth="600"/>
+         <TextArea fx:id="spotsTextArea" prefWidth="400" prefHeight="200"
+              editable="false" wrapText="true"/>
     </VBox>
 
     <!-- Select Service View -->

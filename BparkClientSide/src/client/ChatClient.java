@@ -4,6 +4,7 @@ import ocsf.client.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import common.ChatIF;
 
@@ -75,7 +76,12 @@ public class ChatClient extends AbstractClient {
             else {
                 clientUI.display(message);
             }
-        } else {
+        }
+        else if (msg instanceof List)
+        {
+        	TerminalController.getInstance().handleAvailableSpots((List<String>)msg);
+        }
+        else {
             clientUI.display(msg.toString());
         }
     }

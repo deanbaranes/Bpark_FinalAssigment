@@ -145,5 +145,25 @@ public class mysqlConnection {
             return false;
         }
     }
+    public static List<String> getAvailableSpots() {
+        List<String> availableSpots = new ArrayList<>();
+        String query = "SELECT spot_number FROM parking_spots WHERE status = 'available'";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String spot = "Parking Spot #" + rs.getInt("spot_number") + " is available.";
+                availableSpots.add(spot);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return availableSpots;
+    }
+
 
 }
