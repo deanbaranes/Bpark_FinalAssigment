@@ -1,5 +1,6 @@
 package client;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -14,10 +15,13 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.Stack;
 
+import common.LoginRequest;
+
 public class TerminalController implements BaseController {
 
     private ChatClient client;
     private final Stack<VBox> navigationStack = new Stack<>();
+    private static TerminalController instance;
     
     // ===== MOCK DATA SECTION =====
     private final String mockId = "123";
@@ -80,6 +84,14 @@ public class TerminalController implements BaseController {
         }
         showOnly(next);
     }
+    
+    public TerminalController() {
+        instance = this;
+    }
+
+    public static TerminalController getInstance() {
+        return instance;
+    }
 
     @FXML
     private void handleSignInClick() {
@@ -94,7 +106,41 @@ public class TerminalController implements BaseController {
     }
 
     @FXML
+    
     private void handleSubmitLogin() {
+        String id = idField.getText().trim();
+        String code = codeField.getText().trim();
+        idField.clear();
+        codeField.clear();
+
+        if (id.isEmpty() || code.isEmpty()) {
+            showPopup("Please enter both ID and Subscriber Code.");
+            return;
+        }
+
+        // נשלח לשרת אובייקט שמתאר את הבקשה (מחרוזת או אובייקט LoginRequest)
+        try {
+			client.sendToServer(new LoginRequest(id, code));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+    public void handleLoginResponse(String response) {
+        Platform.runLater(() -> {
+            if ("LOGIN_SUCCESS".equals(response)) {
+                navigationStack.clear();
+                showOnly(selectServicePane);
+            } else {
+                showPopup("Invalid ID or Subscriber Code.");
+            }
+        });
+    }
+
+
+    
+    /*private void handleSubmitLogin() {
         String id = idField.getText().trim();
         String code = codeField.getText().trim();
         idField.clear();
@@ -111,7 +157,7 @@ public class TerminalController implements BaseController {
         } else {
             showPopup("Invalid ID or Subscriber Code.");
         }
-    }
+    }*/
 
     @FXML
     private void handleDropoffClick() {

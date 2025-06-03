@@ -68,7 +68,11 @@ public class ChatClient extends AbstractClient {
                 clientUI.display("Order #" + selectedOrderId + " found. Select a field to update.");
                 currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
                // controller.successfulFirstSubmit();
-            } else {
+            }
+            else if (message.equals("LOGIN_SUCCESS") || message.equals("LOGIN_FAILURE")) {
+                TerminalController.getInstance().handleLoginResponse(message);
+            }
+            else {
                 clientUI.display(message);
             }
         } else {

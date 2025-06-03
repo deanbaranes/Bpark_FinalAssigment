@@ -1,6 +1,8 @@
 package server;
 
 import java.io.*;
+
+import common.LoginRequest;
 import ocsf.server.*;
 
 /**
@@ -30,7 +32,8 @@ public class EchoServer extends AbstractServer {
     public void handleMessageFromClient(Object msg, ConnectionToClient client) {
         System.out.println("Message received: " + msg + " from " + client);
 
-        if (msg instanceof String) {
+        if (msg instanceof String) 
+        {
             String command = (String) msg;
 
             if (command.equals("SHOW_ORDERS")) {
@@ -76,7 +79,22 @@ public class EchoServer extends AbstractServer {
                     e.printStackTrace();
                 }
             }
-        } else {
+        } 
+        
+        else if (msg instanceof LoginRequest) 
+        {
+            LoginRequest request = (LoginRequest) msg;
+
+            boolean success = mysqlConnection.checkLogin(request.getFullName(), request.getSubscriptionCode());
+
+            try {
+                client.sendToClient(success ? "LOGIN_SUCCESS" : "LOGIN_FAILURE");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else 
+        {
             try {
                 client.sendToClient("Unsupported message format.");
             } catch (IOException e) {
