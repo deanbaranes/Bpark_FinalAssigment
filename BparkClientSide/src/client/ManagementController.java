@@ -1,327 +1,162 @@
 package client;
 
-import java.io.IOException;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
+
+import java.io.IOException;
 import java.util.Stack;
 
 public class ManagementController {
+
+    private final Stack<Pane> navigationStack = new Stack<>();
+
+    // === VBoxes (screens) ===
+    @FXML private VBox loginView;
+    @FXML private VBox managerMenuView;
+    @FXML private VBox memberDetailsView;
+    @FXML private VBox parkingDetailsView;
+    @FXML private VBox registerMemberView;
+    @FXML private VBox memberStatusReportView;
+
+    // === Login ===
     @FXML private TextField usernametextfield;
     @FXML private PasswordField passwordfeild;
-    @FXML private Button btnloginsubmit;
     @FXML private Hyperlink btnforgerpassword;
-    @FXML private Label usernamelabel;
-    @FXML private Label passwordlabel;
-    @FXML private Label loginlabel;
+    @FXML private Label usernamelabel, passwordlabel, loginlabel;
+    @FXML private Button btnloginsubmit;
+
+    // === Manager Menu ===
     @FXML private Label labelwelcome;
-    @FXML private Button btnmemberdetails;
-    @FXML private Button btnparkingdetails;
-    @FXML private Button btnregisternewmember;
-    @FXML private Button btnparkingduration;
-    @FXML private Button btnmemberstatusreport;
-    @FXML private Label labelmemberdetails;
-    @FXML private Label labelsearchby_id;
+    @FXML private Button btnmemberdetails, btnparkingdetails, btnregisternewmember, btnparkingduration, btnmemberstatusreport, btnback;
+
+    // === Member Details ===
+    @FXML private Label labelmemberdetails, labelsearchby_id;
     @FXML private TextField searchbyidtext;
     @FXML private Button btnsearch_memberdetails;
     @FXML private TextArea console_memberdeatils;
-    @FXML private Label label_parking_details;
-    @FXML private TextArea console_parkingdetails;
-    @FXML private Label label_parkingdetails_search;
+
+    // === Parking Details ===
+    @FXML private Label label_parking_details, label_parkingdetails_search;
     @FXML private TextField searchbytext2;
     @FXML private Button btnsearch_parkingdetails;
+    @FXML private TextArea console_parkingdetails;
+
+    // === Register New Member ===
     @FXML private Label label_register_member;
-    @FXML private Label label_firstname;
-    @FXML private Label label_lsatname;
-    @FXML private Label label_id;
-    @FXML private Label label_email;
-    @FXML private Label label_phonenumber;
-    @FXML private Label label_vehiclenumber;
-    @FXML private TextField textfield_firstname;
-    @FXML private TextField textfield_lastname;
-    @FXML private TextField textfield_id1;
-    @FXML private TextField textfield_emil;
-    @FXML private TextField textfiled_phonenumber;
-    @FXML private TextField label_vehiclenumber_register;
-    @FXML private Label label_enteryear;
-    @FXML private Label label_entermoth;
-    @FXML private TextField label_Enteryear; // Note: check this naming in FXML!
-    @FXML private TextField monthField;      // This one is unnamed in your FXML, we’ll rename it here for clarity
-    @FXML private javafx.scene.chart.LineChart<?, ?> parking_timechart;
-    @FXML private Text memberStatusTitle;
-    @FXML private javafx.scene.chart.LineChart<?, ?> chart_memberstatus;
-    @FXML private Button btnback;
-    @FXML private Button btnbacktomain;
+    @FXML private TextField textfield_firstname, textfield_lastname, textfield_id1, textfield_emil, textfiled_phonenumber, label_vehiclenumber_register;
     @FXML private Button btnsignup;
+
+    // === Member Status Report ===
+    @FXML private Label label_enteryear, label_entermoth;
+    @FXML private TextField label_Enteryear, monthField;
     @FXML private Button btnsearchreport;
+    @FXML private Text memberStatusTitle;
+    @FXML private javafx.scene.chart.LineChart<?, ?> chart_memberstatus, parking_timechart;
 
-    private Stack<Runnable> screenHistory = new Stack<>();
-    /**
-     * Sets all UI components to invisible.
-     * Used before switching views to ensure only the relevant section is visible.
-     */
-    public void setAllInvisible() {
-        // Manager Menu
-        labelwelcome.setVisible(false);
-        btnback.setVisible(false);
-        btnmemberdetails.setVisible(false);
-        btnparkingdetails.setVisible(false);
-        btnregisternewmember.setVisible(false);
-        btnparkingduration.setVisible(false);
-        btnmemberstatusreport.setVisible(false);
-
-        // Member Details
-        labelmemberdetails.setVisible(false);
-        labelsearchby_id.setVisible(false);
-        searchbyidtext.setVisible(false);
-        btnsearch_memberdetails.setVisible(false);
-        console_memberdeatils.setVisible(false);
-
-        // Parking Details
-        label_parking_details.setVisible(false);
-        console_parkingdetails.setVisible(false);
-        label_parkingdetails_search.setVisible(false);
-        searchbytext2.setVisible(false);
-        btnsearch_parkingdetails.setVisible(false);
-
-        // Register New Member
-        label_register_member.setVisible(false);
-        label_firstname.setVisible(false);
-        label_lsatname.setVisible(false);
-        label_id.setVisible(false);
-        label_email.setVisible(false);
-        label_phonenumber.setVisible(false);
-        label_vehiclenumber.setVisible(false);
-        textfield_firstname.setVisible(false);
-        textfield_lastname.setVisible(false);
-        textfield_id1.setVisible(false);
-        textfield_emil.setVisible(false);
-        textfiled_phonenumber.setVisible(false);
-        label_vehiclenumber_register.setVisible(false);
-        btnsignup.setVisible(false);
-        
-     // Parking Duration Report
-        label_enteryear.setVisible(false);
-        label_entermoth.setVisible(false);
-        label_Enteryear.setVisible(false);
-        monthField.setVisible(false);
-        parking_timechart.setVisible(false);
-        btnsearchreport.setVisible(false);
-        
-     // Member Status Report
-        memberStatusTitle.setVisible(false);
-        chart_memberstatus.setVisible(false);
-        
-        btnback.setVisible(false);
-
-        
-    }
-    /**
-     * Handles the action of viewing the Member Status Report.
-     * Updates the screen to show the relevant chart and saves the current state in history.
-     */
     @FXML
-    private void handleViewMemberStatusReport() {
-    	screenHistory.push(this::showManagerMenu); 
-        setAllInvisible();
-        memberStatusTitle.setVisible(true);
-        chart_memberstatus.setVisible(true);
-        btnback.setVisible(true);
+    private void initialize() {
+        showOnly(loginView);
     }
 
-    /**
-     * Displays the login screen UI components.
-     * Also saves the current screen state to the history stack.
-     */
-    public void showLoginScreen() {
-        screenHistory.push(() -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) btnback.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("Welcome to BPARK");
-            } catch (IOException e) {
-                e.printStackTrace();
+    private void showOnly(Pane target) {
+        for (VBox pane : new VBox[]{loginView, managerMenuView, memberDetailsView, parkingDetailsView, registerMemberView, memberStatusReportView}) {
+            if (pane != null) {
+                pane.setVisible(false);
+                pane.setManaged(false);
             }
-        });
-        usernametextfield.setVisible(true);
-        passwordfeild.setVisible(true);
-        btnloginsubmit.setVisible(true);
-        btnforgerpassword.setVisible(true);
-        usernamelabel.setVisible(true);
-        passwordlabel.setVisible(true);
-        loginlabel.setVisible(true);
-        btnback.setVisible(true);
-    }
-
-    /**
-     * Handles the Back button click from the login screen.
-     * This method loads the main welcome screen (mainWelcome.fxml)
-     * and replaces the current scene with it.
-     */
-    @FXML
-    private void handleLoginBack() {
-        try {
-            // Load the welcome screen FXML file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
-            Parent root = loader.load();
-
-            // Get the current stage from the back button
-            Stage stage = (Stage) btnback.getScene().getWindow();
-
-            // Set the new scene and update the window title
-            stage.setScene(new Scene(root));
-            stage.setTitle("Welcome to BPARK");
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        
+        target.setVisible(true);
+        target.setManaged(true);
     }
-    /**
-     * Displays the manager main menu after successful login.
-     * Also pushes the current state to the history stack for back navigation.
-     */
-    public void showManagerMenu() {
-        screenHistory.push(() -> {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) btnback.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("Welcome to BPARK");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        setAllInvisible();
-        labelwelcome.setText("Welcome, Manager");
-        labelwelcome.setVisible(true);
-        btnmemberdetails.setVisible(true);
-        btnparkingdetails.setVisible(true);
-        btnregisternewmember.setVisible(true);
-        btnparkingduration.setVisible(true);
-        btnmemberstatusreport.setVisible(true);
-        usernametextfield.setVisible(false);
-        passwordfeild.setVisible(false);
-        btnloginsubmit.setVisible(false);
-        btnforgerpassword.setVisible(false);
-        usernamelabel.setVisible(false);
-        passwordlabel.setVisible(false);
-        loginlabel.setVisible(false);
-        btnback.setVisible(true);
-        
-    }
-    /**
-     * Handles the action of viewing member details.
-     * Updates UI to show the member details section.
-     */
-    @FXML
-    private void handleViewMemberDetails() {
-    	screenHistory.push(this::showManagerMenu); 
-        setAllInvisible(); 
-        labelmemberdetails.setVisible(true);
-        labelsearchby_id.setVisible(true);
-        searchbyidtext.setVisible(true);
-        btnsearch_memberdetails.setVisible(true);
-        console_memberdeatils.setVisible(true);
-        btnback.setVisible(true);
-    }
-    /**
-     * Handles the action of viewing parking details.
-     * Updates UI to show the parking details section.
-     */
-    @FXML
-    private void handleViewParkingDetails() {
-    	screenHistory.push(this::showManagerMenu);
-        setAllInvisible(); 
-        label_parking_details.setVisible(true);
-        console_parkingdetails.setVisible(true);
-        label_parkingdetails_search.setVisible(true);
-        searchbytext2.setVisible(true);
-        btnsearch_parkingdetails.setVisible(true);
-        btnback.setVisible(true);
-    }
-    /**
-     * Handles the action of registering a new member.
-     * Updates UI to show the registration form section.
-     */
-    @FXML
-    private void handleRegisterNewMember() {
-    	screenHistory.push(this::showManagerMenu);
-        setAllInvisible(); 
-        label_register_member.setVisible(true);
-        label_firstname.setVisible(true);
-        label_lsatname.setVisible(true);
-        label_id.setVisible(true);
-        label_email.setVisible(true);
-        label_phonenumber.setVisible(true);
-        label_vehiclenumber.setVisible(true);
-        textfield_firstname.setVisible(true);
-        textfield_lastname.setVisible(true);
-        textfield_id1.setVisible(true);
-        textfield_emil.setVisible(true);
-        textfiled_phonenumber.setVisible(true);
-        label_vehiclenumber_register.setVisible(true);
-        btnback.setVisible(true);
-        btnsignup.setVisible(true);
 
+    private void navigateTo(VBox next) {
+        for (VBox pane : new VBox[]{loginView, managerMenuView, memberDetailsView, parkingDetailsView, registerMemberView, memberStatusReportView}) {
+            if (pane != null && pane.isVisible()) {
+                navigationStack.push(pane);
+                break;
+            }
+        }
+        showOnly(next);
     }
-    /**
-     * Handles the action of registering a new member.
-     * Updates UI to show the registration form section.
-     */
-    @FXML
-    private void handleViewParkingDuration() {
-    	screenHistory.push(this::showManagerMenu);
-        setAllInvisible();
-        label_enteryear.setVisible(true);
-        label_entermoth.setVisible(true);
-        label_Enteryear.setVisible(true);
-        monthField.setVisible(true);
-        parking_timechart.setVisible(true);
-        btnback.setVisible(true);
-        btnsearchreport.setVisible(true);
+
+    public void showLoginScreen() {
+        navigationStack.clear();
+        showOnly(loginView);
     }
-    /**
-     * Handles the login submission action.
-     * Currently navigates directly to the manager menu without validation.
-     */
+
     @FXML
     private void handleLoginSubmit() {
-        showManagerMenu(); 
+        String username = usernametextfield.getText().trim();
+        String password = passwordfeild.getText().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            showAlert("Please enter both username and password.");
+            return;
+        }
+        // You can add real authentication here
+        labelwelcome.setText("Welcome, Manager " + username);
+        navigationStack.clear();
+        showOnly(managerMenuView);
     }
-    /**
-     * Handles the back button logic using a stack of previous screen states.
-     * Restores the previous screen by popping the last Runnable from the history stack.
-     */
+
+    @FXML
+    private void handleViewMemberDetails() {
+        navigateTo(memberDetailsView);
+    }
+
+    @FXML
+    private void handleViewParkingDetails() {
+        navigateTo(parkingDetailsView);
+    }
+
+    @FXML
+    private void handleRegisterNewMember() {
+        navigateTo(registerMemberView);
+    }
+
+    @FXML
+    private void handleViewMemberStatusReport() {
+        navigateTo(memberStatusReportView);
+    }
+
+    @FXML
+    private void handleViewParkingDuration() {
+        navigateTo(memberStatusReportView); // Assuming same view for now
+    }
+
     @FXML
     private void handleBack() {
-        if (!screenHistory.isEmpty()) {
-            Runnable lastScreen = screenHistory.pop();
-            lastScreen.run();
+        if (!navigationStack.isEmpty()) {
+        	Pane previous = navigationStack.pop();
+            showOnly(previous);
+        } else {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWelcome.fxml"));
+                Parent root = loader.load();
+                MainWelcomeController controller = loader.getController();
+                controller.showClientSubMenu();
+                Stage stage = (Stage) btnback.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("BPARK - Welcome");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-    /**
-     * Handles the back to main menu button.
-     * Navigates the user back to the main welcome screen (mainWelcome.fxml).
-     */
-    @FXML
-    private void handleBackToMainMenu() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnbacktomain.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Welcome to BPARK");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Notice");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
 }
