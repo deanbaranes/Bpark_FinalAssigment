@@ -81,11 +81,14 @@ public class ManagementController implements BaseController{
         showOnly(loginView);
     }
 
-
+    /* Returns the singleton instance of the ManagementController */
     public static ManagementController getInstance() {
         return instance;
     }
-
+    /*
+    Hides all VBoxes and shows only the specified target pane by setting its visibility and managed state.
+    Used for navigating between different management screens.
+    */
     private void showOnly(Pane target) {
         for (VBox pane : new VBox[]{
             loginView,
@@ -105,6 +108,9 @@ public class ManagementController implements BaseController{
         target.setManaged(true);
     }
 
+    /*
+    Navigates to the specified VBox screen by hiding the current one and pushing it onto the navigation stack for back navigation.
+    */
 
     private void navigateTo(VBox next) {
         for (VBox pane : new VBox[]{loginView, managerMenuView, memberDetailsView, parkingDetailsView, registerMemberView, memberStatusReportView}) {
@@ -145,6 +151,10 @@ public class ManagementController implements BaseController{
     private void handleViewParkingDuration() {
         navigateTo(parkingDurationView);
     }
+    /*
+    Handles the "Back" button logic by navigating to the previous screen in the stack or returning to login/main welcome screen if the stack is empty.
+    */
+
     @FXML
     private void handleBack() {
         if (!navigationStack.isEmpty()) {
@@ -172,6 +182,49 @@ public class ManagementController implements BaseController{
         }
     
     }
+    /**
+     * Sends a request to the server to retrieve subscriber details based on the entered ID.
+     * If the input field is empty, displays a popup asking the user to enter an ID.
+     * Constructs a message in the format "REQUEST_ID_DETAILS|<ID>" and sends it to the server.
+     * 
+     * This method is triggered when the user clicks the "Search" button in the "Member Details" screen.
+     */
+
+    @FXML
+    private void handleSearchMemberDetails() {
+        String id = searchbyidtext.getText().trim();
+
+        if (id.isEmpty()) {
+            showPopup("Please enter an ID.");
+            return;
+        }
+
+        try {
+            client.sendToServer("REQUEST_ID_DETAILS|" + id);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showPopup("Failed to send request.");
+        }
+    }
+    /**
+     * Displays subscriber information in the member details text area.
+     * Ensures the update runs on the JavaFX Application Thread.
+     *
+     * @param info The formatted subscriber information string to display.
+     */
+
+    public void displaySubscriberInfo(String info) {
+        Platform.runLater(() -> {
+            console_memberdeatils.setText(info);
+        });
+    }
+
+    /**
+     * Handles the login submission process for management users.
+     * Validates input fields and sends a LoginManagement object to the server
+     * containing the username and password for authentication.
+     */
+
     @FXML
     private void handleLoginManagementSubmit() {
         String username = usernametextfield.getText().trim();
@@ -189,6 +242,10 @@ public class ManagementController implements BaseController{
             e.printStackTrace();
         }
     }
+
+    /*
+    Displays a styled popup alert with a custom message, centered text, and fixed size for user notifications.
+    */
 
     private void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
@@ -209,7 +266,10 @@ public class ManagementController implements BaseController{
         alert.showAndWait();
     }
     
-    
+    /*
+    Handles the response for management login; shows manager menu on success or error popup on failure.
+    */
+
     public void handleLoginManagementResponse(String response) {
         Platform.runLater(() -> {
             if ("LOGIN_Management_SUCCESS".equals(response)) {
@@ -220,6 +280,10 @@ public class ManagementController implements BaseController{
             }
         });
     }
+    /* 
+    Displays an informational alert popup with the provided message. 
+    */
+
     private void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Notice");

@@ -60,7 +60,9 @@ public class EchoServer extends AbstractServer {
                         e.printStackTrace();
                     }
                 }
-            } else if (command.startsWith("CHECK")) {
+            }
+            /*else if (command.startsWith("CHECK")) { //// זה היה של האבטיפוס
+            	
                 String idStr = command.replace("CHECK", "");
                 try {
                     int orderId = Integer.parseInt(idStr);
@@ -78,12 +80,27 @@ public class EchoServer extends AbstractServer {
                     e.printStackTrace();
                 }
             }
+            */
+            
+            /* Handles subscriber info request by ID and sends the data back to the client */
+            else if (command.startsWith("REQUEST_ID_DETAILS|")) {
+                String id = command.split("\\|")[1]; 
+                String subscriberInfo = mysqlConnection.getSubscriberInfo(id);
+
+                try {
+                    client.sendToClient("SUBSCRIBER_INFO:" + subscriberInfo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            /* Retrieves available parking spots from the database and sends the list to the client */
                 else if (msg.equals("REQUEST_AVAILABLE_SPOTS")) 
                 {
                     availableSpots = mysqlConnection.getAvailableSpots();
                     try 
                     {
-                        client.sendToClient(availableSpots);
+                        client.sendToClient(availableSpots); 
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -97,6 +114,7 @@ public class EchoServer extends AbstractServer {
 	                }
         		}
         } 
+        /* Checks client login credentials and sends result to client */
         else if (msg instanceof LoginRequest) 
         {
             LoginRequest request = (LoginRequest) msg;
@@ -108,6 +126,8 @@ public class EchoServer extends AbstractServer {
                 e.printStackTrace();
             }
         }
+        
+        /* Checks manager login credentials and sends result to client */
         else if (msg instanceof LoginManagement) 
         {
         	LoginManagement loginData = (LoginManagement) msg;
@@ -172,7 +192,7 @@ public class EchoServer extends AbstractServer {
     protected void serverStarted() {
         System.out.println("Server listening for connections on port " + getPort());
     }
-
+    
     /**
      * Called when the server stops listening for connections.
      */

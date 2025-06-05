@@ -104,7 +104,8 @@
         <HBox spacing="10">
             <Label fx:id="labelsearchby_id" text="Search by ID:" />
             <TextField fx:id="searchbyidtext" />
-		<Button fx:id="btnsearch_memberdetails" text="Search"  />
+		<Button fx:id="btnsearch_memberdetails" text="Search" onAction="#handleSearchMemberDetails" />
+
 
         </HBox>
         <TextArea fx:id="console_memberdeatils" prefHeight="180.0" prefWidth="500.0" />

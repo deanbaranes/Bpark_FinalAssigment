@@ -101,29 +101,55 @@ public class mysqlConnection {
             return false;
         }
     }
-
     /**
-     * Checks whether an order with the given ID exists in the database.
-     * @param orderId The order ID to check.
-     * @return true if the order exists, false otherwise.
+     * Retrieves subscriber information from the database based on the given subscriber ID.
+     * Builds a formatted string containing all relevant subscriber fields if found.
+     * If the subscriber does not exist, returns a message indicating so.
+     * In case of a database access error, returns an error message and logs the stack trace.
+     *
+     * @param subscriberId The ID of the subscriber to look up.
+     * @return A formatted string with subscriber details or an error message.
      */
-    public static boolean doesOrderExist(int orderId) {
-        boolean exists = false;
+
+    public static String getSubscriberInfo(String subscriberId) {
+        StringBuilder sb = new StringBuilder();
+        String query = "SELECT * FROM subscribers WHERE subscriber_id = ?";
 
         try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM orders WHERE order_number = ?")) {
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, orderId);
+            stmt.setString(1, subscriberId);
             ResultSet rs = stmt.executeQuery();
-            exists = rs.next();
+
+            if (rs.next()) {
+                sb.append("Subscriber ID: ").append(rs.getString("subscriber_id")).append("\n");
+                sb.append("Full Name: ").append(rs.getString("full_name")).append("\n");
+                sb.append("Email: ").append(rs.getString("email")).append("\n");
+                sb.append("Phone: ").append(rs.getString("phone")).append("\n");
+                sb.append("Vehicle #1: ").append(rs.getString("vehicle_number1")).append("\n");
+                sb.append("Vehicle #2: ").append(rs.getString("vehicle_number2")).append("\n");
+                sb.append("Subscription Code: ").append(rs.getString("subscription_code")).append("\n");
+                sb.append("Notes: ").append(rs.getString("notes")).append("\n");
+                sb.append("Credit Card: ").append(rs.getString("credit_card")).append("\n");
+            } else {
+                sb.append("Subscriber not found.");
+            }
             rs.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            sb.append("Error accessing the database.");
         }
 
-        return exists;
+        return sb.toString();
     }
-    
+
+    /*
+     * Checks if a subscriber with the provided full name and subscription code exists in the database.
+     *
+     * @param fullName The full name of the subscriber.
+     * @param code The subscription code associated with the subscriber.
+     * @return true if a matching subscriber is found, false otherwise.
+     */
     public static boolean checkLogin(String fullName, String code) 
     {
         String query = "SELECT * FROM subscribers WHERE full_name = ? AND subscription_code = ?";
@@ -146,7 +172,15 @@ public class mysqlConnection {
         }
     }
     
-    
+    /*
+
+    * Validates login credentials for a management user by checking the 'employees' table.
+    *
+    * @param username The username entered by the manager.
+    * @param password The password entered by the manager.
+    * @return true if credentials are valid, false otherwise.
+      */
+
     public static boolean checkLoginManagement(String username, String password) 
     {
         String query = "SELECT * FROM employees WHERE username = ? AND password = ?";
@@ -168,7 +202,12 @@ public class mysqlConnection {
             return false;
         }
     }
-    
+    /*
+     * Retrieves all parking spots marked as 'available' from the database.
+     *
+     * @return A list of strings describing each available parking spot.
+     */
+
     public static List<String> getAvailableSpots() {
         List<String> availableSpots = new ArrayList<>();
         String query = "SELECT spot_number FROM parking_spots WHERE status = 'available'";

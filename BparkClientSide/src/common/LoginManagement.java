@@ -1,4 +1,15 @@
+/**
+ * A serializable data class used to encapsulate login credentials
+ * (username and password) for management users.
+ * 
+ * This class was added to the 'common' package so it can be shared 
+ * between both the client and server sides. Its purpose is to enable
+ * the transfer of two parameters (username and password) as a single
+ * object when performing authentication checks.
+ */
+
 package common;
+
 
 import java.io.Serializable;
 

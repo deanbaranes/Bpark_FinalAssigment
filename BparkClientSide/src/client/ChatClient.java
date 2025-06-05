@@ -70,16 +70,27 @@ public class ChatClient extends AbstractClient {
                 currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
                // controller.successfulFirstSubmit();
             }
+            /* Passes login result message to TerminalController for handling */
             else if (message.equals("LOGIN_SUCCESS") || message.equals("LOGIN_FAILURE")) {
                 TerminalController.getInstance().handleLoginResponse(message);
             }
+            
+            /* Passes management login result message to ManagementController for handling */
             else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
             	ManagementController.getInstance().handleLoginManagementResponse(message);
             }
+            
+            /* Extracts subscriber information and displays it using ManagementController */
+            else if (message.startsWith("SUBSCRIBER_INFO:")) {
+                String info = message.substring("SUBSCRIBER_INFO:".length());
+                ManagementController.getInstance().displaySubscriberInfo(info);
+            }
+
             else {
                 clientUI.display(message);
             }
         }
+        /* Passes a list of available parking spots to the TerminalController for display */
         else if (msg instanceof List)
         {
         	TerminalController.getInstance().handleAvailableSpots((List<String>)msg);
