@@ -39,6 +39,7 @@ public class ChatClient extends AbstractClient {
      * Sets the UI controller.
      * @param controller The controller instance.
      */
+  
     public void setController(BaseController controller) {
         this.controller = controller;
     }
@@ -46,7 +47,7 @@ public class ChatClient extends AbstractClient {
     public MenuState getCurrentState() {
         return currentState;
     }
-
+    
     public void setCurrentState(MenuState state) {
         this.currentState = state;
     }
@@ -71,9 +72,15 @@ public class ChatClient extends AbstractClient {
                // controller.successfulFirstSubmit();
             }
             /* Passes login result message to TerminalController for handling */
-            else if (message.equals("LOGIN_SUCCESS") || message.equals("LOGIN_FAILURE")) {
+            else if (message.equals("TERMINAL_LOGIN_SUCCESS") || message.equals("TERMINAL_LOGIN_FAILURE")) {
                 TerminalController.getInstance().handleLoginResponse(message);
             }
+            
+            /* Passes login result message to ClientController for handling */
+            else if (message.equals("APP_LOGIN_SUCCESS") || message.equals("APP_LOGIN_FAILURE")) {
+                ClientController.getInstance().handleLoginResponse(message);
+            }
+            
             
             /* Passes management login result message to ManagementController for handling */
             else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
@@ -90,15 +97,16 @@ public class ChatClient extends AbstractClient {
                 clientUI.display(message);
             }
         }
-        /* Passes a list of available parking spots to the TerminalController for display */
-        else if (msg instanceof List)
-        {
-        	TerminalController.getInstance().handleAvailableSpots((List<String>)msg);
-        }
-        else {
-            clientUI.display(msg.toString());
+        /* Passes a list of available parking spots to the Terminal or Client Controller for display */
+        else if (msg instanceof List) {
+            if (controller instanceof TerminalController) {
+                ((TerminalController) controller).handleAvailableSpots((List<String>) msg);
+            } else if (controller instanceof ClientController) {
+                ((ClientController) controller).handleAvailableSpots((List<String>) msg);
+            }
         }
     }
+
 
     /**
      * Sends an order ID to the server to verify existence.

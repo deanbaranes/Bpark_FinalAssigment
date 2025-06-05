@@ -89,7 +89,6 @@ public class MainWelcomeController {
             Parent root = loader.load();
 
             ManagementController controller = loader.getController();
-            System.out.println("[DEBUG] client before setClient: " + client);
             controller.setClient(client);
             controller.showLoginScreen();
 
@@ -114,6 +113,9 @@ public class MainWelcomeController {
 
             BaseController controller = loader.getController();
             controller.setClient(client);
+            // Sets the application controller instance to allow callback-based handling of server responses.
+            // This enables correct type-checking (instanceof) when processing messages.
+            client.setController(controller);
 
             Stage stage = (Stage) appButton.getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -135,6 +137,11 @@ public class MainWelcomeController {
 
             BaseController controller = loader.getController();
             controller.setClient(client);
+            // Sets the terminal controller instance to allow callback-based handling of server responses.
+            // This enables correct type-checking (instanceof) when processing messages.
+            client.setController(controller);
+           
+
 
             Stage stage = (Stage) terminalButton.getScene().getWindow();
             stage.setScene(new Scene(root));

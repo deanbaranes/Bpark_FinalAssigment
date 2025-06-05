@@ -114,18 +114,31 @@ public class EchoServer extends AbstractServer {
 	                }
         		}
         } 
-        /* Checks client login credentials and sends result to client */
+        /* Checks client login via terminal/application credentials and sends result to client */
         else if (msg instanceof LoginRequest) 
         {
             LoginRequest request = (LoginRequest) msg;
-            boolean success = mysqlConnection.checkLogin(request.getFullName(), request.getSubscriptionCode());
-            try 
-            {
-                client.sendToClient(success ? "LOGIN_SUCCESS" : "LOGIN_FAILURE");
+            boolean success = mysqlConnection.checkLogin(request.getID(), request.getSubscriptionCode());
+
+            // print to console the source
+            System.out.println("LoginRequest received from source: " + request.getSource());
+
+            try {
+                switch (request.getSource()) {
+                    case "terminal":
+                        client.sendToClient(success ? "TERMINAL_LOGIN_SUCCESS" : "TERMINAL_LOGIN_FAILURE");
+                        break;
+                    case "app":
+                        client.sendToClient(success ? "APP_LOGIN_SUCCESS" : "APP_LOGIN_FAILURE");
+                        break;
+                    default:
+                        client.sendToClient("LOGIN_FAILURE"); // unknown source
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
         
         /* Checks manager login credentials and sends result to client */
         else if (msg instanceof LoginManagement) 

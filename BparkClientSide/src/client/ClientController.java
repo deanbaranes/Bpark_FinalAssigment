@@ -5,6 +5,7 @@
  */
 package client;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -19,9 +20,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import common.LoginRequest;
 
 public class ClientController implements BaseController {
 
@@ -34,16 +38,9 @@ public class ClientController implements BaseController {
      * This allows navigating backward through previous screens.
      */
     private final Stack<Pane> navigationStack = new Stack<>();
+    private static ClientController instance;
 
     // ===== MOCK DATA SECTION =====
-    private final String mockId = "123";
-    private final String mockCode = "abc";
-    private final String mockUsername = "Carmel";
-    private final String mockEmail = "user@example.com";
-    private final String mockPhone = "0501234567";
-    private final String mockCar1 = "12-345-67";
-    private final String mockCar2 = "89-012-34";
-    private final String mockCredit = "**** **** **** 1234";
     private boolean hasExtended = false;
     // =============================
 
@@ -67,6 +64,8 @@ public class ClientController implements BaseController {
     @FXML private TextField idField, editPhoneField, editEmailField,
             dateField, timeField;
 
+    @FXML private TextArea spotsTextArea;
+    
     @FXML private PasswordField codeField;
 
     /**
@@ -85,6 +84,14 @@ public class ClientController implements BaseController {
     @FXML
     private void initialize() {
         showOnly(mainMenu);
+    }
+    
+    public ClientController() {
+        instance = this;
+    }
+
+    public static ClientController getInstance() {
+        return instance;
     }
 
     /**
@@ -126,8 +133,23 @@ public class ClientController implements BaseController {
     }
 
     /** Button handlers for navigation */
-    @FXML private void handleSignInClick() { navigateTo(signInForm); }
-    @FXML private void handleShowSpotsClick() { navigateTo(spotsView); }
+    @FXML private void handleSignInClick() {
+    	idField.clear();
+        codeField.clear();
+    	navigateTo(signInForm);
+    }
+    
+    @FXML
+    private void handleShowSpotsClick() {
+        navigateTo(spotsView);
+        try {
+			client.sendToServer("REQUEST_AVAILABLE_SPOTS");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+    }
+    
     @FXML private void handlePersonalInfo() { navigateTo(personalInfoView); }
     @FXML private void handleEditInfo() { navigateTo(editInfoForm); }
     @FXML private void handleActivity() { navigateTo(activityMenu); }
@@ -143,26 +165,52 @@ public class ClientController implements BaseController {
     private void handleSubmitLogin() {
         String id = idField.getText().trim();
         String code = codeField.getText().trim();
+        idField.clear();
+        codeField.clear();
 
         if (id.isEmpty() || code.isEmpty()) {
             showPopup("Please enter both ID and Subscriber Code.");
             return;
         }
 
-        if (id.equals(mockId) && code.equals(mockCode)) {
-            emailLabel.setText("Email: " + mockEmail);
-            phoneLabel.setText("Phone: " + mockPhone);
-            usernameLabel.setText("Username: " + mockUsername);
-            car1Label.setText("Primary Car: " + mockCar1);
-            car2Label.setText("Secondary Car: " + mockCar2);
-            creditCardLabel.setText("Credit Card: " + mockCredit);
-
-            navigationStack.clear();
-            showOnly(postLoginMenu);
-        } else {
-            showPopup("Invalid ID or Code.\nPlease try again.");
-        }
+       //send login request to the server
+        try {
+        	client.sendToServer(new LoginRequest(id, code, "app"));
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
     }
+    
+    public void handleLoginResponse(String response) {
+        Platform.runLater(() -> {
+            if ("APP_LOGIN_SUCCESS".equals(response)) {
+                navigationStack.clear();
+                showOnly(postLoginMenu);
+            } else {
+                showPopup("Invalid ID or Subscriber Code.\nTry again.");
+            }
+        });
+    }
+    
+    public void handleAvailableSpots(List<String> availableSpots) {
+        Platform.runLater(() -> {
+            StringBuilder builder = new StringBuilder();
+            if(availableSpots.isEmpty())
+            {
+            	spotsTextArea.setText("There are no available parking spots.");
+            }
+            else
+            {
+            	for (String spot : availableSpots) {
+                    builder.append(spot).append("\n");
+                }
+                spotsTextArea.setText(builder.toString());
+            }
+        });
+    }
+   
+        
 
     /**
      * Handles the submission of personal info edits.

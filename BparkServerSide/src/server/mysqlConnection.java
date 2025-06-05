@@ -32,7 +32,7 @@ public class mysqlConnection {
         try {
             conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Nmshonpass100!");
+                "root", "Carmel2025!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -150,15 +150,15 @@ public class mysqlConnection {
      * @param code The subscription code associated with the subscriber.
      * @return true if a matching subscriber is found, false otherwise.
      */
-    public static boolean checkLogin(String fullName, String code) 
+    public static boolean checkLogin(String ID, String code) 
     {
-        String query = "SELECT * FROM subscribers WHERE full_name = ? AND subscription_code = ?";
+        String query = "SELECT * FROM subscribers WHERE subscriber_id = ? AND subscription_code = ?";
 
         try (Connection conn = connectToDB();
              PreparedStatement stmt = conn.prepareStatement(query)) 
         {
 
-            stmt.setString(1, fullName);
+            stmt.setString(1, ID);
             stmt.setString(2, code);
 
             ResultSet rs = stmt.executeQuery();

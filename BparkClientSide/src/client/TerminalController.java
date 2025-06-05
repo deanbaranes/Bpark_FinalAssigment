@@ -25,8 +25,6 @@ public class TerminalController implements BaseController {
     private static TerminalController instance;
     
     // ===== MOCK DATA SECTION =====
-    private final String mockId = "123";
-    private final String mockCode = "abc";
     private final String validPickupCode = "AB123";
     // =============================
 
@@ -107,7 +105,6 @@ public class TerminalController implements BaseController {
         try {
 			client.sendToServer("REQUEST_AVAILABLE_SPOTS");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -125,22 +122,21 @@ public class TerminalController implements BaseController {
             return;
         }
 
-        // נשלח לשרת אובייקט שמתאר את הבקשה (מחרוזת או אובייקט LoginRequest)
+        //send login request to the server
         try {
-			client.sendToServer(new LoginRequest(id, code));
+        	client.sendToServer(new LoginRequest(id, code, "terminal"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
     
     public void handleLoginResponse(String response) {
         Platform.runLater(() -> {
-            if ("LOGIN_SUCCESS".equals(response)) {
+            if ("TERMINAL_LOGIN_SUCCESS".equals(response)) {
                 navigationStack.clear();
                 showOnly(selectServicePane);
             } else {
-                showPopup("Invalid ID or Subscriber Code.");
+                showPopup("Invalid ID or Subscriber Code.\nTry again.");
             }
         });
     }
@@ -176,26 +172,6 @@ public class TerminalController implements BaseController {
         return new Random().nextBoolean();
     }
     //===================================================
-
-    /*private void handleSubmitLogin() {
-        String id = idField.getText().trim();
-        String code = codeField.getText().trim();
-        idField.clear();
-        codeField.clear();
-
-        if (id.isEmpty() || code.isEmpty()) {
-            showPopup("Please enter both ID and Subscriber Code.");
-            return;
-        }
-
-        if (id.equals(mockId) && code.equals(mockCode)) {
-        	navigationStack.clear();
-        	showOnly(selectServicePane);
-        } else {
-            showPopup("Invalid ID or Subscriber Code.");
-        }
-    }*/
-
   
     @FXML
     private void handlePickupClick() {
