@@ -4,6 +4,7 @@ package server;
 import java.io.*;
 import java.util.List;
 
+import common.LoginManagement;
 import common.LoginRequest;
 import ocsf.server.*;
 
@@ -103,6 +104,17 @@ public class EchoServer extends AbstractServer {
             try 
             {
                 client.sendToClient(success ? "LOGIN_SUCCESS" : "LOGIN_FAILURE");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (msg instanceof LoginManagement) 
+        {
+        	LoginManagement loginData = (LoginManagement) msg;
+            boolean LoginApproved = mysqlConnection.checkLoginManagement(loginData.getUsername(),loginData.getPassword());
+            try 
+            {
+                client.sendToClient(LoginApproved ? "LOGIN_Management_SUCCESS" : "LOGIN_Management_FAILURE");
             } catch (IOException e) {
                 e.printStackTrace();
             }

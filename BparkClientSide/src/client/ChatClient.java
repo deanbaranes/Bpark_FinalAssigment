@@ -73,6 +73,9 @@ public class ChatClient extends AbstractClient {
             else if (message.equals("LOGIN_SUCCESS") || message.equals("LOGIN_FAILURE")) {
                 TerminalController.getInstance().handleLoginResponse(message);
             }
+            else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
+            	ManagementController.getInstance().handleLoginManagementResponse(message);
+            }
             else {
                 clientUI.display(message);
             }

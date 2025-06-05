@@ -72,7 +72,7 @@
 
     <Hyperlink fx:id="btnforgerpassword" text="Forget password?" />
     <Button fx:id="btnloginsubmit" text="Submit"
-            onAction="#handleLoginSubmit" prefWidth="100" />
+            onAction="#handleLoginManagementSubmit" prefWidth="100" />
 </VBox>
 
 
@@ -84,7 +84,7 @@
             <font><Font size="35" /></font>
         </Label>
 		<Button fx:id="btnmemberdetails" text="View member details" onAction="#handleViewMemberDetails" prefWidth="200" />
-		<Button fx:id="btnparkingdetails" text="View parking details" onAction="#handleViewParkingDetails" prefWidth="200" />
+		<Button fx:id="btnparkingdetails" text="View parking details" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnregisternewmember" text="Register new member" onAction="#handleRegisterNewMember" prefWidth="200" />
 		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
@@ -104,7 +104,8 @@
         <HBox spacing="10">
             <Label fx:id="labelsearchby_id" text="Search by ID:" />
             <TextField fx:id="searchbyidtext" />
-            <Button fx:id="btnsearch_memberdetails" text="Search" />
+		<Button fx:id="btnsearch_memberdetails" text="Search"  />
+
         </HBox>
         <TextArea fx:id="console_memberdeatils" prefHeight="180.0" prefWidth="500.0" />
            <Button text="Back" onAction="#handleBack" prefWidth="150" />
@@ -124,39 +125,51 @@
         <Button text="Back" onAction="#handleBack" prefWidth="150" />
     </VBox>
 
-    <!-- REGISTER MEMBER VIEW -->
-    <VBox fx:id="registerMemberView" alignment="CENTER" spacing="10"
-          visible="false" managed="false"
-          AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
-        <Label fx:id="label_register_member" text="Register new member" />
-        <TextField fx:id="textfield_firstname" promptText="First name" />
-        <TextField fx:id="textfield_lastname" promptText="Last name" />
-        <TextField fx:id="textfield_id1" promptText="ID" />
-        <TextField fx:id="textfield_emil" promptText="Email" />
-        <TextField fx:id="textfiled_phonenumber" promptText="Phone number" />
-        <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" />
-        <Button fx:id="btnsignup" text="Sign up" />
-        <Button text="Back" onAction="#handleBack" prefWidth="150" />
-    </VBox>
+	    <!-- REGISTER MEMBER VIEW -->
+	<VBox fx:id="registerMemberView" alignment="CENTER" spacing="10"
+	      visible="false" managed="false"
+	      AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0"
+	      style="-fx-padding: 30 0 0 0;">
+	    
+	    <Label fx:id="label_register_member" text="Register new member">
+	        <font>
+	            <Font size="24" />
+	        </font>
+	    </Label>
+	
+	    <TextField fx:id="textfield_firstname" promptText="First name" maxWidth="250" />
+	    <TextField fx:id="textfield_lastname" promptText="Last name" maxWidth="250" />
+	    <TextField fx:id="textfield_id1" promptText="ID" maxWidth="250" />
+	    <TextField fx:id="textfield_emil" promptText="Email" maxWidth="250" />
+	    <TextField fx:id="textfiled_phonenumber" promptText="Phone number" maxWidth="250" />
+	    <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" maxWidth="250" />
+	
+	    <VBox spacing="10" alignment="CENTER">
+	        <Button fx:id="btnsignup" text="Sign up" maxWidth="150" />
+	        <Button text="Back" onAction="#handleBack" prefWidth="150" />
+	    </VBox>
+	</VBox>
 
-    <!-- PARKING DURATION REPORT VIEW -->
+
+
+<!-- PARKING DURATION REPORT VIEW -->
 <VBox fx:id="parkingDurationView" alignment="CENTER" spacing="6"
       visible="false" managed="false"
       AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
 
-    <Label text="Parking Duration Report">
+    <Label fx:id="label_parkingDurationTitle" text="Parking Duration Report">
         <font><Font size="20" /></font>
     </Label>
 
     <Label text="Enter year:" />
-    <TextField fx:id="label_Enteryear" maxWidth="200" />
+    <TextField fx:id="parkingDurationYearField" maxWidth="200" />
 
     <Label text="Enter month:" />
-    <TextField fx:id="monthField" maxWidth="200" />
+    <TextField fx:id="parkingDurationMonthField" maxWidth="200" />
 
-    <Button fx:id="btnsearchreport" text="Search" prefWidth="120" />
+    <Button fx:id="btnSearchParkingDuration" text="Search" prefWidth="120" />
 
-    <LineChart fx:id="parking_timechart" prefHeight="180.0" prefWidth="400.0">
+    <LineChart fx:id="parkingDurationChart" prefHeight="180.0" prefWidth="400.0">
         <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
         <yAxis><NumberAxis side="LEFT" /></yAxis>
     </LineChart>
@@ -165,12 +178,12 @@
 </VBox>
 
 
-    <!-- MEMBER STATUS REPORT VIEW -->
+<!-- MEMBER STATUS REPORT VIEW -->
 <VBox fx:id="memberStatusReportView" alignment="CENTER" spacing="6"
       visible="false" managed="false"
       AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
 
-    <Label text="Member Status Report">
+    <Label fx:id="label_memberStatusTitle" text="Member Status Report">
         <font><Font size="20" /></font>
     </Label>
 
@@ -180,15 +193,16 @@
     <Label text="Enter month:" />
     <TextField fx:id="statusReportMonthField" maxWidth="200" />
 
-    <Button fx:id="btnsearchstatusreport" text="Search" prefWidth="120" />
+    <Button fx:id="btnSearchStatusReport" text="Search" prefWidth="120" />
 
-    <LineChart fx:id="chart_memberstatus" prefHeight="180.0" prefWidth="400.0">
+    <LineChart fx:id="memberStatusChart" prefHeight="180.0" prefWidth="400.0">
         <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
         <yAxis><NumberAxis side="LEFT" /></yAxis>
     </LineChart>
 
     <Button text="Back" onAction="#handleBack" prefWidth="120" />
 </VBox>
+
 
 
 

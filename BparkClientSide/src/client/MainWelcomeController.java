@@ -89,6 +89,8 @@ public class MainWelcomeController {
             Parent root = loader.load();
 
             ManagementController controller = loader.getController();
+            System.out.println("[DEBUG] client before setClient: " + client);
+            controller.setClient(client);
             controller.showLoginScreen();
 
             Stage stage = (Stage) managementButton.getScene().getWindow();

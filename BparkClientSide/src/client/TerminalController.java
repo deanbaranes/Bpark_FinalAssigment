@@ -114,7 +114,6 @@ public class TerminalController implements BaseController {
     }
 
     @FXML
-    
     private void handleSubmitLogin() {
         String id = idField.getText().trim();
         String code = codeField.getText().trim();
@@ -145,6 +144,15 @@ public class TerminalController implements BaseController {
             }
         });
     }
+    @FXML
+    private void handleDropoffClick() {
+        boolean parkingAvailable = checkParkingAvailability();
+        if (parkingAvailable) {
+            generateAndShowParkingCode();          
+        } else {
+            showPopup("Sorry, there are currently no parking spots available.");
+        }
+    }
 
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
@@ -163,7 +171,12 @@ public class TerminalController implements BaseController {
         });
     }
 
-    
+    //===========change after implementation============
+    private boolean checkParkingAvailability() {
+        return new Random().nextBoolean();
+    }
+    //===================================================
+
     /*private void handleSubmitLogin() {
         String id = idField.getText().trim();
         String code = codeField.getText().trim();
@@ -183,16 +196,7 @@ public class TerminalController implements BaseController {
         }
     }*/
 
-    @FXML
-    private void handleDropoffClick() {
-        boolean parkingAvailable = checkParkingAvailability();
-        if (parkingAvailable) {
-            generateAndShowParkingCode();          
-        } else {
-            showPopup("Sorry, there are currently no parking spots available.");
-        }
-    }
-
+  
     @FXML
     private void handlePickupClick() {
         navigateTo(pickupPane);
@@ -263,12 +267,7 @@ public class TerminalController implements BaseController {
         }
     }
     
-    //===========change after implementation============
-    private boolean checkParkingAvailability() {
-        return new Random().nextBoolean();
-    }
-    //===================================================
-
+ 
     private void generateAndShowParkingCode() {
         String code = "PARK" + (new Random().nextInt(9000) + 1000);
         String message = "Your parking code is: " + code + "\n\n"
