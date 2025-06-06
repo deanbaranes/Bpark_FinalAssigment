@@ -40,7 +40,9 @@
     <!-- Post-login Menu -->
     <VBox fx:id="postLoginMenu" alignment="CENTER" spacing="20" visible="false" managed="false"
           AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label fx:id="welcomeLabel" text="" alignment="CENTER" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
         <GridPane hgap="20" vgap="20" alignment="CENTER">
+        	
             <Button fx:id="personalInfoButton" text="Personal Information" onAction="#handlePersonalInfo"
                     GridPane.columnIndex="0" GridPane.rowIndex="0" prefWidth="200"/>
             <Button fx:id="activityButton" text="Activity" onAction="#handleActivity"
@@ -56,6 +58,7 @@
     <!-- Personal Info -->
     <VBox fx:id="personalInfoView" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label fx:id="greetingLabelPersonal" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
         <Label fx:id="usernameLabel" text="Username:"/>
         <Label fx:id="emailLabel" text="Email:"/>
         <Label fx:id="phoneLabel" text="Phone:"/>
@@ -68,6 +71,7 @@
     <!-- Edit Info -->
     <VBox fx:id="editInfoForm" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label fx:id="greetingLabelEdit" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
         <Label text="Phone Number:"/>
         <TextField fx:id="editPhoneField" maxWidth="180"/>
         <Label text="Email:"/>
@@ -85,12 +89,14 @@
     <!-- History View -->
     <VBox fx:id="historyView" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label fx:id="greetingLabelHistory" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
         <Label text="No parking history found."/>
     </VBox>
 
     <!-- Reservations View -->
     <VBox fx:id="reservationsView" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label fx:id="greetingLabelReservations" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
         <Label text="No existing reservations found."/>
     </VBox>
 

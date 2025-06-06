@@ -6,8 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import common.ParkingHistory;
+import common.Reservation;
+import common.Subscriber;
 
 /**
  * mysqlConnection provides methods to connect to a MySQL database and perform
@@ -29,10 +35,10 @@ public class mysqlConnection {
             System.out.println("Driver definition failed");
         }
 
-        try {
+        try { 
             conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Carmel2025!");
+                "root", "Aa123456");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -143,6 +149,170 @@ public class mysqlConnection {
         return sb.toString();
     }
 
+    
+    
+    /**
+     * Retrieves subscriber information from the database using a subscriber ID.
+     * This method queries the subscribers table and constructs a
+     * Subscriber object with all relevant fields if a matching record is found.
+     * If no record is found or an error occurs, the method returns null.
+     * @param id The unique ID of the subscriber to retrieve.
+     * @return A Subscriber object containing the subscriber’s details,
+     * or null if no such subscriber exists or an exception occurred.
+     */
+    public static Subscriber getSubscriberById(String id) {
+        try {
+            Connection conn = connectToDB();
+            PreparedStatement stmt = conn.prepareStatement("SELECT * FROM subscribers WHERE subscriber_id = ?");
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Subscriber(
+                    rs.getString("subscriber_id"),
+                    rs.getString("full_name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("vehicle_number1"),
+                    rs.getString("vehicle_number2"),
+                    rs.getString("subscription_code"),
+                    rs.getString("notes"),
+                    rs.getString("credit_card")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Updates email and phone number of a subscriber in the database.
+     *
+     * @param id The subscriber ID to update.
+     * @param email The new email address.
+     * @param phone The new phone number.
+     * @return true if the update succeeded, false otherwise.
+     */
+    public static boolean updateSubscriberContactInfo(String id, String email, String phone) {
+        try {
+            Connection conn = connectToDB();
+            PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE subscribers SET email = ?, phone = ? WHERE subscriber_id = ?"
+            );
+            stmt.setString(1, email);
+            stmt.setString(2, phone);
+            stmt.setString(3, id);
+
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /**
+     * Retrieves the parking history records for a specific subscriber.
+     * This method queries the parking_history table in the database
+     * using the provided subscriber ID, and constructs a list of ParkingHistory
+     * objects representing the subscriber's past parking sessions.
+     * @param subscriberId The ID of the subscriber whose history is to be retrieved.
+     * @return A list of ParkingHistory objects for the given subscriber.
+     * If no records are found or an error occurs, an empty list is returned.
+     */
+    public static List<ParkingHistory> getHistoryForSubscriber(String subscriberId) {
+        List<ParkingHistory> historyList = new ArrayList<>();
+        String query = "SELECT * FROM parking_history WHERE subscriber_id = ?";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, subscriberId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                // שימוש ב־getString ואז המרה ידנית (כדי לא "לסבול" מהמרת אזור זמן)
+                LocalDate entryDate = LocalDate.parse(rs.getString("entry_date"));
+                LocalTime entryTime = LocalTime.parse(rs.getString("entry_time"));
+                LocalDate exitDate = LocalDate.parse(rs.getString("exit_date"));
+                LocalTime exitTime = LocalTime.parse(rs.getString("exit_time"));
+
+                ParkingHistory record = new ParkingHistory(
+                    rs.getInt("history_id"),
+                    rs.getString("subscriber_id"),
+                    rs.getString("vehicle_number"),
+                    entryDate,
+                    entryTime,
+                    exitDate,
+                    exitTime
+                );
+
+                historyList.add(record);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return historyList;
+    }
+
+
+    /**
+     * Retrieves all existing reservations for a specific subscriber.
+     * This method queries the reservations table in the database
+     * using the given subscriber ID and constructs a list of Reservation
+     * objects that represent each scheduled parking reservation.
+     * Dates and times are parsed explicitly to avoid time zone conversion issues.
+     * @param subscriberId The ID of the subscriber whose reservations are requested.
+     * @return A list of Reservation objects for the specified subscriber.
+     * If the subscriber has no reservations or an error occurs, an empty list is returned.
+     */
+    public static List<Reservation> getReservationsForSubscriber(String subscriberId) {
+        List<Reservation> reservations = new ArrayList<>();
+        String query = "SELECT * FROM reservations WHERE subscriber_id = ?";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, subscriberId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                // קריאה כ־String ולאחר מכן המרה — כדי להימנע מהשפעת TimeZone של JVM
+                LocalDate entryDate = LocalDate.parse(rs.getString("entry_date"));
+                LocalTime entryTime = LocalTime.parse(rs.getString("entry_time"));
+                LocalDate exitDate = LocalDate.parse(rs.getString("exit_date"));
+                LocalTime exitTime = LocalTime.parse(rs.getString("exit_time"));
+
+                Reservation r = new Reservation(
+                    rs.getInt("reservation_id"),
+                    rs.getString("subscriber_id"),
+                    rs.getString("parking_code"),
+                    entryDate,
+                    entryTime,
+                    exitDate,
+                    exitTime,
+                    rs.getInt("parking_spot")
+                );
+
+                reservations.add(r);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return reservations;
+    }
+
+
+
+    
+    
     /*
      * Checks if a subscriber with the provided full name and subscription code exists in the database.
      *

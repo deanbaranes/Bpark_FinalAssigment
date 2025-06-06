@@ -26,10 +26,16 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import common.LoginRequest;
+import common.ParkingHistory;
+import common.Reservation;
+import common.Subscriber;
+import common.UpdateSubscriberDetailsRequest;
 
 public class ClientController implements BaseController {
 
     private ChatClient client;
+    private Subscriber currentSubscriber;
+
 
     /**
      * Stack to manage the user's navigation history across panes (screens).
@@ -58,8 +64,10 @@ public class ClientController implements BaseController {
             submitButton, submitEditButton, historyButton, reservationsButton,
             reserveSubmitButton, backButton;
 
-    @FXML private Label usernameLabel, emailLabel, phoneLabel,
-            car1Label, car2Label, creditCardLabel, LogOutLabel;
+    @FXML private Label welcomeLabel, usernameLabel, emailLabel, phoneLabel,
+            car1Label, car2Label, creditCardLabel, LogOutLabel, 
+            greetingLabelHistory, greetingLabelReservations, greetingLabelPersonal, greetingLabelEdit;
+    
 
     @FXML private TextField idField, editPhoneField, editEmailField,
             dateField, timeField;
@@ -151,10 +159,83 @@ public class ClientController implements BaseController {
     }
     
     @FXML private void handlePersonalInfo() { navigateTo(personalInfoView); }
-    @FXML private void handleEditInfo() { navigateTo(editInfoForm); }
+    
+    
+    /**
+     * handleEditInfo — Navigates to the edit info form and pre-fills data.
+     *
+     * Description:
+     * Loads current subscriber phone and email into editable fields for update,
+     * then transitions to the edit pane.
+     *
+     * Parameters:
+     *   - None
+     *
+     * Returns:
+     *   - void
+     */
+    @FXML
+    private void handleEditInfo() {
+        if (currentSubscriber != null) {
+            editEmailField.setText(currentSubscriber.getEmail());
+            editPhoneField.setText(currentSubscriber.getPhone());
+        }
+        greetingLabelEdit.setText("Update your contact details, " + currentSubscriber.getFull_name() + ":");
+        navigateTo(editInfoForm);
+    }
+    
+    
     @FXML private void handleActivity() { navigateTo(activityMenu); }
-    @FXML private void handleHistory() { navigateTo(historyView); }
-    @FXML private void handleReservations() { navigateTo(reservationsView); }
+    
+    
+  
+    /**
+     * handleHistory — Initiates request to fetch parking history.
+     *
+     * Description:
+     * Sends a GET_HISTORY command to the server using the subscriber's ID
+     * and navigates to the history screen.
+     *
+     * Parameters:
+     *   - None
+     *
+     * Returns:
+     *   - void
+     */  
+    @FXML
+    private void handleHistory() {
+        navigateTo(historyView);
+        if (currentSubscriber != null) {
+            client.sendToServerSafe("GET_HISTORY|" + currentSubscriber.getSubscriber_id());
+        } else {
+            showPopup("Subscriber not loaded.");
+        }
+    }
+
+    
+    /**
+     * handleReservations — Sends request to load subscriber's active reservations.
+     *
+     * Description:
+     * Sends GET_RESERVATIONS to server using current subscriber ID
+     * and navigates to the reservations pane.
+     *
+     * Parameters:
+     *   - None
+     *
+     * Returns:
+     *   - void
+     */
+    @FXML
+    private void handleReservations() {
+        navigateTo(reservationsView);
+        if (currentSubscriber != null) {
+            client.sendToServerSafe("GET_RESERVATIONS|" + currentSubscriber.getSubscriber_id());
+        } else {
+            showPopup("Subscriber not loaded.");
+        }
+    }
+    
     @FXML private void handleSchedule() { navigateTo(reservationForm); }
 
     /**
@@ -182,6 +263,20 @@ public class ClientController implements BaseController {
 		}
     }
     
+    
+    /**
+     * handleLoginResponse — Handles server response to login request.
+     *
+     * Description:
+     * If login was successful, displays the post-login menu and a personalized greeting.
+     * If login failed, shows an error popup.
+     *
+     * Parameters:
+     *   - response: String representing server reply to login attempt
+     *
+     * Returns:
+     *   - void
+     */
     public void handleLoginResponse(String response) {
         Platform.runLater(() -> {
             if ("APP_LOGIN_SUCCESS".equals(response)) {
@@ -192,6 +287,127 @@ public class ClientController implements BaseController {
             }
         });
     }
+    
+    /**
+     * setSubscriber — Updates the current logged-in subscriber's details in the controller.
+     *
+     * Description:
+     * Sets the active subscriber and updates various UI labels such as email, phone,
+     * car numbers, and credit card info. Also initializes personalized greeting labels
+     * across different panes.
+     *
+     * Parameters:
+     *   - subscriber: the Subscriber object returned from the server after successful login
+     *
+     * Returns:
+     *   - void
+     */
+    public void setSubscriber(Subscriber subscriber) {
+        this.currentSubscriber = subscriber;
+        
+        Platform.runLater(() -> {
+        	greetingLabelPersonal.setText("Hi " + subscriber.getFull_name() + ", here are your personal details:");
+            usernameLabel.setText("Name: " + subscriber.getFull_name());
+            emailLabel.setText("Email: " + subscriber.getEmail());
+            phoneLabel.setText("Phone: " + subscriber.getPhone());
+            car1Label.setText("Car 1: " + subscriber.getVehicle_number1());
+            car2Label.setText("Car 2: " + subscriber.getVehicle_number2());
+            creditCardLabel.setText("Card: " + subscriber.getCredit_card());
+            
+            welcomeLabel.setText("Welcome, " + subscriber.getFull_name() + "!");
+            navigationStack.clear();
+            showOnly(postLoginMenu);
+        });
+    }
+
+    
+    
+    /**
+     * displayHistory — Shows parking history for the logged-in subscriber.
+     *
+     * Description:
+     * Clears the history view, sets a greeting header, and displays a list of historical
+     * parking entries received from the server.
+     *
+     * Parameters:
+     *   - historyList: List of ParkingHistory objects
+     *
+     * Returns:
+     *   - void
+     */
+    public void displayHistory(List<ParkingHistory> historyList) {
+        Platform.runLater(() -> {
+            historyView.getChildren().clear(); // 
+            greetingLabelHistory.setText("Hi " + currentSubscriber.getFull_name() + ", here is your parking history:");
+            historyView.getChildren().add(greetingLabelHistory);
+            showOnly(historyView); //  
+
+            if (historyList.isEmpty()) {
+                historyView.getChildren().add(new Label("No parking history found."));
+            } else {
+                for (ParkingHistory h : historyList) {
+                    Label entry = new Label(formatHistory(h));
+                    entry.setWrapText(true);
+                    historyView.getChildren().add(entry);
+                }
+            }
+        });
+    }
+
+    private String formatHistory(ParkingHistory h) {
+        return String.format(
+            "Vehicle Number: %s | Entry: %s at %s | Exit: %s at %s\n",
+            h.getVehicleNumber(),
+            h.getEntryDate(),
+            h.getEntryTime(),
+            h.getExitDate(),
+            h.getExitTime()
+        );
+    }
+
+    /**
+     * displayReservations — Displays current reservations for the subscriber.
+     *
+     * Description:
+     * Clears the reservations pane, shows a personalized heading, and populates the
+     * list with existing reservation records.
+     *
+     * Parameters:
+     *   - reservationList: List of Reservation objects
+     *
+     * Returns:
+     *   - void
+     */
+    public void displayReservations(List<Reservation> reservationList) {
+        Platform.runLater(() -> {
+        	reservationsView.getChildren().removeIf(node -> node != greetingLabelReservations);
+            greetingLabelReservations.setText("Hi " + currentSubscriber.getFull_name() + ", here are your current reservations:");
+            showOnly(reservationsView); 
+
+            if (reservationList.isEmpty()) {
+                reservationsView.getChildren().add(new Label("No existing reservations found."));
+            } else {
+                for (Reservation r : reservationList) {
+                    Label entry = new Label(formatReservation(r));
+                    entry.setWrapText(true);
+                    reservationsView.getChildren().add(entry);
+                }
+            }
+        });
+    }
+
+    private String formatReservation(Reservation r) {
+        return String.format(
+            "Parking Code: %s | Parking Spot: %d | From: %s at %s, until: %s at %s\n",
+            r.getParkingCode(),
+            r.getParkingSpot(),
+            r.getEntryDate(),
+            r.getEntryTime(),
+            r.getExitDate(),
+            r.getExitTime()
+        );
+    }
+
     
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
@@ -213,19 +429,19 @@ public class ClientController implements BaseController {
         
 
     /**
-     * Handles the submission of personal info edits.
-     * Validates input and shows appropriate messages.
+     * Handles the submit action for editing email/phone.
+     * Performs local validation, sends update request to server, and updates local view if successful.
      */
     @FXML
     private void handleSubmitEdit() {
         String newPhone = editPhoneField.getText().trim();
         String newEmail = editEmailField.getText().trim();
 
-        boolean phoneChanged = !newPhone.isEmpty();
-        boolean emailChanged = !newEmail.isEmpty();
+        boolean phoneChanged = !newPhone.equals(currentSubscriber.getPhone());
+        boolean emailChanged = !newEmail.equals(currentSubscriber.getEmail());
 
         if (!phoneChanged && !emailChanged) {
-            showPopup("Please edit at least one field.");
+            showPopup("No changes were made.");
             return;
         }
 
@@ -233,7 +449,7 @@ public class ClientController implements BaseController {
         if (phoneChanged && !newPhone.matches("\\d{10}")) {
             errors.append("Phone number must be exactly 10 digits.\n");
         }
-        if (emailChanged && !Pattern.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$", newEmail)) {
+        if (emailChanged && !newEmail.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
             errors.append("Email must be in a valid format.\n");
         }
 
@@ -242,12 +458,39 @@ public class ClientController implements BaseController {
             return;
         }
 
-        if (phoneChanged) phoneLabel.setText("Phone: " + newPhone);
-        if (emailChanged) emailLabel.setText("Email: " + newEmail);
+      
+        try {
+            client.sendToServer(new UpdateSubscriberDetailsRequest(
+                currentSubscriber.getSubscriber_id(),
+                emailChanged ? newEmail : currentSubscriber.getEmail(),
+                phoneChanged ? newPhone : currentSubscriber.getPhone()
+            ));
+        } catch (IOException e) {
+            e.printStackTrace();
+            showPopup("Error sending update to server.");
+            return;
+        }
 
-        showPopup("Details updated successfully.\nYou can now click Back.");
+        currentSubscriber = new Subscriber(
+            currentSubscriber.getSubscriber_id(),
+            currentSubscriber.getFull_name(),
+            emailChanged ? newEmail : currentSubscriber.getEmail(),
+            phoneChanged ? newPhone : currentSubscriber.getPhone(),
+            currentSubscriber.getVehicle_number1(),
+            currentSubscriber.getVehicle_number2(),
+            currentSubscriber.getSubscription_code(),
+            currentSubscriber.getNotes(),
+            currentSubscriber.getCredit_card()
+        );
+
+        
+        setSubscriber(currentSubscriber);
+
+        showPopup("Details updated successfully.");
         showOnly(personalInfoView);
     }
+
+
 
     /**
      * Displays the reservation form.
@@ -326,7 +569,7 @@ public class ClientController implements BaseController {
      * Utility method to show popup alerts in a consistent format.
      * @param message the content of the popup
      */
-    private void showPopup(String message) {
+    void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");
         alert.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);

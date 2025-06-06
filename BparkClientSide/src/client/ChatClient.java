@@ -7,6 +7,10 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import common.ChatIF;
+import common.ParkingHistory;
+import common.Reservation;
+import common.Subscriber;
+import javafx.application.Platform;
 
 /**
  * ChatClient represents the client-side connection to the EchoServer.
@@ -51,15 +55,20 @@ public class ChatClient extends AbstractClient {
     public void setCurrentState(MenuState state) {
         this.currentState = state;
     }
-
+    
+    
     /**
      * Handles incoming messages from the server.
      * @param msg The message received.
      */
+    /*
+     * 
+     * 
     @Override
     public void handleMessageFromServer(Object msg) {
         if (msg instanceof String message) {
-            if (message.equals("ORDER_DOES_NOT_EXIST")) {
+            /////// PROTOTYPE
+             * if (message.equals("ORDER_DOES_NOT_EXIST")) {
                 clientUI.display("Order does not exist. Please try again.");
                 currentState = MenuState.CHECK_IF_EXISTS;
             } else if (message.equals("INVALID_ORDER_ID")) {
@@ -71,33 +80,40 @@ public class ChatClient extends AbstractClient {
                 currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
                // controller.successfulFirstSubmit();
             }
-            /* Passes login result message to TerminalController for handling */
-            else if (message.equals("TERMINAL_LOGIN_SUCCESS") || message.equals("TERMINAL_LOGIN_FAILURE")) {
+        	
+            // Passes login result message to TerminalController for handling 
+            if (message.equals("TERMINAL_LOGIN_SUCCESS") || message.equals("TERMINAL_LOGIN_FAILURE")) {
                 TerminalController.getInstance().handleLoginResponse(message);
             }
             
-            /* Passes login result message to ClientController for handling */
+            // Passes login result message to ClientController for handling 
             else if (message.equals("APP_LOGIN_SUCCESS") || message.equals("APP_LOGIN_FAILURE")) {
                 ClientController.getInstance().handleLoginResponse(message);
             }
             
             
-            /* Passes management login result message to ManagementController for handling */
+            // Passes management login result message to ManagementController for handling 
             else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
             	ManagementController.getInstance().handleLoginManagementResponse(message);
             }
             
-            /* Extracts subscriber information and displays it using ManagementController */
+            // Extracts subscriber information and displays it using ManagementController 
             else if (message.startsWith("SUBSCRIBER_INFO:")) {
                 String info = message.substring("SUBSCRIBER_INFO:".length());
                 ManagementController.getInstance().displaySubscriberInfo(info);
+            }
+            else if (message.equals("SUBSCRIBER_UPDATE_SUCCESS")) {
+                ClientController.getInstance().showPopup("Details updated successfully.");
+            }
+            else if (message.equals("SUBSCRIBER_UPDATE_FAILURE")) {
+                ClientController.getInstance().showPopup("Failed to update details.");
             }
 
             else {
                 clientUI.display(message);
             }
         }
-        /* Passes a list of available parking spots to the Terminal or Client Controller for display */
+        // Passes a list of available parking spots to the Terminal or Client Controller for display 
         else if (msg instanceof List) {
             if (controller instanceof TerminalController) {
                 ((TerminalController) controller).handleAvailableSpots((List<String>) msg);
@@ -105,7 +121,110 @@ public class ChatClient extends AbstractClient {
                 ((ClientController) controller).handleAvailableSpots((List<String>) msg);
             }
         }
+        else if (msg instanceof Subscriber) {
+            ClientController controller = ClientController.getInstance();
+            controller.setSubscriber((Subscriber) msg);
+        }
     }
+    */
+    
+    /**
+     * Handles messages received from the server in a structured and maintainable way.
+     * 
+     * This method was refactored from a series of separate if/else chains
+     * into a clean `switch` statement, which improves readability, scalability,
+     * and centralizes response logic for different message types.
+     *
+     * It handles:
+     * - Login results for terminal, app, and management.
+     * - Subscriber info and update results.
+     * - Lists (e.g., parking spots).
+     * - Subscriber object (after login).
+     *
+     * GUI updates are safely wrapped in Platform.runLater to ensure they are
+     * executed on the JavaFX Application Thread.
+     *
+     * If an unknown message is received, it is passed to the general clientUI.
+     *
+     * @param msg The message object sent by the server (String, List, or Subscriber).
+     */
+
+    @Override
+    public void handleMessageFromServer(Object msg) {
+        try {
+            if (msg instanceof String message) {
+                switch (message) {
+                    case "TERMINAL_LOGIN_SUCCESS":
+                    case "TERMINAL_LOGIN_FAILURE":
+                        TerminalController.getInstance().handleLoginResponse(message);
+                        break;
+
+                    case "APP_LOGIN_SUCCESS":
+                    case "APP_LOGIN_FAILURE":
+                        ClientController.getInstance().handleLoginResponse(message);
+                        break;
+
+                    case "LOGIN_Management_SUCCESS":
+                    case "LOGIN_Management_FAILURE":
+                        ManagementController.getInstance().handleLoginManagementResponse(message);
+                        break;
+
+                    case "SUBSCRIBER_UPDATE_SUCCESS":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Details updated successfully.");
+                        });
+                        break;
+
+                    case "SUBSCRIBER_UPDATE_FAILURE":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Failed to update details.");
+                        });
+                        break;
+
+                    default:
+                        if (message.startsWith("SUBSCRIBER_INFO:")) {
+                            String info = message.substring("SUBSCRIBER_INFO:".length());
+                            ManagementController.getInstance().displaySubscriberInfo(info);
+                        } else {
+                            clientUI.display(message);
+                        }
+                        break;
+                }
+            }
+
+            else if (msg instanceof List<?> list) {
+                
+                if (!list.isEmpty()) {
+                    Object first = list.get(0);
+
+                    if (first instanceof String) {
+                        if (controller instanceof TerminalController) {
+                            ((TerminalController) controller).handleAvailableSpots((List<String>) list);
+                        } else if (controller instanceof ClientController) {
+                            ((ClientController) controller).handleAvailableSpots((List<String>) list);
+                        }
+
+                    } else if (first instanceof ParkingHistory) {
+                        ClientController.getInstance().displayHistory((List<ParkingHistory>) list);
+
+                    } else if (first instanceof Reservation) {
+                        ClientController.getInstance().displayReservations((List<Reservation>) list);
+                    }
+                }
+            }
+
+
+            else if (msg instanceof Subscriber subscriber) {
+                ClientController.getInstance().setSubscriber(subscriber);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Exception in handleMessageFromServer: " + e.getMessage());
+        }
+    }
+
+
 
 
     /**
@@ -181,7 +300,7 @@ public class ChatClient extends AbstractClient {
      * Sends a message to the server with error handling.
      * @param msg The message string.
      */
-    private void sendToServerSafe(String msg) {
+    void sendToServerSafe(String msg) {
         try {
             sendToServer(msg);
         } catch (IOException e) {

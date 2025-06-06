@@ -6,6 +6,10 @@ import java.util.List;
 
 import common.LoginManagement;
 import common.LoginRequest;
+import common.ParkingHistory;
+import common.Reservation;
+import common.Subscriber;
+import common.UpdateSubscriberDetailsRequest;
 import ocsf.server.*;
 
 /**
@@ -27,11 +31,16 @@ public class EchoServer extends AbstractServer {
     }
 
     /**
-     * Handles messages received from a client.
-     * @param msg The message sent by the client.
-     * @param client The connection to the client.
+     * Handles messages sent from clients to the server.
+     * Routes requests based on object type or command string.
+     * Manages login logic, subscriber info requests, and update requests.
+     *
+     * @param msg Message received from the client.
+     * @param client Reference to the client connection.
      */
-    @Override
+   /*
+    * 
+    *  @Override
     public void handleMessageFromClient(Object msg, ConnectionToClient client) {
         System.out.println("Message received: " + msg + " from " + client);
 
@@ -39,7 +48,7 @@ public class EchoServer extends AbstractServer {
         {
             String command = (String) msg;
 
-            if (command.equals("SHOW_ORDERS")) {
+             if (command.equals("SHOW_ORDERS")) { /////PROTOTYPE
                 try {
                     String orders = mysqlConnection.getAllOrders();
                     client.sendToClient(orders);
@@ -60,7 +69,7 @@ public class EchoServer extends AbstractServer {
                         e.printStackTrace();
                     }
                 }
-            }
+            }*/
             /*else if (command.startsWith("CHECK")) { //// זה היה של האבטיפוס
             	
                 String idStr = command.replace("CHECK", "");
@@ -80,10 +89,10 @@ public class EchoServer extends AbstractServer {
                     e.printStackTrace();
                 }
             }
-            */
             
-            /* Handles subscriber info request by ID and sends the data back to the client */
-            else if (command.startsWith("REQUEST_ID_DETAILS|")) {
+            
+            // Handles subscriber info request by ID and sends the data back to the client 
+            if (command.startsWith("REQUEST_ID_DETAILS|")) {
                 String id = command.split("\\|")[1]; 
                 String subscriberInfo = mysqlConnection.getSubscriberInfo(id);
 
@@ -94,7 +103,28 @@ public class EchoServer extends AbstractServer {
                 }
             }
             
-            /* Retrieves available parking spots from the database and sends the list to the client */
+            else if (command.startsWith("GET_HISTORY|")) {
+                String id = command.split("\\|")[1];
+                List<ParkingHistory> history = mysqlConnection.getHistoryForSubscriber(id); 
+
+                try {
+                    client.sendToClient(history);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            else if (command.startsWith("GET_RESERVATIONS|")) {
+                String id = command.split("\\|")[1];
+                List<Reservation> reservations = mysqlConnection.getReservationsForSubscriber(id); //   
+                try {
+                    client.sendToClient(reservations);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            
+            // Retrieves available parking spots from the database and sends the list to the client 
                 else if (msg.equals("REQUEST_AVAILABLE_SPOTS")) 
                 {
                     availableSpots = mysqlConnection.getAvailableSpots();
@@ -113,8 +143,9 @@ public class EchoServer extends AbstractServer {
 	                    e.printStackTrace();
 	                }
         		}
+            
         } 
-        /* Checks client login via terminal/application credentials and sends result to client */
+        // Checks client login via terminal/application credentials and sends result to client 
         else if (msg instanceof LoginRequest) 
         {
             LoginRequest request = (LoginRequest) msg;
@@ -129,8 +160,19 @@ public class EchoServer extends AbstractServer {
                         client.sendToClient(success ? "TERMINAL_LOGIN_SUCCESS" : "TERMINAL_LOGIN_FAILURE");
                         break;
                     case "app":
-                        client.sendToClient(success ? "APP_LOGIN_SUCCESS" : "APP_LOGIN_FAILURE");
+                        if (success) {
+                            Subscriber subscriber = mysqlConnection.getSubscriberById(request.getID());
+                            if (subscriber != null) {
+                                client.sendToClient("APP_LOGIN_SUCCESS");
+                                client.sendToClient(subscriber);
+                            } else {
+                                client.sendToClient("APP_LOGIN_FAILED_NO_DATA");
+                            }
+                        } else {
+                            client.sendToClient("APP_LOGIN_FAILURE");
+                        }
                         break;
+                
                     default:
                         client.sendToClient("LOGIN_FAILURE"); // unknown source
                 }
@@ -140,7 +182,7 @@ public class EchoServer extends AbstractServer {
         }
 
         
-        /* Checks manager login credentials and sends result to client */
+        // Checks manager login credentials and sends result to client 
         else if (msg instanceof LoginManagement) 
         {
         	LoginManagement loginData = (LoginManagement) msg;
@@ -152,6 +194,23 @@ public class EchoServer extends AbstractServer {
                 e.printStackTrace();
             }
         }
+        // Handles an UpdateSubscriberDetailsRequest by updating DB and sending result
+        else if (msg instanceof UpdateSubscriberDetailsRequest) {
+            UpdateSubscriberDetailsRequest update = (UpdateSubscriberDetailsRequest) msg;
+            boolean success = mysqlConnection.updateSubscriberContactInfo(
+                update.getSubscriberId(),
+                update.getNewEmail(),
+                update.getNewPhone()
+            );
+
+            try {
+                client.sendToClient(success ? "SUBSCRIBER_UPDATE_SUCCESS" : "SUBSCRIBER_UPDATE_FAILURE");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        
         else 
         {
             try {
@@ -160,8 +219,123 @@ public class EchoServer extends AbstractServer {
                 e.printStackTrace();
             }
         }
+        
+    }*/
+
+    
+    /**
+     * Handles all incoming messages from clients and delegates processing
+     * based on the message type (String commands, Login requests, etc.).
+     * This method acts as the main dispatcher for client requests.
+     *
+     * @param msg The message received from the client (String, LoginRequest, etc.)
+     * @param client The client connection that sent the message
+     */
+    @Override
+    public void handleMessageFromClient(Object msg, ConnectionToClient client) {
+        System.out.println("Message received: " + msg + " from " + client);
+
+        try {
+            if (msg instanceof String command) {
+                handleStringCommand(command, client);
+            } else if (msg instanceof LoginRequest request) {
+                handleLoginRequest(request, client);
+            } else if (msg instanceof LoginManagement management) {
+                handleManagementLogin(management, client);
+            } else if (msg instanceof UpdateSubscriberDetailsRequest update) {
+                handleSubscriberUpdate(update, client);
+            } else {
+                client.sendToClient("Unsupported message format.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    /**
+     * Processes text-based commands sent from the client (usually via sendToServer(String)).
+     * Each command represents a specific request (e.g., fetch history, get reservations).
+     *
+     * @param command The string command sent by the client
+     * @param client The client connection to respond to
+     * @throws IOException if sending a response to the client fails
+     */
+    private void handleStringCommand(String command, ConnectionToClient client) throws IOException {
+        if (command.startsWith("REQUEST_ID_DETAILS|")) {
+            String id = command.split("\\|")[1];
+            client.sendToClient("SUBSCRIBER_INFO:" + mysqlConnection.getSubscriberInfo(id));
+        } else if (command.startsWith("GET_HISTORY|")) {
+            String id = command.split("\\|")[1];
+            client.sendToClient(mysqlConnection.getHistoryForSubscriber(id));
+        } else if (command.startsWith("GET_RESERVATIONS|")) {
+            String id = command.split("\\|")[1];
+            client.sendToClient(mysqlConnection.getReservationsForSubscriber(id));
+        } else if (command.equals("REQUEST_AVAILABLE_SPOTS")) {
+            client.sendToClient(mysqlConnection.getAvailableSpots());
+        } else {
+            client.sendToClient("Unrecognized command.");
+        }
+    }
+
+    /**
+     * Processes login requests from clients (e.g., mobile app or terminal).
+     * If login is successful, a Subscriber object is sent back (for app logins).
+     *
+     * @param request The login credentials and source ("app" or "terminal")
+     * @param client The client attempting to log in
+     * @throws IOException if sending a login result or subscriber object fails
+     */
+    private void handleLoginRequest(LoginRequest request, ConnectionToClient client) throws IOException {
+        boolean success = mysqlConnection.checkLogin(request.getID(), request.getSubscriptionCode());
+        System.out.println("LoginRequest received from source: " + request.getSource());
+
+        switch (request.getSource()) {
+            case "terminal" -> client.sendToClient(success ? "TERMINAL_LOGIN_SUCCESS" : "TERMINAL_LOGIN_FAILURE");
+            case "app" -> {
+                if (success) {
+                    Subscriber sub = mysqlConnection.getSubscriberById(request.getID());
+                    if (sub != null) {
+                        client.sendToClient("APP_LOGIN_SUCCESS");
+                        client.sendToClient(sub);
+                    } else {
+                        client.sendToClient("APP_LOGIN_FAILED_NO_DATA");
+                    }
+                } else {
+                    client.sendToClient("APP_LOGIN_FAILURE");
+                }
+            }
+            default -> client.sendToClient("LOGIN_FAILURE");
+        }
+    }
+
+    /**
+     * Processes login attempts from management clients.
+     * Verifies username and password against the 'employees' table.
+     *
+     * @param login The login credentials provided by the management client
+     * @param client The client attempting to log in
+     * @throws IOException if sending the login result to the client fails
+     */
+    private void handleManagementLogin(LoginManagement login, ConnectionToClient client) throws IOException {
+        boolean approved = mysqlConnection.checkLoginManagement(login.getUsername(), login.getPassword());
+        client.sendToClient(approved ? "LOGIN_Management_SUCCESS" : "LOGIN_Management_FAILURE");
+    }
+
+    
+    /**
+     * Processes update requests to modify a subscriber's email and phone.
+     * Updates the database and sends success/failure response back to the client.
+     *
+     * @param update The update request containing subscriber ID and new data
+     * @param client The client that initiated the update request
+     * @throws IOException if sending the update result to the client fails
+     */
+    private void handleSubscriberUpdate(UpdateSubscriberDetailsRequest update, ConnectionToClient client) throws IOException {
+        boolean success = mysqlConnection.updateSubscriberContactInfo(update.getSubscriberId(), update.getNewEmail(), update.getNewPhone());
+        client.sendToClient(success ? "SUBSCRIBER_UPDATE_SUCCESS" : "SUBSCRIBER_UPDATE_FAILURE");
+    }
+
+    
     /**
      * Returns a formatted string describing all currently connected clients.
      * @return Client connection status summary.
