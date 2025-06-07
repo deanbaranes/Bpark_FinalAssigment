@@ -57,76 +57,6 @@ public class ChatClient extends AbstractClient {
     }
     
     
-    /**
-     * Handles incoming messages from the server.
-     * @param msg The message received.
-     */
-    /*
-     * 
-     * 
-    @Override
-    public void handleMessageFromServer(Object msg) {
-        if (msg instanceof String message) {
-            /////// PROTOTYPE
-             * if (message.equals("ORDER_DOES_NOT_EXIST")) {
-                clientUI.display("Order does not exist. Please try again.");
-                currentState = MenuState.CHECK_IF_EXISTS;
-            } else if (message.equals("INVALID_ORDER_ID")) {
-                clientUI.display("Invalid order ID format.");
-                currentState = MenuState.CHECK_IF_EXISTS;
-            } else if (message.startsWith("ORDER_EXISTS:")) {
-                selectedOrderId = message.substring("ORDER_EXISTS:".length());
-                clientUI.display("Order #" + selectedOrderId + " found. Select a field to update.");
-                currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
-               // controller.successfulFirstSubmit();
-            }
-        	
-            // Passes login result message to TerminalController for handling 
-            if (message.equals("TERMINAL_LOGIN_SUCCESS") || message.equals("TERMINAL_LOGIN_FAILURE")) {
-                TerminalController.getInstance().handleLoginResponse(message);
-            }
-            
-            // Passes login result message to ClientController for handling 
-            else if (message.equals("APP_LOGIN_SUCCESS") || message.equals("APP_LOGIN_FAILURE")) {
-                ClientController.getInstance().handleLoginResponse(message);
-            }
-            
-            
-            // Passes management login result message to ManagementController for handling 
-            else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
-            	ManagementController.getInstance().handleLoginManagementResponse(message);
-            }
-            
-            // Extracts subscriber information and displays it using ManagementController 
-            else if (message.startsWith("SUBSCRIBER_INFO:")) {
-                String info = message.substring("SUBSCRIBER_INFO:".length());
-                ManagementController.getInstance().displaySubscriberInfo(info);
-            }
-            else if (message.equals("SUBSCRIBER_UPDATE_SUCCESS")) {
-                ClientController.getInstance().showPopup("Details updated successfully.");
-            }
-            else if (message.equals("SUBSCRIBER_UPDATE_FAILURE")) {
-                ClientController.getInstance().showPopup("Failed to update details.");
-            }
-
-            else {
-                clientUI.display(message);
-            }
-        }
-        // Passes a list of available parking spots to the Terminal or Client Controller for display 
-        else if (msg instanceof List) {
-            if (controller instanceof TerminalController) {
-                ((TerminalController) controller).handleAvailableSpots((List<String>) msg);
-            } else if (controller instanceof ClientController) {
-                ((ClientController) controller).handleAvailableSpots((List<String>) msg);
-            }
-        }
-        else if (msg instanceof Subscriber) {
-            ClientController controller = ClientController.getInstance();
-            controller.setSubscriber((Subscriber) msg);
-        }
-    }
-    */
     
     /**
      * Handles messages received from the server in a structured and maintainable way.
@@ -185,6 +115,13 @@ public class ChatClient extends AbstractClient {
                         if (message.startsWith("SUBSCRIBER_INFO:")) {
                             String info = message.substring("SUBSCRIBER_INFO:".length());
                             ManagementController.getInstance().displaySubscriberInfo(info);
+                        } else if (message.startsWith("register_result:")) {
+                            String result = message.substring("register_result:".length()).trim();
+                            if (controller instanceof ManagementController mgrController) {
+                                Platform.runLater(() -> mgrController.showPopup(result));
+                            } else {
+                                clientUI.display(result);
+                            }
                         } else {
                             clientUI.display(message);
                         }
@@ -193,7 +130,6 @@ public class ChatClient extends AbstractClient {
             }
 
             else if (msg instanceof List<?> list) {
-                
                 if (!list.isEmpty()) {
                     Object first = list.get(0);
 
@@ -213,7 +149,6 @@ public class ChatClient extends AbstractClient {
                 }
             }
 
-
             else if (msg instanceof Subscriber subscriber) {
                 ClientController.getInstance().setSubscriber(subscriber);
             }
@@ -223,9 +158,6 @@ public class ChatClient extends AbstractClient {
             System.err.println("Exception in handleMessageFromServer: " + e.getMessage());
         }
     }
-
-
-
 
     /**
      * Sends an order ID to the server to verify existence.
@@ -318,3 +250,77 @@ public class ChatClient extends AbstractClient {
         System.exit(0);
     }
 }
+
+
+
+/**
+ * Handles incoming messages from the server.
+ * @param msg The message received.
+ */
+/*
+ * 
+ * 
+@Override
+public void handleMessageFromServer(Object msg) {
+    if (msg instanceof String message) {
+        /////// PROTOTYPE
+         * if (message.equals("ORDER_DOES_NOT_EXIST")) {
+            clientUI.display("Order does not exist. Please try again.");
+            currentState = MenuState.CHECK_IF_EXISTS;
+        } else if (message.equals("INVALID_ORDER_ID")) {
+            clientUI.display("Invalid order ID format.");
+            currentState = MenuState.CHECK_IF_EXISTS;
+        } else if (message.startsWith("ORDER_EXISTS:")) {
+            selectedOrderId = message.substring("ORDER_EXISTS:".length());
+            clientUI.display("Order #" + selectedOrderId + " found. Select a field to update.");
+            currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
+           // controller.successfulFirstSubmit();
+        }
+    	
+        // Passes login result message to TerminalController for handling 
+        if (message.equals("TERMINAL_LOGIN_SUCCESS") || message.equals("TERMINAL_LOGIN_FAILURE")) {
+            TerminalController.getInstance().handleLoginResponse(message);
+        }
+        
+        // Passes login result message to ClientController for handling 
+        else if (message.equals("APP_LOGIN_SUCCESS") || message.equals("APP_LOGIN_FAILURE")) {
+            ClientController.getInstance().handleLoginResponse(message);
+        }
+        
+        
+        // Passes management login result message to ManagementController for handling 
+        else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
+        	ManagementController.getInstance().handleLoginManagementResponse(message);
+        }
+        
+        // Extracts subscriber information and displays it using ManagementController 
+        else if (message.startsWith("SUBSCRIBER_INFO:")) {
+            String info = message.substring("SUBSCRIBER_INFO:".length());
+            ManagementController.getInstance().displaySubscriberInfo(info);
+        }
+        else if (message.equals("SUBSCRIBER_UPDATE_SUCCESS")) {
+            ClientController.getInstance().showPopup("Details updated successfully.");
+        }
+        else if (message.equals("SUBSCRIBER_UPDATE_FAILURE")) {
+            ClientController.getInstance().showPopup("Failed to update details.");
+        }
+
+        else {
+            clientUI.display(message);
+        }
+    }
+    // Passes a list of available parking spots to the Terminal or Client Controller for display 
+    else if (msg instanceof List) {
+        if (controller instanceof TerminalController) {
+            ((TerminalController) controller).handleAvailableSpots((List<String>) msg);
+        } else if (controller instanceof ClientController) {
+            ((ClientController) controller).handleAvailableSpots((List<String>) msg);
+        }
+    }
+    else if (msg instanceof Subscriber) {
+        ClientController controller = ClientController.getInstance();
+        controller.setSubscriber((Subscriber) msg);
+    }
+}
+*/
+

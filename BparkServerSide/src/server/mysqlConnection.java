@@ -38,7 +38,7 @@ public class mysqlConnection {
         try { 
             conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Aa123456");
+                "root", "Nmshonpass100!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -48,6 +48,97 @@ public class mysqlConnection {
         return conn;
     }
 
+    
+    /**
+     * Checks if a subscriber with the given ID number already exists in the database.
+     *
+     * @param idNumber The subscriber's ID number.
+     * @return true if the subscriber exists, false otherwise.
+     */
+    public static boolean doesSubscriberExist(String idNumber) {
+    	String query = "SELECT 1 FROM subscribers WHERE subscriber_id = ?";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, idNumber);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        
+    }
+    /**
+     * Generates a random subscription code for new subscribers.
+     * Format: SUB123456
+     *
+     * @return A unique subscription code string.
+     */
+    private static String generateSubscriptionCode() {
+        int randomNum = (int)(Math.random() * 1_000_000);
+        return "SUB" + String.format("%06d", randomNum);
+    }
+
+    /**
+     * Registers a new subscriber in the database with the given details.
+     *
+     * @return true if the insertion was successful, false otherwise.
+     */
+    public static boolean registerSubscriber(String firstName, String lastName, String idNumber,
+            String email, String phone, String vehicleNumber1, String vehicleNumber2,
+            String creditCard) {
+
+        String query = "INSERT INTO subscribers (subscriber_id, full_name, email, phone, vehicle_number1, vehicle_number2, subscription_code, credit_card) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = connectToDB();
+            stmt = conn.prepareStatement(query);
+
+            String fullName = firstName + " " + lastName;
+            String subscriptionCode = generateSubscriptionCode();
+            System.out.println(" Registering subscriber: " + idNumber);
+            stmt.setString(1, idNumber);
+            stmt.setString(2, fullName);
+            stmt.setString(3, email);
+            stmt.setString(4, phone);
+            stmt.setString(5, vehicleNumber1);
+
+            if (vehicleNumber2 == null || vehicleNumber2.trim().isEmpty()) {
+                stmt.setNull(6, java.sql.Types.VARCHAR);
+            } else {
+                stmt.setString(6, vehicleNumber2);
+            }
+            stmt.setString(7, subscriptionCode);
+            stmt.setString(8, creditCard);
+
+            int rows = stmt.executeUpdate();
+            System.out.println(" Rows inserted: " + rows);
+            return rows > 0;
+
+        } catch (SQLException e) {
+            System.out.println("❌ SQL ERROR: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+
+        } finally {
+            try {
+                if (stmt != null) stmt.close();
+            } catch (SQLException e) {
+                System.err.println("Failed to close statement: " + e.getMessage());
+            }
+
+            try {
+                if (conn != null) conn.close(); 
+            } catch (SQLException e) {
+                System.err.println("Failed to close connection: " + e.getMessage());
+            }
+        }
+    }
     /**
      * Retrieves all orders from the database and formats them as a string.
      * @return A formatted string of all orders.

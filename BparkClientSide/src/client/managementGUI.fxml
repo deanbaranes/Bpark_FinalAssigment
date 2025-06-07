@@ -126,7 +126,7 @@
         <Button text="Back" onAction="#handleBack" prefWidth="150" />
     </VBox>
 
-	    <!-- REGISTER MEMBER VIEW -->
+	 <!-- REGISTER MEMBER VIEW -->
 	<VBox fx:id="registerMemberView" alignment="CENTER" spacing="10"
 	      visible="false" managed="false"
 	      AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0"
@@ -141,16 +141,16 @@
 	    <TextField fx:id="textfield_firstname" promptText="First name" maxWidth="250" />
 	    <TextField fx:id="textfield_lastname" promptText="Last name" maxWidth="250" />
 	    <TextField fx:id="textfield_id1" promptText="ID" maxWidth="250" />
-	    <TextField fx:id="textfield_emil" promptText="Email" maxWidth="250" />
+	    <TextField fx:id="textfield_email" promptText="Email" maxWidth="250" />
 	    <TextField fx:id="textfiled_phonenumber" promptText="Phone number" maxWidth="250" />
+	    <TextField fx:id="textfield_creditcard" promptText="Credit card" maxWidth="250" />
 	    <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" maxWidth="250" />
-	
+		<TextField fx:id="label_vehiclenumber_register2" promptText="Vehicle number (2)" maxWidth="250" />		
 	    <VBox spacing="10" alignment="CENTER">
-	        <Button fx:id="btnsignup" text="Sign up" maxWidth="150" />
+			<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="150" />
 	        <Button text="Back" onAction="#handleBack" prefWidth="150" />
 	    </VBox>
 	</VBox>
-
 
 
 <!-- PARKING DURATION REPORT VIEW -->

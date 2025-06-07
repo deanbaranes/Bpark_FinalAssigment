@@ -49,6 +49,7 @@ public class MainWelcomeController {
     public void initialize() {
         try {
             client = new ChatClient("localhost", 5555, null);
+            client.openConnection(); // ← נדרש כדי לפתוח את ה־socket
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -89,7 +90,9 @@ public class MainWelcomeController {
             Parent root = loader.load();
 
             ManagementController controller = loader.getController();
+            System.out.println("[DEBUG] client before setClient: " + client);
             controller.setClient(client);
+            client.setController(controller);
             controller.showLoginScreen();
 
             Stage stage = (Stage) managementButton.getScene().getWindow();
@@ -99,7 +102,6 @@ public class MainWelcomeController {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Handles the "App (Remote)" button click.
