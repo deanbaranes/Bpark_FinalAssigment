@@ -142,13 +142,13 @@ public class TerminalController implements BaseController {
     }
     @FXML
     private void handleDropoffClick() {
-        boolean parkingAvailable = checkParkingAvailability();
-        if (parkingAvailable) {
-            generateAndShowParkingCode();          
-        } else {
-            showPopup("Sorry, there are currently no parking spots available.");
+        try {
+            client.sendToServer("CHECK_PARKING_AVAILABILITY");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
 
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
@@ -215,7 +215,7 @@ public class TerminalController implements BaseController {
         }
     }
 
-    private void showPopup(String message) {
+    public void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");
         alert.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
@@ -244,7 +244,7 @@ public class TerminalController implements BaseController {
     }
     
  
-    private void generateAndShowParkingCode() {
+    public void generateAndShowParkingCode() {
         String code = "PARK" + (new Random().nextInt(9000) + 1000);
         String message = "Your parking code is: " + code + "\n\n"
                        + "Please leave your car on the conveyor.\n\n"

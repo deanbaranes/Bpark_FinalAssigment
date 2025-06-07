@@ -110,7 +110,16 @@ public class ChatClient extends AbstractClient {
                             ClientController.getInstance().showPopup("Failed to update details.");
                         });
                         break;
-
+                    case "NO_SPOTS_AVAILABLE":
+                        Platform.runLater(() ->
+                            TerminalController.getInstance().showPopup("Sorry, there are currently no parking spots available.")
+                        );
+                        break;
+                    case "SPOT_AVAILABLE":
+                        Platform.runLater(() ->
+                            TerminalController.getInstance().generateAndShowParkingCode()
+                        );
+                        break;
                     default:
                         if (message.startsWith("SUBSCRIBER_INFO:")) {
                             String info = message.substring("SUBSCRIBER_INFO:".length());

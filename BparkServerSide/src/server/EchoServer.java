@@ -85,10 +85,18 @@ public class EchoServer extends AbstractServer {
             client.sendToClient(mysqlConnection.getReservationsForSubscriber(id));
         } else if (command.equals("REQUEST_AVAILABLE_SPOTS")) {
             client.sendToClient(mysqlConnection.getAvailableSpots());
+        } else if (command.equals("CHECK_PARKING_AVAILABILITY")) {
+            List<String> availableSpots = mysqlConnection.getAvailableSpots();
+            if (availableSpots.isEmpty()) {
+                client.sendToClient("NO_SPOTS_AVAILABLE");
+            } else {
+                client.sendToClient("SPOT_AVAILABLE");
+            }
         } else {
             client.sendToClient("Unrecognized command.");
         }
     }
+
 
     /**
      * Processes login requests from clients (e.g., mobile app or terminal).
