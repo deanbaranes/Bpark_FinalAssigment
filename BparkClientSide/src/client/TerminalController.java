@@ -161,7 +161,7 @@ public class TerminalController implements BaseController {
     
     @FXML
     private void handleDropoffYesReserve() {
-    	showPopup("testing something ");
+    	showPopup("ongoing coding progress ");
     }
     
     
