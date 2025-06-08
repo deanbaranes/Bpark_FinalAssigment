@@ -85,6 +85,7 @@ public class EchoServer extends AbstractServer {
             client.sendToClient(mysqlConnection.getReservationsForSubscriber(id));
         } else if (command.equals("REQUEST_AVAILABLE_SPOTS")) {
             client.sendToClient(mysqlConnection.getAvailableSpots());
+            
         } else if (command.equals("CHECK_PARKING_AVAILABILITY")) {
             List<String> availableSpots = mysqlConnection.getAvailableSpots();
             if (availableSpots.isEmpty()) {

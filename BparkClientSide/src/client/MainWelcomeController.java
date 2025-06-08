@@ -117,7 +117,7 @@ public class MainWelcomeController {
 
             BaseController controller = loader.getController();
             controller.setClient(client);
-
+            client.setController(controller);
             Stage stage = (Stage) appButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("BPARK - Client App");
@@ -138,7 +138,7 @@ public class MainWelcomeController {
 
             BaseController controller = loader.getController();
             controller.setClient(client);
-
+            client.setController(controller);
             Stage stage = (Stage) terminalButton.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("BPARK - Terminal");

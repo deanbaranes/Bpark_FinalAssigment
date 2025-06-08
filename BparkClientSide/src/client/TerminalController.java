@@ -31,12 +31,13 @@ public class TerminalController implements BaseController {
 
     // === VBoxes ===
     @FXML private VBox mainMenu, signInForm, spotsView,
-            selectServicePane, pickupPane;
+            selectServicePane, pickupPane,signInChoice,dropoffMethod;
 
     // === Buttons ===
     @FXML private Button signInButton, showSpotsButton,
             dropoffButton, pickupButton, submitButton, submitPickupCodeButton,
-            backDropoffButton, backInsertCodeButton, backButton, exitButton;
+            backDropoffButton, backInsertCodeButton, backButton, exitButton,btnsignbyhand,signViaScanner,
+            btnYesReservation,btnNoReservation;
 
     // === Labels ===
     @FXML private Label chooseServiceLabel, dropoffCarLabel,
@@ -64,7 +65,7 @@ public class TerminalController implements BaseController {
     }
 
     private void showOnly(VBox target) {
-        for (VBox pane : new VBox[]{mainMenu, signInForm, spotsView, selectServicePane, pickupPane}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod}) {
             if (pane != null) {
                 pane.setVisible(false);
                 pane.setManaged(false);
@@ -75,7 +76,7 @@ public class TerminalController implements BaseController {
     }
 
     private void navigateTo(VBox next) {
-        for (VBox pane : new VBox[]{mainMenu, signInForm, spotsView, selectServicePane, pickupPane}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice, signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod}) {
             if (pane != null && pane.isVisible()) {
                 navigationStack.push(pane);
                 break;
@@ -98,7 +99,18 @@ public class TerminalController implements BaseController {
         codeField.clear();
         navigateTo(signInForm);
     }
-
+    @FXML
+    private void handleSignInChoiceClick() {
+        navigateTo(signInChoice);
+    }
+    
+    @FXML
+    private void handleSignInViaScannerClick() {
+    	idField.clear();
+        codeField.clear();
+        navigateTo(signInForm);
+    }
+    
     @FXML
     private void handleShowSpotsClick() {
         navigateTo(spotsView);
@@ -114,6 +126,7 @@ public class TerminalController implements BaseController {
     private void handleSubmitLogin() {
         String id = idField.getText().trim();
         String code = codeField.getText().trim();
+        
         idField.clear();
         codeField.clear();
 
@@ -140,6 +153,18 @@ public class TerminalController implements BaseController {
             }
         });
     }
+    
+    @FXML
+    private void handleDropoffMethodChoice() {
+        navigateTo(dropoffMethod);
+    }
+    
+    @FXML
+    private void handleDropoffYesReserve() {
+    	showPopup("testing something ");
+    }
+    
+    
     @FXML
     private void handleDropoffClick() {
         try {

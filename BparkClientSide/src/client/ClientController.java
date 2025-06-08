@@ -92,6 +92,10 @@ public class ClientController implements BaseController {
     @FXML
     private void initialize() {
         showOnly(mainMenu);
+        
+        if (client != null) {
+            client.setController(this);
+        }
     }
     
     public ClientController() {
