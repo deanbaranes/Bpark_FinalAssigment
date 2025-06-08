@@ -85,7 +85,7 @@
             <font><Font size="35" /></font>
         </Label>
 		<Button fx:id="btnmemberdetails" text="View member details" onAction="#handleViewMemberDetails" prefWidth="200" />
-		<Button fx:id="btnparkingdetails" text="View parking details" onAction="#handleViewParkingDuration" prefWidth="200" />
+		<Button fx:id="btnparkingdetails" text="View parking details" onAction="#handleViewParkingDetails" prefWidth="200" />
 		<Button fx:id="btnregisternewmember" text="Register new member" onAction="#handleRegisterNewMember" prefWidth="200" />
 		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
@@ -121,7 +121,8 @@
         <HBox spacing="10">
             <Label fx:id="label_parkingdetails_search" text="Search by member number/parking number:" />
             <TextField fx:id="searchbytext2" />
-            <Button fx:id="btnsearch_parkingdetails" text="Search" />
+		<Button fx:id="btnsearch_parkingdetails" text="Search" onAction="#handleSearchParkingDetails" />
+
         </HBox>
         <TextArea fx:id="console_parkingdetails" prefHeight="180.0" prefWidth="500.0" />
         <Button text="Back" onAction="#handleBack" prefWidth="150" />

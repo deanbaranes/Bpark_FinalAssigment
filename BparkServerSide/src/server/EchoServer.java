@@ -1,20 +1,21 @@
 package server;
 
-
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import common.LoginManagement;
 import common.LoginRequest;
 import common.ParkingHistory;
 import common.RegisterMemberRequest;
 import common.Reservation;
 import common.Subscriber;
+import common.ActiveParking;
 import common.UpdateSubscriberDetailsRequest;
 import ocsf.server.*;
+
 
 /**
  * EchoServer is a server-side class that listens for client connections
@@ -96,9 +97,34 @@ public class EchoServer extends AbstractServer {
             List<String> availableSpots = mysqlConnection.getAvailableSpots();
             if (availableSpots.isEmpty()) {
                 client.sendToClient("NO_SPOTS_AVAILABLE");
-            } else {
+            }
+            
+            else {
                 client.sendToClient("SPOT_AVAILABLE");
             }
+
+        } else if (command.startsWith("SEARCH_ACTIVE_PARKING|")) {
+            String value = command.split("\\|")[1];
+            List<ActiveParking> results = new ArrayList<>();
+
+            // Try to interpret the value as a subscriber ID (most common case)
+            try {
+                int subscriberId = Integer.parseInt(value);
+                results = mysqlConnection.searchActiveParkingByMemberId(subscriberId);
+            } catch (NumberFormatException ignored) {}
+
+            // If no results found, try interpreting the value as a parking spot
+            if (results.isEmpty()) {
+                results = mysqlConnection.searchActiveParkingBySpot(value);
+            }
+
+            // Send appropriate response based on search results
+            if (results.isEmpty()) {
+                client.sendToClient("No active parking found for the given member number or parking number.");
+            } else {
+                client.sendToClient(results);
+            }
+
         } else {
             client.sendToClient("Unrecognized command.");
         }

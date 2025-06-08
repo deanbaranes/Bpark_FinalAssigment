@@ -14,6 +14,7 @@ import java.util.List;
 import common.ParkingHistory;
 import common.Reservation;
 import common.Subscriber;
+import common.ActiveParking;
 
 /**
  * mysqlConnection provides methods to connect to a MySQL database and perform
@@ -38,7 +39,7 @@ public class mysqlConnection {
         try { 
             conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Carmel2025!");
+                "root", "Daniel2204");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -594,6 +595,82 @@ public class mysqlConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    /**
+     * Searches for active parking records by subscriber ID.
+     *
+     * Retrieves all active parking records from the database where the given subscriber ID
+     * matches and the expected exit date is today or later.
+     *
+     * @param subscriberId The subscriber ID to search for.
+     * @return A list of ActiveParking records matching the search criteria.
+     */
+    public static List<ActiveParking> searchActiveParkingByMemberId(int subscriberId) {
+        List<ActiveParking> result = new ArrayList<>();
+        String query = "SELECT * FROM active_parkings WHERE subscriber_id = ? AND expected_exit_date >= CURDATE()";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, subscriberId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                result.add(new ActiveParking(
+                    rs.getInt("parking_code"),
+                    rs.getInt("subscriber_id"),
+                    rs.getString("entry_date"),
+                    rs.getString("entry_time"),
+                    rs.getString("expected_exit_date"),
+                    rs.getString("expected_exit_time"),
+                    rs.getString("parking_spot"),
+                    rs.getBoolean("extended")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+    /**
+     * Searches for active parking records by parking spot.
+     *
+     * Retrieves all active parking records from the database where the parking spot matches
+     * the provided value and the expected exit date is today or later.
+     *
+     * @param spot The parking spot identifier to search for.
+     * @return A list of ActiveParking records matching the search criteria.
+     */
+    public static List<ActiveParking> searchActiveParkingBySpot(String spot) {
+        List<ActiveParking> result = new ArrayList<>();
+        String query = "SELECT * FROM active_parkings WHERE parking_spot = ? AND expected_exit_date >= CURDATE()";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, spot);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                result.add(new ActiveParking(
+                    rs.getInt("parking_code"),
+                    rs.getInt("subscriber_id"),
+                    rs.getString("entry_date"),
+                    rs.getString("entry_time"),
+                    rs.getString("expected_exit_date"),
+                    rs.getString("expected_exit_time"),
+                    rs.getString("parking_spot"),
+                    rs.getBoolean("extended")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
 

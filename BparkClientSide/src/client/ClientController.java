@@ -97,6 +97,7 @@ public class ClientController implements BaseController {
             client.setController(this);
         }
     }
+
     
     public ClientController() {
         instance = this;

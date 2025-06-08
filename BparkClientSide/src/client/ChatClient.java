@@ -11,6 +11,7 @@ import common.ParkingHistory;
 import common.Reservation;
 import common.Subscriber;
 import javafx.application.Platform;
+import common.ActiveParking;
 
 /**
  * ChatClient represents the client-side connection to the EchoServer.
@@ -156,29 +157,41 @@ public class ChatClient extends AbstractClient {
                         break;
                 }
 
+
             } else if (msg instanceof List<?> list) {
-                if (!list.isEmpty()) {
-                    Object first = list.get(0);
-
-                    if (first instanceof String) {
-                        if (controller instanceof TerminalController) {
-                            ((TerminalController) controller).handleAvailableSpots((List<String>) list);
-                        } else if (controller instanceof ClientController) {
-                            ((ClientController) controller).handleAvailableSpots((List<String>) list);
-                        }
-
-                    } else if (first instanceof ParkingHistory) {
-                        ClientController.getInstance().displayHistory((List<ParkingHistory>) list);
-
-                    } else if (first instanceof Reservation) {
-                        ClientController.getInstance().displayReservations((List<Reservation>) list);
+                // Handle incoming list messages from the server
+                if (list.isEmpty()) {
+                    // Show a message if no records were found
+                    if (controller instanceof ManagementController mgr) {
+                        Platform.runLater(() -> {
+                            mgr.showPopup("No active parking records found for the given member number / parking number.");
+                        });
                     }
+                    return;
                 }
 
+                Object first = list.get(0);
+
+                if (first instanceof String) {
+                    if (controller instanceof TerminalController) {
+                        ((TerminalController) controller).handleAvailableSpots((List<String>) list);
+                    } else if (controller instanceof ClientController) {
+                        ((ClientController) controller).handleAvailableSpots((List<String>) list);
+                    }
+                } else if (first instanceof ParkingHistory) {
+                    ClientController.getInstance().displayHistory((List<ParkingHistory>) list);
+                } else if (first instanceof Reservation) {
+                    ClientController.getInstance().displayReservations((List<Reservation>) list);
+                } else if (first instanceof ActiveParking) {
+                    if (controller instanceof ManagementController mgr) {
+                        Platform.runLater(() -> {
+                            mgr.displayActiveParkingDetails((List<ActiveParking>) list);
+                        });
+                    }
+                }
             } else if (msg instanceof Subscriber subscriber) {
                 ClientController.getInstance().setSubscriber(subscriber);
-            }
-            else if (msg instanceof Reservation r) {
+            } else if (msg instanceof Reservation r) {
                 Platform.runLater(() -> {
                     String message = String.format(
                         "Reservation confirmed!\n" +
@@ -193,7 +206,7 @@ public class ChatClient extends AbstractClient {
 
                     if (controller instanceof ClientController clientController) {
                         clientController.showPopup(message);
-                        clientController.showOnlyPostLoginMenu(); 
+                        clientController.showOnlyPostLoginMenu();
                     }
                 });
             }

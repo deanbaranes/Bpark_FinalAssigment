@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import java.util.List;
 
 import java.io.IOException;
 import java.util.Stack;
@@ -18,6 +19,7 @@ import java.util.Stack;
 import common.LoginManagement;
 import common.LoginRequest;
 import common.RegisterMemberRequest;
+import common.ActiveParking;
 
 public class ManagementController implements BaseController{
 
@@ -164,10 +166,16 @@ public class ManagementController implements BaseController{
     Handles the "Back" button logic by navigating to the previous screen in the stack or returning to login/main welcome screen if the stack is empty.
     */
 
+    
     @FXML
     private void handleBack() {
         if (!navigationStack.isEmpty()) {
             Pane previous = navigationStack.pop();
+            if (parkingDetailsView.isVisible()) {
+                searchbytext2.clear();               // Clear search input field
+                console_parkingdetails.clear();      // Clear result display
+            }
+
             if (memberDetailsView.isVisible()) {
                 searchbyidtext.clear();              
                 console_memberdeatils.clear();      
@@ -210,6 +218,25 @@ public class ManagementController implements BaseController{
             }
         }
     }
+    /**
+     * Handles the click on the 'Search' button in the parking details view.
+     * Sends a request to the server to fetch active parking data based on input.
+     */
+    @FXML
+    private void handleSearchParkingDetails() {
+        String query = searchbytext2.getText().trim();
+        if (query.isEmpty()) {
+            console_parkingdetails.setText("Please enter a member number or parking spot.");
+            return;
+        }
+
+        try {
+            client.sendToServer("SEARCH_ACTIVE_PARKING|" + query);
+        } catch (IOException e) {
+            console_parkingdetails.setText("Error sending request: " + e.getMessage());
+        }
+    }
+
 
     /**
      * Sends a request to the server to retrieve subscriber details based on the entered ID.
@@ -460,28 +487,40 @@ public class ManagementController implements BaseController{
         alert.setContentText(message);
         alert.showAndWait();
     }
-    
-    /*
-    @FXML
-    private void handleLoginSubmit() {
-        String username = usernametextfield.getText().trim();
-        String password = passwordfeild.getText().trim();
-
-        if (username.isEmpty() || password.isEmpty()) {
-            showPopup("Please enter both username and password.");
+    /**
+     * Displays a detailed list of active parking records in a structured format.
+     * Each record is shown as a multi-line list for readability.
+     *
+     * @param records The list of matching active parking records.
+     */
+    public void displayActiveParkingDetails(List<ActiveParking> records) {
+        // Handle empty result
+        if (records == null || records.isEmpty()) {
+            console_parkingdetails.setText("No active parking records found for the given member number / parking number.");
             return;
         }
 
-        // שלח את הנתונים לשרת לבדיקה
-        LoginManagement loginData = new LoginManagement(username, password);
-        try {
-            ChatClient.getClient().sendToServer(loginData);
-        } catch (IOException e) {
-            e.printStackTrace();
-            showPopup("Failed to send login request to server.");
+        // Use StringBuilder for efficient output construction
+        StringBuilder sb = new StringBuilder();
+
+        // Loop through all records
+        for (ActiveParking rec : records) {
+            sb.append("Parking Code: ").append(rec.getParkingCode()).append("\n");
+            sb.append("Subscriber ID: ").append(rec.getSubscriberId()).append("\n");
+            sb.append("Entry Date: ").append(rec.getEntryDate()).append("\n");
+            sb.append("Entry Time: ").append(rec.getEntryTime()).append("\n");
+            sb.append("Expected Exit Date: ").append(rec.getExpectedExitDate()).append("\n");
+            sb.append("Expected Exit Time: ").append(rec.getExpectedExitTime()).append("\n");
+            sb.append("Parking Spot: ").append(rec.getParkingSpot()).append("\n");
+            sb.append("Extended: ").append(rec.isExtended() ? "Yes" : "No").append("\n");
+            sb.append("----------------------------------------------------\n");
         }
+
+        // Set the formatted string to the TextArea
+        console_parkingdetails.setText(sb.toString());
     }
 
-     */
-
 }
+    
+
+
