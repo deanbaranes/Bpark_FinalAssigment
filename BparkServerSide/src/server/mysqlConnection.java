@@ -38,7 +38,7 @@ public class mysqlConnection {
         try { 
             conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Nmshonpass100!");
+                "root", "Daniel2204");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -442,27 +442,28 @@ public class mysqlConnection {
     * @return true if credentials are valid, false otherwise.
       */
 
-    public static boolean checkLoginManagement(String username, String password) 
-    {
-        String query = "SELECT * FROM employees WHERE username = ? AND password = ?";
+    public static String checkLoginManagement(String username, String password) {
+        String query = "SELECT role FROM employees WHERE username = ? AND password = ?";
 
         try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(query)) 
-        {
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
             stmt.setString(2, password);
 
             ResultSet rs = stmt.executeQuery();
-            return rs.next();
+            if (rs.next()) {
+                return rs.getString("role").toLowerCase(); // מחזיר "manager" או "attendant"
+            } else {
+                return null;
+            }
 
-        } 
-        catch (SQLException e) 
-        {
+        } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
+
     /*
      * Retrieves all parking spots marked as 'available' from the database.
      *

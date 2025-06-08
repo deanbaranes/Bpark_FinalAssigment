@@ -73,6 +73,7 @@
     <Hyperlink fx:id="btnforgerpassword" text="Forget password?" />
     <Button fx:id="btnloginsubmit" text="Submit"
             onAction="#handleLoginManagementSubmit" prefWidth="100" />
+     <Button fx:id="btnback" text="Back" onAction="#handleBack" prefWidth="100" />
 </VBox>
 
 

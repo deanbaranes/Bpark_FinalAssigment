@@ -49,11 +49,12 @@ public class MainWelcomeController {
     public void initialize() {
         try {
             client = new ChatClient("localhost", 5555, null);
-            client.openConnection(); // ← נדרש כדי לפתוח את ה־socket
+            client.openConnection(); 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     /**
      * Handles the "Clients" button click.
@@ -103,6 +104,7 @@ public class MainWelcomeController {
         }
     }
 
+
     /**
      * Handles the "App (Remote)" button click.
      * Loads the client application interface.
@@ -115,9 +117,6 @@ public class MainWelcomeController {
 
             BaseController controller = loader.getController();
             controller.setClient(client);
-            // Sets the application controller instance to allow callback-based handling of server responses.
-            // This enables correct type-checking (instanceof) when processing messages.
-            client.setController(controller);
 
             Stage stage = (Stage) appButton.getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -139,11 +138,6 @@ public class MainWelcomeController {
 
             BaseController controller = loader.getController();
             controller.setClient(client);
-            // Sets the terminal controller instance to allow callback-based handling of server responses.
-            // This enables correct type-checking (instanceof) when processing messages.
-            client.setController(controller);
-           
-
 
             Stage stage = (Stage) terminalButton.getScene().getWindow();
             stage.setScene(new Scene(root));

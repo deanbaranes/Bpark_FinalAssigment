@@ -59,6 +59,9 @@ public class ManagementController implements BaseController{
     @FXML private TextArea console_parkingdetails;
     @FXML private Label parkingDurationTitle;
     @FXML private VBox parkingDurationView;
+    @FXML private TextField parkingDurationYearField;
+    @FXML private TextField parkingDurationMonthField;
+
 
     // === Register New Member ===
     @FXML private Label label_register_member;
@@ -143,7 +146,6 @@ public class ManagementController implements BaseController{
 
     @FXML
     private void handleRegisterNewMember() {
-        clearRegisterMemberForm(); // איפוס הטופס
         navigateTo(registerMemberView);
     }
 
@@ -166,29 +168,49 @@ public class ManagementController implements BaseController{
     private void handleBack() {
         if (!navigationStack.isEmpty()) {
             Pane previous = navigationStack.pop();
+            if (memberDetailsView.isVisible()) {
+                searchbyidtext.clear();              
+                console_memberdeatils.clear();      
+            }
+            if (parkingDurationView.isVisible()) {
+            	parkingDurationYearField.clear();
+            	parkingDurationMonthField.clear();
+
+            }
             showOnly(previous);
+            
         } else if (managerMenuView.isVisible()) {
             // We're in manager menu, go back to login
-            loginView.setVisible(true);
-            loginView.setManaged(true);
-            managerMenuView.setVisible(false);
-            managerMenuView.setManaged(false);
-        } else 
-        {
+            usernametextfield.clear();   
+            passwordfeild.clear();
+            showOnly(loginView);
+            
+        } else if (loginView.isVisible()) {
+            // We're in login view, go back to mainWelcome.fxml
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
                 Parent root = loader.load();
                 Stage stage = (Stage) btnback.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("BPARK - Welcome");
-            } 
-            catch (IOException e) 
-            {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            
+        } else {
+            // fallback — go to welcome screen anyway
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
+                Parent root = loader.load();
+                Stage stage = (Stage) btnback.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("BPARK - Welcome");
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-    
     }
+
     /**
      * Sends a request to the server to retrieve subscriber details based on the entered ID.
      * If the input field is empty, displays a popup asking the user to enter an ID.
@@ -387,8 +409,10 @@ public class ManagementController implements BaseController{
     }
     
     
-    
-    private void clearRegisterMemberForm() {
+    /**
+     * Clears all input fields in the "Register New Member" form.
+     */
+    public void clearRegisterMemberForm() {
         textfield_firstname.clear();
         textfield_lastname.clear();
         textfield_id1.clear();
@@ -415,13 +439,14 @@ public class ManagementController implements BaseController{
         Platform.runLater(() -> {
             if (response.startsWith("LOGIN_Management_SUCCESS")) {
                 String[] parts = response.split("\\|");
-                currentRole = (parts.length > 1) ? parts[1] : "attendant"; // default fallback
+                currentRole = (parts.length > 1) ? parts[1].toLowerCase() : "attendant";
 
                 configureRoleBasedAccess(); // adjust UI based on role
                 navigationStack.clear();
                 showOnly(managerMenuView);
             } else {
                 showPopup("Invalid Username or Password.");
+                
             }
         });
     }

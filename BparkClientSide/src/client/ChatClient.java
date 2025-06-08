@@ -79,11 +79,14 @@ public class ChatClient extends AbstractClient {
      * @param msg The message object sent by the server (String, List, or Subscriber).
      */
 
+    
     @Override
     public void handleMessageFromServer(Object msg) {
         try {
             if (msg instanceof String message) {
-                switch (message) {
+                String baseMessage = message.contains("|") ? message.substring(0, message.indexOf("|")) : message;
+
+                switch (baseMessage) {
                     case "TERMINAL_LOGIN_SUCCESS":
                     case "TERMINAL_LOGIN_FAILURE":
                         TerminalController.getInstance().handleLoginResponse(message);
@@ -110,35 +113,43 @@ public class ChatClient extends AbstractClient {
                             ClientController.getInstance().showPopup("Failed to update details.");
                         });
                         break;
+
                     case "NO_SPOTS_AVAILABLE":
                         Platform.runLater(() ->
                             TerminalController.getInstance().showPopup("Sorry, there are currently no parking spots available.")
                         );
                         break;
+
                     case "SPOT_AVAILABLE":
                         Platform.runLater(() ->
                             TerminalController.getInstance().generateAndShowParkingCode()
                         );
                         break;
+
                     default:
                         if (message.startsWith("SUBSCRIBER_INFO:")) {
                             String info = message.substring("SUBSCRIBER_INFO:".length());
                             ManagementController.getInstance().displaySubscriberInfo(info);
+
                         } else if (message.startsWith("register_result:")) {
                             String result = message.substring("register_result:".length()).trim();
                             if (controller instanceof ManagementController mgrController) {
-                                Platform.runLater(() -> mgrController.showPopup(result));
+                                Platform.runLater(() -> {
+                                    mgrController.showPopup(result);
+                                    if (result.equalsIgnoreCase("Subscriber registered successfully.")) {
+                                        mgrController.clearRegisterMemberForm(); // <- Clear fields after success
+                                    }
+                                });
                             } else {
-                                clientUI.display(result);
+                                if (clientUI != null) clientUI.display(result);
                             }
                         } else {
-                            clientUI.display(message);
+                            if (clientUI != null) clientUI.display(message);
                         }
                         break;
                 }
-            }
 
-            else if (msg instanceof List<?> list) {
+            } else if (msg instanceof List<?> list) {
                 if (!list.isEmpty()) {
                     Object first = list.get(0);
 
@@ -156,9 +167,8 @@ public class ChatClient extends AbstractClient {
                         ClientController.getInstance().displayReservations((List<Reservation>) list);
                     }
                 }
-            }
 
-            else if (msg instanceof Subscriber subscriber) {
+            } else if (msg instanceof Subscriber subscriber) {
                 ClientController.getInstance().setSubscriber(subscriber);
             }
 
@@ -167,6 +177,7 @@ public class ChatClient extends AbstractClient {
             System.err.println("Exception in handleMessageFromServer: " + e.getMessage());
         }
     }
+
 
     /**
      * Sends an order ID to the server to verify existence.

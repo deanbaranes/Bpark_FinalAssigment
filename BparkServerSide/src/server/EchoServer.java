@@ -138,8 +138,13 @@ public class EchoServer extends AbstractServer {
      * @throws IOException if sending the login result to the client fails
      */
     private void handleManagementLogin(LoginManagement login, ConnectionToClient client) throws IOException {
-        boolean approved = mysqlConnection.checkLoginManagement(login.getUsername(), login.getPassword());
-        client.sendToClient(approved ? "LOGIN_Management_SUCCESS" : "LOGIN_Management_FAILURE");
+        String role = mysqlConnection.checkLoginManagement(login.getUsername(), login.getPassword());
+
+        if (role != null) {
+            client.sendToClient("LOGIN_Management_SUCCESS|" + role);
+        } else {
+            client.sendToClient("LOGIN_Management_FAILURE");
+        }
     }
 
     
