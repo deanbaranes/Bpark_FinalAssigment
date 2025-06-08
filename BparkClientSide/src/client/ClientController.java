@@ -164,6 +164,17 @@ public class ClientController implements BaseController {
     
     @FXML private void handlePersonalInfo() { navigateTo(personalInfoView); }
     
+    /**
+     * Navigates the user interface to the post-login menu screen.
+     * 
+     * This method is used after successful actions such as login or reservation,
+     * to return the user to the main menu of the client application.
+     * It wraps a call to showOnly(postLoginMenu) while keeping the postLoginMenu
+     * field private and encapsulated.
+     */
+    public void showOnlyPostLoginMenu() {
+        showOnly(postLoginMenu);
+    }
     
     /**
      * handleEditInfo — Navigates to the edit info form and pre-fills data.
@@ -402,16 +413,16 @@ public class ClientController implements BaseController {
 
     private String formatReservation(Reservation r) {
         return String.format(
-            "Parking Code: %s | Parking Spot: %d | From: %s at %s, until: %s at %s\n",
+        //  "Parking Code: %s | Parking Spot: %d | From: %s at %s, until: %s at %s\n",
+            "Parking Code: %s | From: %s at %s, until: %s at %s\n",
             r.getParkingCode(),
-            r.getParkingSpot(),
+           // r.getParkingSpot(),
             r.getEntryDate(),
             r.getEntryTime(),
             r.getExitDate(),
             r.getExitTime()
         );
     }
-
     
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
@@ -496,30 +507,56 @@ public class ClientController implements BaseController {
 
 
 
+
     /**
      * Displays the reservation form.
+     * @throws IOException 
      */
+
     @FXML
     private void handleSubmitReservation() {
         String dateInput = dateField.getText().trim();
         String timeInput = timeField.getText().trim();
 
-        try {
-            LocalDate date = LocalDate.parse(dateInput);
-            LocalDate now = LocalDate.now();
-            if (date.isBefore(now.plusDays(1)) || date.isAfter(now.plusDays(7))) {
-                showPopup("Date must be between 1 to 7 days from now.");
-                return;
-            }
-            LocalTime time = LocalTime.parse(timeInput, DateTimeFormatter.ofPattern("HH:mm"));
+        LocalDate date;
+        LocalTime time;
 
-            String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-            showPopup("Reservation confirmed.\nYour parking code is: " + code +
-                    "\nPlease note: If you do not arrive within 15 minutes of your reservation time, your reservation will be cancelled.");
-            showOnly(postLoginMenu);
+        try {
+            date = LocalDate.parse(dateInput);
         } catch (DateTimeParseException e) {
-            showPopup("Please enter a valid date (yyyy-mm-dd) and time (hh:mm).\nExample: 2025-06-03 14:30");
+            showPopup("Invalid date format! Please use yyyy-MM-dd.\nExample: 2025-06-12");
+            return;
         }
+
+        try {
+            time = LocalTime.parse(timeInput, DateTimeFormatter.ofPattern("HH:mm"));
+        } catch (DateTimeParseException e) {
+            showPopup("Invalid time format! Please use HH:mm.\nExample: 14:30");
+            return;
+        }
+
+        LocalDate now = LocalDate.now();
+        if (date.isBefore(now.plusDays(1)) || date.isAfter(now.plusDays(7))) {
+            showPopup("Date must be between 1 to 7 days from today.");
+            return;
+        }
+
+        Reservation newReservation = new Reservation(
+            currentSubscriber.getSubscriber_id(),
+            date,
+            time
+        );
+
+        try {
+            client.sendToServer(newReservation);
+            dateField.clear();
+            timeField.clear();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showPopup("Error sending reservation to server.");
+        }
+        
     }
 
     /**
@@ -586,7 +623,7 @@ public class ClientController implements BaseController {
 
         VBox wrapper = new VBox(content);
         wrapper.setAlignment(Pos.CENTER);
-        wrapper.setPrefSize(320, 150);
+        wrapper.setPrefSize(500, 180);
 
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();

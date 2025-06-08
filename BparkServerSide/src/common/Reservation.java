@@ -31,6 +31,14 @@ public class Reservation implements Serializable {
         this.exitTime = exitTime;
         this.parkingSpot = parkingSpot;
     }
+    
+    // Constructor used for sending new reservation requests from the client
+    public Reservation(String subscriberId, LocalDate entryDate, LocalTime entryTime) {
+        this.subscriberId = subscriberId;
+        this.entryDate = entryDate;
+        this.entryTime = entryTime;
+    }
+
 
     public int getReservationId() {
         return reservationId;

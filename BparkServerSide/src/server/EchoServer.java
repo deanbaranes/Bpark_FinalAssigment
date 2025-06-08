@@ -2,7 +2,10 @@ package server;
 
 
 import java.io.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 import common.LoginManagement;
 import common.LoginRequest;
@@ -23,6 +26,7 @@ public class EchoServer extends AbstractServer {
     /** Default port to listen on. */
     final public static int DEFAULT_PORT = 5555;
     private List<String> availableSpots;
+    final int RESERVATION_DURATION_HOURS = 4;
     /**
      * Constructs an EchoServer on the specified port.
      * @param port The port number to listen on.
@@ -56,6 +60,8 @@ public class EchoServer extends AbstractServer {
                 handleSubscriberUpdate(update, client);
             } else if (msg instanceof RegisterMemberRequest request) {
                 handleRegisterMember(request, client);  // ✅ נוספה התמיכה ברישום לקוח חדש
+            } else if (msg instanceof Reservation req && req.getReservationId() == 0) { //new reservation
+                handleNewReservationRequest(req, client);
             } else {
                 client.sendToClient("Unsupported message format.");
             }
@@ -198,6 +204,61 @@ public class EchoServer extends AbstractServer {
             }
         }
     }
+    
+    private void handleNewReservationRequest(Reservation req, ConnectionToClient client) {
+        try {
+            int totalSpots = mysqlConnection.getTotalParkingSpots();
+            int available = mysqlConnection.getAvailableSpotsCount();
+
+            // Check if less than 40% of spots are available
+            if (available < totalSpots * 0.4) {
+                client.sendToClient("RESERVATION_FAILED|Less than 40% of parking spots are available at the moment.");
+                return;
+            }
+
+            int spot = mysqlConnection.findAvailableSpot();
+
+            if (spot == -1) {
+                client.sendToClient("RESERVATION_FAILED|No available parking spot found at this time.");
+                return;
+            }
+
+            String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            LocalDate exitDate = req.getEntryDate();
+            LocalTime exitTime = req.getEntryTime().plusHours(RESERVATION_DURATION_HOURS); // usually 4 hours
+
+            // Insert reservation into DB and update spot
+            mysqlConnection.insertReservationAndUpdateSpot(
+                req.getSubscriberId(), code,
+                req.getEntryDate(), req.getEntryTime(),
+                exitDate, exitTime, spot
+            );
+
+            // Send the new confirmed reservation back to client
+            Reservation confirmed = new Reservation(
+                0,
+                req.getSubscriberId(),
+                code,
+                req.getEntryDate(),
+                req.getEntryTime(),
+                exitDate,
+                exitTime,
+                spot
+            );
+
+            client.sendToClient(confirmed);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                client.sendToClient("RESERVATION_FAILED|A server error occurred while processing your request.");
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+    }
+
+    
     /**
      * Returns a formatted string describing all currently connected clients.
      * @return Client connection status summary.

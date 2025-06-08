@@ -113,6 +113,13 @@ public class ChatClient extends AbstractClient {
                             ClientController.getInstance().showPopup("Failed to update details.");
                         });
                         break;
+                        
+                    case String s when s.startsWith("RESERVATION_FAILED|"):
+                        String errorMsg = s.substring("RESERVATION_FAILED|".length());
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Reservation failed:\n" + errorMsg);
+                        });
+                        break;
 
                     case "NO_SPOTS_AVAILABLE":
                         Platform.runLater(() ->
@@ -170,6 +177,25 @@ public class ChatClient extends AbstractClient {
 
             } else if (msg instanceof Subscriber subscriber) {
                 ClientController.getInstance().setSubscriber(subscriber);
+            }
+            else if (msg instanceof Reservation r) {
+                Platform.runLater(() -> {
+                    String message = String.format(
+                        "Reservation confirmed!\n" +
+                        "Entry: %s at %s\n" +
+                        "Exit: %s at %s\n" +
+                        "Parking Code: %s\n\n" +
+                        "Please arrive on time.\nReservations are canceled if you're over 15 minutes late.",
+                        r.getEntryDate(), r.getEntryTime(),
+                        r.getExitDate(), r.getExitTime(),
+                        r.getParkingCode()
+                    );
+
+                    if (controller instanceof ClientController clientController) {
+                        clientController.showPopup(message);
+                        clientController.showOnlyPostLoginMenu(); 
+                    }
+                });
             }
 
         } catch (Exception e) {

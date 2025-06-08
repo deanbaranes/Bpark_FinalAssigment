@@ -38,7 +38,7 @@ public class mysqlConnection {
         try { 
             conn = DriverManager.getConnection(
                 "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Nmshonpass100!");
+                "root", "Carmel2025!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -488,6 +488,112 @@ public class mysqlConnection {
         }
 
         return availableSpots;
+    }
+    /**
+     * Returns the total number of parking spots in the system.
+     * @return total count of all parking spots
+     */
+    public static int getTotalParkingSpots() {
+        int count = 0;
+        String query = "SELECT COUNT(*) FROM parking_spots";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    /**
+     * Returns the number of available (free) parking spots.
+     * @return count of available spots
+     */
+    public static int getAvailableSpotsCount() {
+        int count = 0;
+        String query = "SELECT COUNT(*) FROM parking_spots WHERE status = 'available'";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    /**
+     * Finds the number of the first available parking spot.
+     * @return spot_number or throws an error if none found
+     */
+    public static int findAvailableSpot() {
+        String query = "SELECT spot_number FROM parking_spots WHERE status = 'available' LIMIT 1";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("spot_number");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        throw new RuntimeException("No available parking spots found.");
+    }
+
+    /**
+     * Reserves a spot by updating its status and inserts a new reservation.
+     * @param subscriberId the subscriber making the reservation
+     * @param code the generated reservation code
+     * @param entryDate the reservation start date
+     * @param entryTime the reservation start time
+     * @param exitDate the reservation end date
+     * @param exitTime the reservation end time
+     * @param spotNumber the parking spot to reserve
+     */
+    public static void insertReservationAndUpdateSpot(String subscriberId, String code,
+                                                      LocalDate entryDate, LocalTime entryTime,
+                                                      LocalDate exitDate, LocalTime exitTime,
+                                                      int spotNumber) {
+        try (Connection conn = connectToDB()) {
+            conn.setAutoCommit(false);
+
+            // Update parking spot to 'reserved'
+            try (PreparedStatement update = conn.prepareStatement(
+                    "UPDATE parking_spots SET status = 'reserved' WHERE spot_number = ?")) {
+                update.setInt(1, spotNumber);
+                update.executeUpdate();
+            }
+
+            // Insert reservation record
+            try (PreparedStatement insert = conn.prepareStatement(
+                    "INSERT INTO reservations (subscriber_id, parking_code, entry_date, entry_time, exit_date, exit_time, parking_spot) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+                insert.setString(1, subscriberId);
+                insert.setString(2, code);
+                insert.setDate(3, java.sql.Date.valueOf(entryDate));
+                insert.setTime(4, java.sql.Time.valueOf(entryTime));
+                insert.setDate(5, java.sql.Date.valueOf(exitDate));
+                insert.setTime(6, java.sql.Time.valueOf(exitTime));
+                insert.setInt(7, spotNumber);
+                insert.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 
