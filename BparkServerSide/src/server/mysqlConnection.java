@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +38,9 @@ public class mysqlConnection {
         }
 
         try { 
-            conn = DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/bpark?serverTimezone=IST&useSSL=false",
-                "root", "Daniel2204");
+        	conn = DriverManager.getConnection(
+        		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
+        		    "root", "Carmel2025!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -584,9 +585,9 @@ public class mysqlConnection {
                 insert.setString(1, subscriberId);
                 insert.setString(2, code);
                 insert.setDate(3, java.sql.Date.valueOf(entryDate));
-                insert.setTime(4, java.sql.Time.valueOf(entryTime));
+                insert.setString(4, entryTime.format(DateTimeFormatter.ofPattern("HH:mm")));
                 insert.setDate(5, java.sql.Date.valueOf(exitDate));
-                insert.setTime(6, java.sql.Time.valueOf(exitTime));
+                insert.setString(6, exitTime.format(DateTimeFormatter.ofPattern("HH:mm")));
                 insert.setInt(7, spotNumber);
                 insert.executeUpdate();
             }
@@ -671,6 +672,37 @@ public class mysqlConnection {
         }
 
         return result;
+    }
+    
+    /**
+     * Checks whether a reservation already exists in the database for a given subscriber ID,
+     * entry date, and entry time.
+     *
+     * This method is used to prevent duplicate reservations at the exact same date and time
+     * for the same subscriber. It queries the "reservations" table and returns true if such
+     * a reservation exists.
+     *
+     * @param subscriberId The ID of the subscriber attempting to create a reservation.
+     * @param entryDate    The date of the requested reservation entry.
+     * @param entryTime    The time of the requested reservation entry.
+     * @return true if a reservation already exists for the given subscriber at the specified date and time, false otherwise.
+     */
+    public static boolean reservationExists(String subscriberId, LocalDate entryDate, LocalTime entryTime) {
+        try (Connection conn = connectToDB()) {
+            String query = "SELECT COUNT(*) FROM reservations WHERE subscriber_id = ? AND entry_date = ? AND entry_time = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setString(1, subscriberId);
+                stmt.setDate(2, java.sql.Date.valueOf(entryDate));
+                stmt.setString(3, entryTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 

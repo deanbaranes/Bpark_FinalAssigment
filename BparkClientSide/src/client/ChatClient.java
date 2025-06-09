@@ -114,14 +114,26 @@ public class ChatClient extends AbstractClient {
                             ClientController.getInstance().showPopup("Failed to update details.");
                         });
                         break;
-                        
-                    case String s when s.startsWith("RESERVATION_FAILED|"):
-                        String errorMsg = s.substring("RESERVATION_FAILED|".length());
+                     
+                    case "RESERVATION_FAILED":
                         Platform.runLater(() -> {
-                            ClientController.getInstance().showPopup("Reservation failed:\n" + errorMsg);
+                            ClientController.getInstance().showPopup("Reservation failed:\nNo available spots at the selected time.\nPlease choose a different date and time.");
+                            
                         });
                         break;
-
+                        
+                    case  "RESERVATION_FAILED_SERVER_ERROR":
+                    	Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Reservation failed:\nA server error occurred while processing your request.");
+                    	 });
+                        break;
+                        
+                    case  "RESERVATION_ALREADY_EXIST":
+                    	Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Reservation failed:\nYou already have a reservation at that date and time.");
+                    	 });
+                        break;
+                        
                     case "NO_SPOTS_AVAILABLE":
                         Platform.runLater(() ->
                             TerminalController.getInstance().showPopup("Sorry, there are currently no parking spots available.")
@@ -138,7 +150,7 @@ public class ChatClient extends AbstractClient {
                         if (message.startsWith("SUBSCRIBER_INFO:")) {
                             String info = message.substring("SUBSCRIBER_INFO:".length());
                             ManagementController.getInstance().displaySubscriberInfo(info);
-
+                            
                         } else if (message.startsWith("register_result:")) {
                             String result = message.substring("register_result:".length()).trim();
                             if (controller instanceof ManagementController mgrController) {

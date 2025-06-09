@@ -238,16 +238,16 @@ public class EchoServer extends AbstractServer {
 
             // Check if less than 40% of spots are available
             if (available < totalSpots * 0.4) {
-                client.sendToClient("RESERVATION_FAILED|Less than 40% of parking spots are available at the moment.");
+                client.sendToClient("RESERVATION_FAILED");
+                return;
+            }
+            if (mysqlConnection.reservationExists(req.getSubscriberId(), req.getEntryDate(), req.getEntryTime())) {
+                client.sendToClient("RESERVATION_ALREADY_EXIST");
                 return;
             }
 
             int spot = mysqlConnection.findAvailableSpot();
 
-            if (spot == -1) {
-                client.sendToClient("RESERVATION_FAILED|No available parking spot found at this time.");
-                return;
-            }
 
             String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             LocalDate exitDate = req.getEntryDate();
@@ -277,13 +277,13 @@ public class EchoServer extends AbstractServer {
         } catch (Exception e) {
             e.printStackTrace();
             try {
-                client.sendToClient("RESERVATION_FAILED|A server error occurred while processing your request.");
+                client.sendToClient("RESERVATION_FAILED_SERVER_ERROR");
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
     }
-
+    
     
     /**
      * Returns a formatted string describing all currently connected clients.
