@@ -471,7 +471,8 @@ public class mysqlConnection {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }
+        }	
+        System.out.println(count); 
         return count;
     }
 
@@ -527,9 +528,11 @@ public class mysqlConnection {
                 insert.setString(1, subscriberId);
                 insert.setString(2, code);
                 insert.setDate(3, java.sql.Date.valueOf(entryDate));
-                insert.setString(4, entryTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                //insert.setString(4, entryTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                insert.setTime(4, java.sql.Time.valueOf(entryTime));
                 insert.setDate(5, java.sql.Date.valueOf(exitDate));
-                insert.setString(6, exitTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                //insert.setString(6, exitTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                insert.setTime(6, java.sql.Time.valueOf(exitTime));
                 insert.setInt(7, spotNumber);
                 insert.executeUpdate();
             }
