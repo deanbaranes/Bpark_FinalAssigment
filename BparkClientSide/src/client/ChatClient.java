@@ -8,6 +8,7 @@ import java.util.List;
 
 import common.ChatIF;
 import common.ParkingHistory;
+import common.PasswordResetResponse;
 import common.Reservation;
 import common.Subscriber;
 import javafx.application.Platform;
@@ -61,6 +62,13 @@ public class ChatClient extends AbstractClient {
     @Override
     public void handleMessageFromServer(Object msg) {
         try {
+            if (msg instanceof PasswordResetResponse resp) {
+                Platform.runLater(() ->
+                    ManagementController.getInstance()
+                        .handlePasswordResetResponse(resp)
+                );
+                return;
+            }
             if (msg instanceof String message) {
                 String baseMessage = message.contains("|") ? message.substring(0, message.indexOf("|")) : message;
 

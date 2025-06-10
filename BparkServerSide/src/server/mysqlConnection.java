@@ -40,7 +40,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Aa123456");
+        		    "root", "Daniel2204");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());

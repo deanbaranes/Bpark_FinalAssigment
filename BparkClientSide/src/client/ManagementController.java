@@ -16,6 +16,8 @@ import java.util.List;
 import java.io.IOException;
 import java.util.Stack;
 
+import common.PasswordResetRequest;
+import common.PasswordResetResponse;
 import common.LoginManagement;
 import common.LoginRequest;
 import common.RegisterMemberRequest;
@@ -40,13 +42,15 @@ public class ManagementController implements BaseController{
     // === Login ===
     @FXML private TextField usernametextfield;
     @FXML private PasswordField passwordfeild;
-    @FXML private Hyperlink btnforgerpassword;
+    @FXML private Hyperlink btnforgotpassword;
     @FXML private Label usernamelabel, passwordlabel, loginlabel;
     @FXML private Button btnloginsubmit;
 
     // === Manager Menu ===
-    @FXML private Label labelwelcome;
+    @FXML private Label labelwelcome,resetMessage;
     @FXML private Button btnmemberdetails, btnparkingdetails, btnregisternewmember, btnparkingduration, btnmemberstatusreport, btnback;
+    @FXML private VBox     forgotView;
+    @FXML private TextField resetEmailField;  
 
     // === Member Details ===
     @FXML private Label labelmemberdetails, labelsearchby_id;
@@ -106,7 +110,8 @@ public class ManagementController implements BaseController{
             parkingDetailsView,
             registerMemberView,
             memberStatusReportView,
-            parkingDurationView
+            parkingDurationView,
+            forgotView 
         }) {
             if (pane != null) {
                 pane.setVisible(false);
@@ -166,9 +171,57 @@ public class ManagementController implements BaseController{
     Handles the "Back" button logic by navigating to the previous screen in the stack or returning to login/main welcome screen if the stack is empty.
     */
 
+    /**
+     * Triggered by clicking the "Forgot password?" hyperlink.
+     * Switches the UI to the forgotView pane.
+     */
+    @FXML
+    private void handleShowForgot() {
+        showOnly(forgotView);
+    }
+
+
+    /**
+     * Handles the "Send Reset" button click by validating the entered email
+     * and sending a PasswordResetRequest to the server.
+     * If the email field is empty, displays an error message.
+     * Any IOException during sendToServer is caught and reported to the user.
+     *
+     * @throws IllegalArgumentException if the email field is empty (handled by UI feedback)
+     */
+    @FXML
+    private void handleSendReset() {
+        String email = resetEmailField.getText().trim();
+        if (email.isEmpty()) {
+            resetMessage.setText("Please enter your email.");
+            resetMessage.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        try {
+            // שליחת ה־Request לשרת
+            client.sendToServer(new PasswordResetRequest(email));
+        } catch (IOException e) {
+            e.printStackTrace();
+            resetMessage.setText("Failed to send request.");
+            resetMessage.setStyle("-fx-text-fill: red;");
+        }
+    }
+
+        
+
     
     @FXML
     private void handleBack() {
+        // 0. If we're on the Forgot-Password screen, just clear it and go back
+        if (forgotView.isVisible()) {
+            // Clear the forgot-password fields
+            resetEmailField.clear();
+            resetMessage.setText("");
+
+            // Show login screen
+            showOnly(loginView);
+            return;
+        }
         if (!navigationStack.isEmpty()) {
             Pane previous = navigationStack.pop();
             if (parkingDetailsView.isVisible()) {
@@ -262,6 +315,8 @@ public class ManagementController implements BaseController{
             showPopup("Failed to send request.");
         }
     }
+    
+    
     /**
      * Displays subscriber information in the member details text area.
      * Ensures the update runs on the JavaFX Application Thread.
@@ -519,6 +574,32 @@ public class ManagementController implements BaseController{
         console_parkingdetails.setText(sb.toString());
     }
 
+    
+    /**
+     * Processes the server’s response to a password reset request and updates the UI accordingly.
+     * This method must be called on the JavaFX Application Thread; wrapping via Platform.runLater
+     * ensures thread safety when modifying UI controls.
+     *
+     * @param resp the PasswordResetResponse object containing:
+     *             
+     *               success – true if the reset email was sent successfully, false otherwise
+     *               message – the feedback text to display to the user
+     *             
+     */
+    public void handlePasswordResetResponse(PasswordResetResponse resp) {
+        Platform.runLater(() -> {
+            if (resp.isSuccess()) {
+                resetMessage.setText(resp.getMessage());
+                resetMessage.setStyle("-fx-text-fill: green;");
+            } else {
+                resetMessage.setText(resp.getMessage());
+                resetMessage.setStyle("-fx-text-fill: red;");
+            }
+        });
+    }
+
+    
+    
 }
     
 

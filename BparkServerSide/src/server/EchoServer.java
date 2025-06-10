@@ -1,6 +1,7 @@
 package server;
 
 import java.io.*;
+import java.sql.Connection;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -13,7 +14,11 @@ import common.RegisterMemberRequest;
 import common.Reservation;
 import common.Subscriber;
 import common.ActiveParking;
+import common.EmailSender;
 import common.UpdateSubscriberDetailsRequest;
+import common.PasswordResetResponse;
+import common.PasswordResetRequest;
+import common.SendMailConfig; 
 import ocsf.server.*;
 
 
@@ -58,16 +63,39 @@ public class EchoServer extends AbstractServer {
             } else if (msg instanceof UpdateSubscriberDetailsRequest update) {
                 handleSubscriberUpdate(update, client);
             } else if (msg instanceof RegisterMemberRequest request) {
-                handleRegisterMember(request, client);  // ✅ נוספה התמיכה ברישום לקוח חדש
-            } else if (msg instanceof Reservation req && req.getReservationId() == 0) { //new reservation
-                handleNewReservationRequest(req, client);
-            } else {
+                handleRegisterMember(request, client);
+            }
+            // ← חסימת PasswordResetRequest הוספת כאן
+            else if (msg instanceof PasswordResetRequest req) {
+            	System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
+                String email = req.getEmail();
+                try (Connection conn = mysqlConnection.connectToDB()) {
+                    EmployeePassword ep = new EmployeePassword(conn);
+                    String password = ep.getPasswordForEmail(email);
+
+                    if (password == null) {
+                        client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
+                    } else {
+                        System.out.println("[EchoServer] → About to call sendPasswordEmail()");
+                        new EmailSender().sendPasswordEmail(email, password);
+                        System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
+                        client.sendToClient(new PasswordResetResponse(true, "Your password has been sent to " + email));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    client.sendToClient(new PasswordResetResponse(
+                        false, "Server error."));
+                }
+            }
+            // ← עד כאן
+            else {
                 client.sendToClient("Unsupported message format.");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
 
     /**
