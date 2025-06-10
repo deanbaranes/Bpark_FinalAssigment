@@ -8,20 +8,18 @@ public class Subscriber implements Serializable {
     private String email;
     private String phone;
     private String vehicle_number1;
-    private String vehicle_number2;
     private String subscription_code;
     private int late_count;
     private String credit_card;
 
     public Subscriber(String subscriber_id, String full_name, String email, String phone,
-                      String vehicle_number1, String vehicle_number2, String subscription_code,
+                      String vehicle_number1, String subscription_code,
                       int late_count, String credit_card) {
         this.subscriber_id = subscriber_id;
         this.full_name = full_name;
         this.email = email;
         this.phone = phone;
         this.vehicle_number1 = vehicle_number1;
-        this.vehicle_number2 = vehicle_number2;
         this.subscription_code = subscription_code;
         this.late_count = late_count;
         this.credit_card = credit_card;
@@ -47,9 +45,6 @@ public class Subscriber implements Serializable {
         return vehicle_number1;
     }
 
-    public String getVehicle_number2() {
-        return vehicle_number2;
-    }
 
     public String getSubscription_code() {
         return subscription_code;

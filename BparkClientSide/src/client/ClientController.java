@@ -335,7 +335,6 @@ public class ClientController implements BaseController {
             emailLabel.setText("Email: " + subscriber.getEmail());
             phoneLabel.setText("Phone: " + subscriber.getPhone());
             car1Label.setText("Car 1: " + subscriber.getVehicle_number1());
-            car2Label.setText("Car 2: " + subscriber.getVehicle_number2());
             creditCardLabel.setText("Card: " + subscriber.getCredit_card());
             
             welcomeLabel.setText("Welcome, " + subscriber.getFull_name() + "!");
@@ -493,7 +492,6 @@ public class ClientController implements BaseController {
             emailChanged ? newEmail : currentSubscriber.getEmail(),
             phoneChanged ? newPhone : currentSubscriber.getPhone(),
             currentSubscriber.getVehicle_number1(),
-            currentSubscriber.getVehicle_number2(),
             currentSubscriber.getSubscription_code(),
             currentSubscriber.getLateCount(),
             currentSubscriber.getCredit_card()

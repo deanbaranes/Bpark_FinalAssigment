@@ -40,7 +40,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Aa123456");
+        		    "root", "Daniel2204");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -89,10 +89,10 @@ public class mysqlConnection {
      * @return true if the insertion was successful, false otherwise.
      */
     public static boolean registerSubscriber(String firstName, String lastName, String idNumber,
-            String email, String phone, String vehicleNumber1, String vehicleNumber2,
+            String email, String phone, String vehicleNumber1,
             String creditCard) {
 
-        String query = "INSERT INTO subscribers (subscriber_id, full_name, email, phone, vehicle_number1, vehicle_number2, subscription_code, credit_card) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO subscribers (subscriber_id, full_name, email, phone, vehicle_number1,subscription_code, credit_card) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -109,15 +109,8 @@ public class mysqlConnection {
             stmt.setString(3, email);
             stmt.setString(4, phone);
             stmt.setString(5, vehicleNumber1);
-
-            if (vehicleNumber2 == null || vehicleNumber2.trim().isEmpty()) {
-                stmt.setNull(6, java.sql.Types.VARCHAR);
-            } else {
-                stmt.setString(6, vehicleNumber2);
-            }
-            stmt.setString(7, subscriptionCode);
-            stmt.setString(8, creditCard);
-
+            stmt.setString(6, subscriptionCode);
+            stmt.setString(7, creditCard);
             int rows = stmt.executeUpdate();
             System.out.println(" Rows inserted: " + rows);
             return rows > 0;
@@ -168,9 +161,8 @@ public class mysqlConnection {
                 sb.append("Email: ").append(rs.getString("email")).append("\n");
                 sb.append("Phone: ").append(rs.getString("phone")).append("\n");
                 sb.append("Vehicle #1: ").append(rs.getString("vehicle_number1")).append("\n");
-                sb.append("Vehicle #2: ").append(rs.getString("vehicle_number2")).append("\n");
                 sb.append("Subscription Code: ").append(rs.getString("subscription_code")).append("\n");
-                sb.append("Notes: ").append(rs.getString("notes")).append("\n");
+                sb.append("late_count: ").append(rs.getString("late_count")).append("\n");
                 sb.append("Credit Card: ").append(rs.getString("credit_card")).append("\n");
             } else {
                 sb.append("Subscriber not found.");
@@ -209,7 +201,6 @@ public class mysqlConnection {
                     rs.getString("email"),
                     rs.getString("phone"),
                     rs.getString("vehicle_number1"),
-                    rs.getString("vehicle_number2"),
                     rs.getString("subscription_code"),
                     rs.getInt("late_count"),
                     rs.getString("credit_card")

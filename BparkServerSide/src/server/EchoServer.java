@@ -214,7 +214,6 @@ public class EchoServer extends AbstractServer {
                 request.getEmail(),
                 request.getPhoneNumber(),
                 request.getVehicleNumber(),
-                request.getVehicleNumber2(),
                 request.getCreditCard()
             );
 

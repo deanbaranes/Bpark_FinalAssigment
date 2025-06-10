@@ -14,12 +14,11 @@ public class RegisterMemberRequest implements Serializable {
     private String email;
     private String phoneNumber;
     private String vehicleNumber;
-    private String vehicleNumber2;
     private String creditCard;
 
 
     public RegisterMemberRequest(String firstName, String lastName, String idNumber,
-            String email, String phoneNumber, String vehicleNumber, String vehicleNumber2,
+            String email, String phoneNumber, String vehicleNumber, 
             String creditCard) {
 			this.firstName = firstName;
 			this.lastName = lastName;
@@ -27,7 +26,6 @@ public class RegisterMemberRequest implements Serializable {
 			this.email = email;
 			this.phoneNumber = phoneNumber;
 			this.vehicleNumber = vehicleNumber;
-		    this.vehicleNumber2 = vehicleNumber2;
 			this.creditCard = creditCard;
 }
 
@@ -37,7 +35,6 @@ public class RegisterMemberRequest implements Serializable {
     public String getEmail() { return email; }
     public String getPhoneNumber() { return phoneNumber; }
     public String getVehicleNumber() { return vehicleNumber; }
-    public String getVehicleNumber2() {return vehicleNumber2;}
     public String getCreditCard() {return creditCard;}
 
 }

@@ -107,7 +107,6 @@
 	    <TextField fx:id="textfiled_phonenumber" promptText="Phone number" maxWidth="250" />
 	    <TextField fx:id="textfield_creditcard" promptText="Credit card" maxWidth="250" />
 	    <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" maxWidth="250" />
-		<TextField fx:id="label_vehiclenumber_register2" promptText="Vehicle number (2)" maxWidth="250" />		
 	    <VBox spacing="10" alignment="CENTER">
 			<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="150" />
 	        <Button text="Back" onAction="#handleBack" prefWidth="150" />

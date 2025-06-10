@@ -342,7 +342,6 @@ public class ManagementController implements BaseController{
         String email = textfield_email.getText().trim();
         String phone = textfiled_phonenumber.getText().trim();
         String vehicle = label_vehiclenumber_register.getText().trim();
-        String vehicle2 = label_vehiclenumber_register2.getText().trim(); 
         String creditCard = textfield_creditcard.getText().trim();
         
         if (firstName.isEmpty() || lastName.isEmpty() || id.isEmpty()
@@ -380,7 +379,7 @@ public class ManagementController implements BaseController{
 
         
         RegisterMemberRequest request = new RegisterMemberRequest(
-                firstName, lastName, id, email, phone, vehicle,vehicle2, creditCard);
+                firstName, lastName, id, email, phone, vehicle, creditCard);
 
         try {
             client.sendToServer(request);
