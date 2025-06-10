@@ -269,7 +269,6 @@ public class mysqlConnection {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                // שימוש ב־getString ואז המרה ידנית (כדי לא "לסבול" מהמרת אזור זמן)
                 LocalDate entryDate = LocalDate.parse(rs.getString("entry_date"));
                 LocalTime entryTime = LocalTime.parse(rs.getString("entry_time"));
                 LocalDate exitDate = LocalDate.parse(rs.getString("exit_date"));
@@ -317,7 +316,6 @@ public class mysqlConnection {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                // קריאה כ־String ולאחר מכן המרה — כדי להימנע מהשפעת TimeZone של JVM
                 LocalDate entryDate = LocalDate.parse(rs.getString("entry_date"));
                 LocalTime entryTime = LocalTime.parse(rs.getString("entry_time"));
                 LocalDate exitDate = LocalDate.parse(rs.getString("exit_date"));
@@ -553,7 +551,7 @@ public class mysqlConnection {
      */
     public static List<ActiveParking> searchActiveParkingByMemberId(int subscriberId) {
         List<ActiveParking> result = new ArrayList<>();
-        String query = "SELECT * FROM active_parkings WHERE subscriber_id = ? AND expected_exit_date >= CURDATE()";
+        String query = "SELECT * FROM active_parkings WHERE subscriber_id = ? ";
 
         try (Connection conn = connectToDB();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -591,7 +589,7 @@ public class mysqlConnection {
      */
     public static List<ActiveParking> searchActiveParkingBySpot(String spot) {
         List<ActiveParking> result = new ArrayList<>();
-        String query = "SELECT * FROM active_parkings WHERE parking_spot = ? AND expected_exit_date >= CURDATE()";
+        String query = "SELECT * FROM active_parkings WHERE parking_spot = ? ";
 
         try (Connection conn = connectToDB();
              PreparedStatement stmt = conn.prepareStatement(query)) {

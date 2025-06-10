@@ -9,47 +9,7 @@
 <?import javafx.scene.text.Text?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ManagementController" prefWidth="700" prefHeight="500">
-
-    <!-- Top Menu Bar -->
-    <MenuBar AnchorPane.topAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <menus>
-            <Menu text="File">
-                <items>
-                    <MenuItem text="New" />
-                    <MenuItem text="Open..." />
-                    <Menu text="Open Recent" />
-                    <SeparatorMenuItem />
-                    <MenuItem text="Close" />
-                    <MenuItem text="Save" />
-                    <MenuItem text="Save As..." />
-                    <MenuItem text="Revert" />
-                    <SeparatorMenuItem />
-                    <MenuItem text="Preferences..." />
-                    <SeparatorMenuItem />
-                    <MenuItem text="Quit" />
-                </items>
-            </Menu>
-            <Menu text="Edit">
-                <items>
-                    <MenuItem text="Undo" />
-                    <MenuItem text="Redo" />
-                    <SeparatorMenuItem />
-                    <MenuItem text="Cut" />
-                    <MenuItem text="Copy" />
-                    <MenuItem text="Paste" />
-                    <MenuItem text="Delete" />
-                    <SeparatorMenuItem />
-                    <MenuItem text="Select All" />
-                    <MenuItem text="Unselect All" />
-                </items>
-            </Menu>
-            <Menu text="Help">
-                <items>
-                    <MenuItem text="About MyHelloApp" />
-                </items>
-            </Menu>
-        </menus>
-    </MenuBar>
+    
 
 <VBox fx:id="loginView" alignment="CENTER" spacing="10"
       visible="true" managed="true"
