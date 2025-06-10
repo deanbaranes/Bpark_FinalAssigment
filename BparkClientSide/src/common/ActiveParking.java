@@ -47,4 +47,14 @@ public class ActiveParking implements Serializable {
     public void setExtended(boolean extended) {
         this.extended = extended;
     }
+    
+    /**
+     * Updates the expected exit time for the parking session.
+     *
+     * @param expectedExitTime The new expected exit time in HH:mm format.
+     */
+    public void setExpectedExitTime(String expectedExitTime) {
+        this.expectedExitTime = expectedExitTime;
+    }
+
 }

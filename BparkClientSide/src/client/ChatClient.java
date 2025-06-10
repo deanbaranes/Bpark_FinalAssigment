@@ -125,6 +125,40 @@ public class ChatClient extends AbstractClient {
                             TerminalController.getInstance().generateAndShowParkingCode()
                         );
                         break;
+                        
+                    case "EXTEND_SUCCESS":
+                        String[] parts = message.split("\\|");
+                        String newTime = parts.length > 1 ? parts[1] : "";
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup
+                            ("Parking duration was successfully extended.\nPickup time has been updated to: " + newTime);
+                        });
+                        break;
+
+                    case "EXTEND_ALREADY_DONE":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup
+                            ("Sorry, this parking session has already been extended.\nFurther extensions are not allowed.");
+                        });
+                        break;
+                    case "EXTEND_FAILED_NO_ACTIVE_PARKING":
+                        Platform.runLater(() ->
+                            ClientController.getInstance().showPopup("Hi, no active parking was found.")
+                        );
+                        break;
+
+                    case "EXTEND_FAILED_DB":
+                        Platform.runLater(() ->
+                            ClientController.getInstance().showPopup("Sorry, an error occurred.\nPlease try again.")
+                        );
+                        break;
+
+                    case "EXTEND_FAILED_UNKNOWN":
+                        Platform.runLater(() ->
+                            ClientController.getInstance().showPopup("Sorry, an error occurred.\\nPlease try again.")
+                        );
+                        break;
+
 
                     default:
                         if (message.startsWith("SUBSCRIBER_INFO:")) {

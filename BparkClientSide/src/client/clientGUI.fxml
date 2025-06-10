@@ -63,7 +63,6 @@
         <Label fx:id="emailLabel" text="Email:"/>
         <Label fx:id="phoneLabel" text="Phone:"/>
         <Label fx:id="car1Label" text="Primary Car:"/>
-        <Label fx:id="car2Label" text="Secondary Car:"/>
         <Label fx:id="creditCardLabel" text="Credit Card:"/>
         <Button fx:id="editInfoButton" text="Edit" onAction="#handleEditInfo"/>
     </VBox>

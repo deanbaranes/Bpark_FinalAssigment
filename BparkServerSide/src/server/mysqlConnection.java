@@ -40,7 +40,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Daniel2204");
+        		    "root", "Aa123456");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -334,12 +334,8 @@ public class mysqlConnection {
     }
 
 
-
-    
-    
     /*
      * Checks if a subscriber with the provided full name and subscription code exists in the database.
-     *
      * @param fullName The full name of the subscriber.
      * @param code The subscription code associated with the subscriber.
      * @return true if a matching subscriber is found, false otherwise.
@@ -367,14 +363,11 @@ public class mysqlConnection {
     }
     
     /*
-
     * Validates login credentials for a management user by checking the 'employees' table.
-    *
     * @param username The username entered by the manager.
     * @param password The password entered by the manager.
     * @return true if credentials are valid, false otherwise.
       */
-
     public static String checkLoginManagement(String username, String password) {
         String query = "SELECT role FROM employees WHERE username = ? AND password = ?";
 
@@ -607,6 +600,38 @@ public class mysqlConnection {
 
         return result;
     }
+    
+    
+    /**
+     * Extends the expected exit time of an active parking session by 4 hours.
+     * Updates the 'extended' flag to 1 in the database.
+     * @param ap The ActiveParking object representing the active session to be extended.
+     * @return true if the update succeeded, false otherwise.
+     */
+    public static boolean extendParkingTime(ActiveParking ap) {
+        String query = "UPDATE active_parkings SET expected_exit_time = ?, extended = 1 WHERE parking_code = ?";
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            LocalTime currentExit = LocalTime.parse(ap.getExpectedExitTime());
+            LocalTime newExit = currentExit.plusHours(4);
+
+            stmt.setString(1, newExit.toString());
+            stmt.setInt(2, ap.getParkingCode());
+
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                ap.setExtended(true);
+                ap.setExpectedExitTime(newExit.toString());
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    
     
     /**
      * Checks whether a reservation already exists in the database for a given subscriber ID,

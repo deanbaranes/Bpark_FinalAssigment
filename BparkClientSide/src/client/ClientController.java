@@ -47,10 +47,6 @@ public class ClientController implements BaseController {
     private final Stack<Pane> navigationStack = new Stack<>();
     private static ClientController instance;
 
-    // ===== MOCK DATA SECTION =====
-    private boolean hasExtended = false;
-    // =============================
-
     /**
      * A Pane in JavaFX is a layout container for organizing UI elements (buttons, labels, etc.).
      * We use multiple panes to represent different "screens" within the same window.
@@ -66,7 +62,7 @@ public class ClientController implements BaseController {
             reserveSubmitButton, backButton;
 
     @FXML private Label welcomeLabel, usernameLabel, emailLabel, phoneLabel,
-            car1Label, car2Label, creditCardLabel, LogOutLabel, 
+            car1Label, creditCardLabel, LogOutLabel, 
             greetingLabelHistory, greetingLabelReservations, greetingLabelPersonal, greetingLabelEdit;
     
 
@@ -212,16 +208,9 @@ public class ClientController implements BaseController {
   
     /**
      * handleHistory — Initiates request to fetch parking history.
-     *
      * Description:
      * Sends a GET_HISTORY command to the server using the subscriber's ID
      * and navigates to the history screen.
-     *
-     * Parameters:
-     *   - None
-     *
-     * Returns:
-     *   - void
      */  
     @FXML
     private void handleHistory() {
@@ -236,16 +225,9 @@ public class ClientController implements BaseController {
     
     /**
      * handleReservations — Sends request to load subscriber's active reservations.
-     *
      * Description:
      * Sends GET_RESERVATIONS to server using current subscriber ID
      * and navigates to the reservations pane.
-     *
-     * Parameters:
-     *   - None
-     *
-     * Returns:
-     *   - void
      */
     @FXML
     private void handleReservations() {
@@ -286,43 +268,13 @@ public class ClientController implements BaseController {
     
     
     /**
-     * handleLoginResponse — Handles server response to login request.
-     *
-     * Description:
-     * If login was successful, displays the post-login menu and a personalized greeting.
-     * If login failed, shows an error popup.
-     *
-     * Parameters:
-     *   - response: String representing server reply to login attempt
-     *
-     * Returns:
-     *   - void
-     */
-    /*
-     * public void handleLoginResponse(String response) {
-        Platform.runLater(() -> {
-            if ("APP_LOGIN_SUCCESS".equals(response)) {
-                navigationStack.clear();
-                showOnly(postLoginMenu);
-            } else {
-                showPopup("Invalid ID or Subscriber Code.\nTry again.");
-            }
-        });
-    }*/
-    
-    /**
      * setSubscriber — Updates the current logged-in subscriber's details in the controller.
-     *
      * Description:
      * Sets the active subscriber and updates various UI labels such as email, phone,
      * car numbers, and credit card info. Also initializes personalized greeting labels
      * across different panes.
-     *
      * Parameters:
      *   - subscriber: the Subscriber object returned from the server after successful login
-     *
-     * Returns:
-     *   - void
      */
     public void setSubscriber(Subscriber subscriber) {
     	 System.out.println("Subscriber received: " + subscriber.getFull_name()); // 🔍 Debug
@@ -331,11 +283,11 @@ public class ClientController implements BaseController {
 
         Platform.runLater(() -> {
         	greetingLabelPersonal.setText("Hi " + subscriber.getFull_name() + ", here are your personal details:");
-            usernameLabel.setText("Name: " + subscriber.getFull_name());
-            emailLabel.setText("Email: " + subscriber.getEmail());
-            phoneLabel.setText("Phone: " + subscriber.getPhone());
-            car1Label.setText("Car 1: " + subscriber.getVehicle_number1());
-            creditCardLabel.setText("Card: " + subscriber.getCredit_card());
+            usernameLabel.setText("Full Name: " + subscriber.getFull_name());
+            emailLabel.setText("E-mail: " + subscriber.getEmail());
+            phoneLabel.setText("Phone Number: " + subscriber.getPhone());
+            car1Label.setText("Car Number: " + subscriber.getVehicle_number1());
+            creditCardLabel.setText("Credit Card Number: " + subscriber.getCredit_card());
             
             welcomeLabel.setText("Welcome, " + subscriber.getFull_name() + "!");
             navigationStack.clear();
@@ -345,16 +297,11 @@ public class ClientController implements BaseController {
   
     /**
      * displayHistory — Shows parking history for the logged-in subscriber.
-     *
      * Description:
      * Clears the history view, sets a greeting header, and displays a list of historical
      * parking entries received from the server.
-     *
      * Parameters:
      *   - historyList: List of ParkingHistory objects
-     *
-     * Returns:
-     *   - void
      */
     public void displayHistory(List<ParkingHistory> historyList) {
         Platform.runLater(() -> {
@@ -388,16 +335,11 @@ public class ClientController implements BaseController {
 
     /**
      * displayReservations — Displays current reservations for the subscriber.
-     *
      * Description:
      * Clears the reservations pane, shows a personalized heading, and populates the
      * list with existing reservation records.
-     *
      * Parameters:
      *   - reservationList: List of Reservation objects
-     *
-     * Returns:
-     *   - void
      */
     public void displayReservations(List<Reservation> reservationList) {
         Platform.runLater(() -> {
@@ -556,13 +498,23 @@ public class ClientController implements BaseController {
      * Extends the current parking session if not extended already.
      * Otherwise shows message that extension is not allowed.
      */
-    @FXML
+    /*
+     * @FXML
     private void handleExtend() {
         if (hasExtended) {
             showPopup("You have already extended this parking session.\nFurther extensions are not allowed.");
         } else {
             hasExtended = true;
             showPopup("Parking time extended successfully.");
+        }
+    }*/
+    
+    @FXML
+    private void handleExtend() {
+        if (currentSubscriber != null) {
+            client.sendToServerSafe("EXTEND_PARKING|" + currentSubscriber.getSubscriber_id());
+        } else {
+            showPopup("Subscriber not loaded.");
         }
     }
 

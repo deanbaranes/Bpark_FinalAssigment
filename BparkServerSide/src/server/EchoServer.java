@@ -36,8 +36,6 @@ public class EchoServer extends AbstractServer {
         super(port);
     }
 
-   
-    
     /**
      * Handles all incoming messages from clients and delegates processing
      * based on the message type (String commands, Login requests, etc.).
@@ -125,6 +123,38 @@ public class EchoServer extends AbstractServer {
                 client.sendToClient(results);
             }
 
+        } else if (command.startsWith("EXTEND_PARKING|")) {
+            String subscriberIdStr = command.split("\\|")[1];
+
+            try {
+                int subscriberId = Integer.parseInt(subscriberIdStr);
+
+                List<ActiveParking> list = mysqlConnection.searchActiveParkingByMemberId(subscriberId);
+
+                if (list == null || list.isEmpty()) {
+                    client.sendToClient("EXTEND_FAILED_NO_ACTIVE_PARKING");
+                    return;
+                }
+
+                ActiveParking ap = list.get(0);
+
+                if (ap.isExtended()) {
+                    client.sendToClient("EXTEND_ALREADY_DONE");
+                    return;
+                }
+
+                boolean success = mysqlConnection.extendParkingTime(ap);
+                if (success) {
+                    client.sendToClient("EXTEND_SUCCESS|" + ap.getExpectedExitTime());
+                } else {
+                    client.sendToClient("EXTEND_FAILED_DB");
+                }
+
+            }  catch (Exception e) {
+                e.printStackTrace();
+                client.sendToClient("EXTEND_FAILED_UNKNOWN");
+            }
+        
         } else {
             client.sendToClient("Unrecognized command.");
         }
@@ -353,200 +383,3 @@ public class EchoServer extends AbstractServer {
         }
     }
 }
-
-
-
-
-
-
-/**
- * Handles messages sent from clients to the server.
- * Routes requests based on object type or command string.
- * Manages login logic, subscriber info requests, and update requests.
- *
- * @param msg Message received from the client.
- * @param client Reference to the client connection.
- */
-/*
-* 
-*  @Override
-public void handleMessageFromClient(Object msg, ConnectionToClient client) {
-    System.out.println("Message received: " + msg + " from " + client);
-
-    if (msg instanceof String) 
-    {
-        String command = (String) msg;
-
-         if (command.equals("SHOW_ORDERS")) { /////PROTOTYPE
-            try {
-                String orders = mysqlConnection.getAllOrders();
-                client.sendToClient(orders);
-                client.sendToClient("Please choose another action if desired or press 'exit' to log out.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (command.startsWith("UPDATE_ORDER|")) {
-            String[] parts = command.split("\\|");
-            if (parts.length == 4) {
-                String id = parts[1];
-                String field = parts[2];
-                String value = parts[3];
-                boolean success = mysqlConnection.updateOrderField(id, field, value);
-                try {
-                    client.sendToClient(success ? "Order updated.\n" : "Failed to update.\n");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }*/
-        /*else if (command.startsWith("CHECK")) { //// זה היה של האבטיפוס
-        	
-            String idStr = command.replace("CHECK", "");
-            try {
-                int orderId = Integer.parseInt(idStr);
-                boolean exists = mysqlConnection.doesOrderExist(orderId);
-                client.sendToClient(exists ? "ORDER_EXISTS:" + orderId : "ORDER_DOES_NOT_EXIST");
-            } catch (NumberFormatException e) {
-                try {
-                    client.sendToClient("INVALID_ORDER_ID");
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-            catch (IOException e) 
-            {
-                e.printStackTrace();
-            }
-        }
-        
-        
-        // Handles subscriber info request by ID and sends the data back to the client 
-        if (command.startsWith("REQUEST_ID_DETAILS|")) {
-            String id = command.split("\\|")[1]; 
-            String subscriberInfo = mysqlConnection.getSubscriberInfo(id);
-
-            try {
-                client.sendToClient("SUBSCRIBER_INFO:" + subscriberInfo);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        else if (command.startsWith("GET_HISTORY|")) {
-            String id = command.split("\\|")[1];
-            List<ParkingHistory> history = mysqlConnection.getHistoryForSubscriber(id); 
-
-            try {
-                client.sendToClient(history);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        else if (command.startsWith("GET_RESERVATIONS|")) {
-            String id = command.split("\\|")[1];
-            List<Reservation> reservations = mysqlConnection.getReservationsForSubscriber(id); //   
-            try {
-                client.sendToClient(reservations);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        
-        // Retrieves available parking spots from the database and sends the list to the client 
-            else if (msg.equals("REQUEST_AVAILABLE_SPOTS")) 
-            {
-                availableSpots = mysqlConnection.getAvailableSpots();
-                try 
-                {
-                    client.sendToClient(availableSpots); 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-    		else 
-    		{
-                try {
-                    client.sendToClient("Unrecognized command.");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-    		}
-        
-    } 
-    // Checks client login via terminal/application credentials and sends result to client 
-    else if (msg instanceof LoginRequest) 
-    {
-        LoginRequest request = (LoginRequest) msg;
-        boolean success = mysqlConnection.checkLogin(request.getID(), request.getSubscriptionCode());
-
-        // print to console the source
-        System.out.println("LoginRequest received from source: " + request.getSource());
-
-        try {
-            switch (request.getSource()) {
-                case "terminal":
-                    client.sendToClient(success ? "TERMINAL_LOGIN_SUCCESS" : "TERMINAL_LOGIN_FAILURE");
-                    break;
-                case "app":
-                    if (success) {
-                        Subscriber subscriber = mysqlConnection.getSubscriberById(request.getID());
-                        if (subscriber != null) {
-                            client.sendToClient("APP_LOGIN_SUCCESS");
-                            client.sendToClient(subscriber);
-                        } else {
-                            client.sendToClient("APP_LOGIN_FAILED_NO_DATA");
-                        }
-                    } else {
-                        client.sendToClient("APP_LOGIN_FAILURE");
-                    }
-                    break;
-            
-                default:
-                    client.sendToClient("LOGIN_FAILURE"); // unknown source
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    
-    // Checks manager login credentials and sends result to client 
-    else if (msg instanceof LoginManagement) 
-    {
-    	LoginManagement loginData = (LoginManagement) msg;
-        boolean LoginApproved = mysqlConnection.checkLoginManagement(loginData.getUsername(),loginData.getPassword());
-        try 
-        {
-            client.sendToClient(LoginApproved ? "LOGIN_Management_SUCCESS" : "LOGIN_Management_FAILURE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    // Handles an UpdateSubscriberDetailsRequest by updating DB and sending result
-    else if (msg instanceof UpdateSubscriberDetailsRequest) {
-        UpdateSubscriberDetailsRequest update = (UpdateSubscriberDetailsRequest) msg;
-        boolean success = mysqlConnection.updateSubscriberContactInfo(
-            update.getSubscriberId(),
-            update.getNewEmail(),
-            update.getNewPhone()
-        );
-
-        try {
-            client.sendToClient(success ? "SUBSCRIBER_UPDATE_SUCCESS" : "SUBSCRIBER_UPDATE_FAILURE");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    
-    else 
-    {
-        try {
-            client.sendToClient("Unsupported message format.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-}*/
