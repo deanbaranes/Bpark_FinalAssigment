@@ -21,9 +21,6 @@ import common.ActiveParking;
 public class ChatClient extends AbstractClient {
 
     private ChatIF clientUI;
-    private MenuState currentState = MenuState.IDLE;
-    private String selectedOrderId;
-    private String selectedField;
     private BaseController controller;
 
 
@@ -48,39 +45,19 @@ public class ChatClient extends AbstractClient {
     public void setController(BaseController controller) {
         this.controller = controller;
     }
-
-    public MenuState getCurrentState() {
-        return currentState;
-    }
-    
-    public void setCurrentState(MenuState state) {
-        this.currentState = state;
-    }
-    
-    
     
     /**
      * Handles messages received from the server in a structured and maintainable way.
-     * 
-     * This method was refactored from a series of separate if/else chains
-     * into a clean `switch` statement, which improves readability, scalability,
-     * and centralizes response logic for different message types.
-     *
      * It handles:
      * - Login results for terminal, app, and management.
      * - Subscriber info and update results.
      * - Lists (e.g., parking spots).
      * - Subscriber object (after login).
-     *
      * GUI updates are safely wrapped in Platform.runLater to ensure they are
      * executed on the JavaFX Application Thread.
-     *
      * If an unknown message is received, it is passed to the general clientUI.
-     *
      * @param msg The message object sent by the server (String, List, or Subscriber).
      */
-
-    
     @Override
     public void handleMessageFromServer(Object msg) {
         try {
@@ -93,9 +70,12 @@ public class ChatClient extends AbstractClient {
                         TerminalController.getInstance().handleLoginResponse(message);
                         break;
 
-                    case "APP_LOGIN_SUCCESS":
                     case "APP_LOGIN_FAILURE":
-                        ClientController.getInstance().handleLoginResponse(message);
+                        Platform.runLater(() -> ClientController.getInstance().showPopup("Invalid ID or Subscriber Code."));
+                        break;
+
+                    case "APP_LOGIN_FAILED_NO_DATA":
+                        Platform.runLater(() -> ClientController.getInstance().showPopup("Login succeeded but no subscriber data found."));
                         break;
 
                     case "LOGIN_Management_SUCCESS":
@@ -229,76 +209,6 @@ public class ChatClient extends AbstractClient {
         }
     }
 
-
-    /**
-     * Sends an order ID to the server to verify existence.
-     * @param orderId The order ID string.
-     */
-    public void submitOrderId(String orderId) {
-        try {
-            Integer.parseInt(orderId);
-            selectedOrderId = orderId;
-            sendToServerSafe("CHECK" + orderId);
-        } catch (NumberFormatException e) {
-            clientUI.display("Invalid order ID. Must be a number.");
-        }
-    }
-
-    /**
-     * Sets the field that will be updated.
-     * @param field The field name ("parking_space" or "order_date").
-     */
-    public void selectFieldToUpdate(String field) {
-        if (field.equals("parking_space") || field.equals("order_date")) {
-            selectedField = field;
-            currentState = MenuState.UPDATE_ORDER_ENTER_VALUE;
-        } else {
-            clientUI.display("Invalid field selected.");
-        }
-    }
-
-    /**
-     * Sends the updated value to the server for the selected field.
-     * @param newValue The new value for the field.
-     */
-    public void submitFieldUpdate(String newValue) {
-        if (selectedField == null || selectedOrderId == null) {
-            clientUI.display("No field or order selected.");
-            return;
-        }
-
-        if (selectedField.equals("order_date")) {
-            try {
-                LocalDate newDate = LocalDate.parse(newValue);
-                LocalDate tomorrow = LocalDate.now().plusDays(1);
-                if (newDate.isBefore(tomorrow)) {
-                    clientUI.display("Order Date must be from tomorrow onwards.");
-                    return;
-                }
-            } catch (DateTimeParseException e) {
-                clientUI.display("Invalid date format. Use yyyy-mm-dd.");
-                return;
-            }
-        } else if (selectedField.equals("parking_space")) {
-            if (!newValue.matches("-?\\d+")) {
-                clientUI.display("Parking space must be a number.");
-                return;
-            }
-        }
-
-        String command = "UPDATE_ORDER|" + selectedOrderId + "|" + selectedField + "|" + newValue;
-        sendToServerSafe(command);
-        clientUI.display("Update sent.");
-        currentState = MenuState.IDLE;
-    }
-
-    /**
-     * Sends a request to display all orders.
-     */
-    public void showOrders() {
-        sendToServerSafe("SHOW_ORDERS");
-    }
-
     /**
      * Sends a message to the server with error handling.
      * @param msg The message string.
@@ -321,77 +231,3 @@ public class ChatClient extends AbstractClient {
         System.exit(0);
     }
 }
-
-
-
-/**
- * Handles incoming messages from the server.
- * @param msg The message received.
- */
-/*
- * 
- * 
-@Override
-public void handleMessageFromServer(Object msg) {
-    if (msg instanceof String message) {
-        /////// PROTOTYPE
-         * if (message.equals("ORDER_DOES_NOT_EXIST")) {
-            clientUI.display("Order does not exist. Please try again.");
-            currentState = MenuState.CHECK_IF_EXISTS;
-        } else if (message.equals("INVALID_ORDER_ID")) {
-            clientUI.display("Invalid order ID format.");
-            currentState = MenuState.CHECK_IF_EXISTS;
-        } else if (message.startsWith("ORDER_EXISTS:")) {
-            selectedOrderId = message.substring("ORDER_EXISTS:".length());
-            clientUI.display("Order #" + selectedOrderId + " found. Select a field to update.");
-            currentState = MenuState.UPDATE_ORDER_SELECT_FIELD;
-           // controller.successfulFirstSubmit();
-        }
-    	
-        // Passes login result message to TerminalController for handling 
-        if (message.equals("TERMINAL_LOGIN_SUCCESS") || message.equals("TERMINAL_LOGIN_FAILURE")) {
-            TerminalController.getInstance().handleLoginResponse(message);
-        }
-        
-        // Passes login result message to ClientController for handling 
-        else if (message.equals("APP_LOGIN_SUCCESS") || message.equals("APP_LOGIN_FAILURE")) {
-            ClientController.getInstance().handleLoginResponse(message);
-        }
-        
-        
-        // Passes management login result message to ManagementController for handling 
-        else if (message.equals("LOGIN_Management_SUCCESS") || message.equals("LOGIN_Management_FAILURE")) {
-        	ManagementController.getInstance().handleLoginManagementResponse(message);
-        }
-        
-        // Extracts subscriber information and displays it using ManagementController 
-        else if (message.startsWith("SUBSCRIBER_INFO:")) {
-            String info = message.substring("SUBSCRIBER_INFO:".length());
-            ManagementController.getInstance().displaySubscriberInfo(info);
-        }
-        else if (message.equals("SUBSCRIBER_UPDATE_SUCCESS")) {
-            ClientController.getInstance().showPopup("Details updated successfully.");
-        }
-        else if (message.equals("SUBSCRIBER_UPDATE_FAILURE")) {
-            ClientController.getInstance().showPopup("Failed to update details.");
-        }
-
-        else {
-            clientUI.display(message);
-        }
-    }
-    // Passes a list of available parking spots to the Terminal or Client Controller for display 
-    else if (msg instanceof List) {
-        if (controller instanceof TerminalController) {
-            ((TerminalController) controller).handleAvailableSpots((List<String>) msg);
-        } else if (controller instanceof ClientController) {
-            ((ClientController) controller).handleAvailableSpots((List<String>) msg);
-        }
-    }
-    else if (msg instanceof Subscriber) {
-        ClientController controller = ClientController.getInstance();
-        controller.setSubscriber((Subscriber) msg);
-    }
-}
-*/
-

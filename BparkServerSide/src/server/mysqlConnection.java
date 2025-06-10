@@ -40,7 +40,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Carmel2025!");
+        		    "root", "Aa123456");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -141,65 +141,7 @@ public class mysqlConnection {
             }
         }
     }
-    /**
-     * Retrieves all orders from the database and formats them as a string.
-     * @return A formatted string of all orders.
-     */
-    public static String getAllOrders() {
-        List<String> orders = new ArrayList<>();
-        StringBuilder formattedOrders = new StringBuilder();
-        formattedOrders.append("=====ORDER LIST=====\n");
-        String query = "SELECT * FROM orders";
-
-        try (Connection conn = connectToDB();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
-            while (rs.next()) {
-                String order = "Order# " + rs.getInt("order_number") +
-                        " | Parking: " + rs.getInt("parking_space") +
-                        " | Date: " + rs.getString("order_date") +
-                        " | Confirmation code: " + rs.getInt("confirmation_code") +
-                        " | Subscriber: " + rs.getInt("subscriber_id") +
-                        " | Placed: " + rs.getString("date_of_placing_an_order");
-                orders.add(order);
-            }
-        } catch (SQLException e) {
-            orders.add("Error retrieving orders: " + e.getMessage());
-        }
-
-        for (String order : orders) {
-            formattedOrders.append("[").append(order).append("]\n");
-        }
-        return formattedOrders.toString();
-    }
-
-    /**
-     * Updates a specific field in an order.
-     * @param orderId The ID of the order to update.
-     * @param field The field to update ("parking_space" or "order_date").
-     * @param newValue The new value for the field.
-     * @return true if the update was successful, false otherwise.
-     */
-    public static boolean updateOrderField(String orderId, String field, String newValue) {
-        if (!field.equals("parking_space") && !field.equals("order_date")) {
-            System.err.println("Invalid field name: " + field);
-            return false;
-        }
-
-        String sql = "UPDATE orders SET " + field + " = ? WHERE order_number = ?";
-        try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, newValue);
-            stmt.setString(2, orderId);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            System.err.println("Update failed: " + e.getMessage());
-            return false;
-        }
-    }
+  
     /**
      * Retrieves subscriber information from the database based on the given subscriber ID.
      * Builds a formatted string containing all relevant subscriber fields if found.
@@ -269,7 +211,7 @@ public class mysqlConnection {
                     rs.getString("vehicle_number1"),
                     rs.getString("vehicle_number2"),
                     rs.getString("subscription_code"),
-                    rs.getString("notes"),
+                    rs.getInt("late_count"),
                     rs.getString("credit_card")
                 );
             }
@@ -681,7 +623,6 @@ public class mysqlConnection {
      * This method is used to prevent duplicate reservations at the exact same date and time
      * for the same subscriber. It queries the "reservations" table and returns true if such
      * a reservation exists.
-     *
      * @param subscriberId The ID of the subscriber attempting to create a reservation.
      * @param entryDate    The date of the requested reservation entry.
      * @param entryTime    The time of the requested reservation entry.
@@ -704,6 +645,4 @@ public class mysqlConnection {
         }
         return false;
     }
-
-
 }

@@ -149,7 +149,7 @@ public class EchoServer extends AbstractServer {
                 if (success) {
                     Subscriber sub = mysqlConnection.getSubscriberById(request.getID());
                     if (sub != null) {
-                        client.sendToClient("APP_LOGIN_SUCCESS");
+                       // client.sendToClient("APP_LOGIN_SUCCESS");
                         client.sendToClient(sub);
                     } else {
                         client.sendToClient("APP_LOGIN_FAILED_NO_DATA");

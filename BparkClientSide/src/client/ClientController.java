@@ -35,6 +35,7 @@ public class ClientController implements BaseController {
 
     private ChatClient client;
     private Subscriber currentSubscriber;
+    private boolean isLoggedIn = false;
 
 
     /**
@@ -163,7 +164,11 @@ public class ClientController implements BaseController {
 
     }
     
-    @FXML private void handlePersonalInfo() { navigateTo(personalInfoView); }
+    @FXML private void handlePersonalInfo() { 
+    	navigationStack.push(postLoginMenu);  
+        showOnly(personalInfoView);
+       
+    }
     
     /**
      * Navigates the user interface to the post-login menu screen.
@@ -293,7 +298,8 @@ public class ClientController implements BaseController {
      * Returns:
      *   - void
      */
-    public void handleLoginResponse(String response) {
+    /*
+     * public void handleLoginResponse(String response) {
         Platform.runLater(() -> {
             if ("APP_LOGIN_SUCCESS".equals(response)) {
                 navigationStack.clear();
@@ -302,7 +308,7 @@ public class ClientController implements BaseController {
                 showPopup("Invalid ID or Subscriber Code.\nTry again.");
             }
         });
-    }
+    }*/
     
     /**
      * setSubscriber — Updates the current logged-in subscriber's details in the controller.
@@ -319,8 +325,10 @@ public class ClientController implements BaseController {
      *   - void
      */
     public void setSubscriber(Subscriber subscriber) {
+    	 System.out.println("Subscriber received: " + subscriber.getFull_name()); // 🔍 Debug
         this.currentSubscriber = subscriber;
-        
+        isLoggedIn = true;
+
         Platform.runLater(() -> {
         	greetingLabelPersonal.setText("Hi " + subscriber.getFull_name() + ", here are your personal details:");
             usernameLabel.setText("Name: " + subscriber.getFull_name());
@@ -335,9 +343,7 @@ public class ClientController implements BaseController {
             showOnly(postLoginMenu);
         });
     }
-
-    
-    
+  
     /**
      * displayHistory — Shows parking history for the logged-in subscriber.
      *
@@ -442,8 +448,6 @@ public class ClientController implements BaseController {
         });
     }
    
-        
-
     /**
      * Handles the submit action for editing email/phone.
      * Performs local validation, sends update request to server, and updates local view if successful.
@@ -460,7 +464,6 @@ public class ClientController implements BaseController {
             showPopup("No changes were made.");
             return;
         }
-
         StringBuilder errors = new StringBuilder();
         if (phoneChanged && !newPhone.matches("\\d{10}")) {
             errors.append("Phone number must be exactly 10 digits.\n");
@@ -468,13 +471,11 @@ public class ClientController implements BaseController {
         if (emailChanged && !newEmail.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
             errors.append("Email must be in a valid format.\n");
         }
-
         if (!errors.isEmpty()) {
             showPopup(errors.toString());
             return;
         }
 
-      
         try {
             client.sendToServer(new UpdateSubscriberDetailsRequest(
                 currentSubscriber.getSubscriber_id(),
@@ -486,7 +487,6 @@ public class ClientController implements BaseController {
             showPopup("Error sending update to server.");
             return;
         }
-
         currentSubscriber = new Subscriber(
             currentSubscriber.getSubscriber_id(),
             currentSubscriber.getFull_name(),
@@ -495,25 +495,19 @@ public class ClientController implements BaseController {
             currentSubscriber.getVehicle_number1(),
             currentSubscriber.getVehicle_number2(),
             currentSubscriber.getSubscription_code(),
-            currentSubscriber.getNotes(),
+            currentSubscriber.getLateCount(),
             currentSubscriber.getCredit_card()
         );
-
-        
         setSubscriber(currentSubscriber);
-
         showPopup("Details updated successfully.");
-        showOnly(personalInfoView);
+        navigationStack.push(postLoginMenu); 
+        showOnly(personalInfoView); 
     }
-
-
-
 
     /**
      * Displays the reservation form.
      * @throws IOException 
      */
-
     @FXML
     private void handleSubmitReservation() {
         String dateInput = dateField.getText().trim();
@@ -593,16 +587,19 @@ public class ClientController implements BaseController {
             Pane previous = navigationStack.pop();
             showOnly(previous);
         } else {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWelcome.fxml"));
-                Parent root = loader.load();
-                MainWelcomeController controller = loader.getController();
-                controller.showClientSubMenu();
-                Stage stage = (Stage) backButton.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("BPARK - Welcome");
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isLoggedIn) {
+                isLoggedIn = false; //end log-in session
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWelcome.fxml"));
+                    Parent root = loader.load();
+                    MainWelcomeController controller = loader.getController();
+                    controller.showClientSubMenu(); // ⬅️ Choose Access Type
+                    Stage stage = (Stage) backButton.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("BPARK - Welcome");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -611,7 +608,7 @@ public class ClientController implements BaseController {
      * Utility method to show popup alerts in a consistent format.
      * @param message the content of the popup
      */
-    void showPopup(String message) {
+     void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");
         alert.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
