@@ -54,6 +54,9 @@ public class EchoServer extends AbstractServer {
         System.out.println("Message received: " + msg + " from " + client);
 
         try {
+            if (msg instanceof PasswordResetRequest req) {
+                handlePasswordReset(req, client);
+            }
             if (msg instanceof String command) {
                 handleStringCommand(command, client);
             } else if (msg instanceof LoginRequest request) {
@@ -68,29 +71,6 @@ public class EchoServer extends AbstractServer {
                 handleNewReservationRequest(req, client);
             }
 
-            // ← חסימת PasswordResetRequest הוספת כאן
-            else if (msg instanceof PasswordResetRequest req) {
-            	System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
-                String email = req.getEmail();
-                try (Connection conn = mysqlConnection.connectToDB()) {
-                    EmployeePassword ep = new EmployeePassword(conn);
-                    String password = ep.getPasswordForEmail(email);
-
-                    if (password == null) {
-                        client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
-                    } else {
-                        System.out.println("[EchoServer] → About to call sendPasswordEmail()");
-                        new EmailSender().sendPasswordEmail(email, password);
-                        System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
-                        client.sendToClient(new PasswordResetResponse(true, "Your password has been sent to " + email));
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    client.sendToClient(new PasswordResetResponse(
-                        false, "Server error."));
-                }
-            }
-            // ← עד כאן
             else {
                 client.sendToClient("Unsupported message format.");
             }
@@ -411,6 +391,35 @@ public class EchoServer extends AbstractServer {
             sv.listen();
         } catch (Exception ex) {
             System.out.println("ERROR - Could not listen for clients!");
+        }
+    }
+    
+    private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) {
+        System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
+        String email = req.getEmail();
+
+        try (Connection conn = mysqlConnection.connectToDB()) {
+            EmployeePassword ep = new EmployeePassword(conn);
+            String password = ep.getPasswordForEmail(email);
+
+            if (password == null) {
+                client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
+            } else {
+                System.out.println("[EchoServer] → About to call sendPasswordEmail()");
+                new EmailSender().sendPasswordEmail(email, password);
+                System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
+                client.sendToClient(new PasswordResetResponse(true,
+                    "Your password has been sent to " + email));
+            }
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+				client.sendToClient(new PasswordResetResponse(false, "Server error."));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
 }
