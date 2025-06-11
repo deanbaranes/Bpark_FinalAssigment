@@ -24,6 +24,17 @@ public class Subscriber implements Serializable {
         this.late_count = late_count;
         this.credit_card = credit_card;
     }
+    public Subscriber(String subscriber_id, String subscription_code)
+    {
+        this.subscriber_id = subscriber_id;
+        this.subscription_code = subscription_code;
+        this.full_name = null;
+        this.email = null;
+        this.phone = null;
+        this.vehicle_number1 = null;
+        this.late_count = 0;
+        this.credit_card = null;
+    }
 
     public String getSubscriber_id() {
         return subscriber_id;

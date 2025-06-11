@@ -17,12 +17,14 @@ import java.util.Random;
 import java.util.Stack;
 
 import common.LoginRequest;
+import common.Subscriber;
 
 public class TerminalController implements BaseController {
 
     private ChatClient client;
     private final Stack<VBox> navigationStack = new Stack<>();
     private static TerminalController instance;
+    private Subscriber currentSubscriber = new Subscriber("000000000","DefultUserPassword");
     
     // ===== MOCK DATA SECTION =====
     private final String validPickupCode = "AB123";
@@ -126,7 +128,7 @@ public class TerminalController implements BaseController {
     private void handleSubmitLogin() {
         String id = idField.getText().trim();
         String code = codeField.getText().trim();
-        
+        currentSubscriber = new Subscriber(id,code);
         idField.clear();
         codeField.clear();
 
@@ -168,13 +170,19 @@ public class TerminalController implements BaseController {
     @FXML
     private void handleDropoffClick() {
         try {
-            client.sendToServer("CHECK_PARKING_AVAILABILITY");
+            client.sendToServer(currentSubscriber);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
+    public void subscriberNotFoundCase()
+    {
+    	//System.out.println(currentSubscriber.getSubscriber_id());
+    	currentSubscriber =  new Subscriber("000000000","DefultUserPassword");
+    }
+    
+    
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
             StringBuilder builder = new StringBuilder();
@@ -192,11 +200,6 @@ public class TerminalController implements BaseController {
         });
     }
 
-    //===========change after implementation============
-    private boolean checkParkingAvailability() {
-        return new Random().nextBoolean();
-    }
-    //===================================================
   
     @FXML
     private void handlePickupClick() {
@@ -258,6 +261,18 @@ public class TerminalController implements BaseController {
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
     }
+    
+    public void handleSucsessfulParking(String parkingCode) 
+    {
+    	handleBack();
+    	showPopup("Dropoff was successful.\n your parking code is: "+ parkingCode +"\n If you would like to extend your parking time by up to 4 additional hours,\n you can do so through the app. ");
+    }
+    
+    public void handleCarAlreadyParked() 
+    {
+    	handleBack();
+    	showPopup("Dropoff failed:\nYou already have a car that is parked under your name. ");
+    }
 
     @FXML
     private void handleExit() {
@@ -266,15 +281,5 @@ public class TerminalController implements BaseController {
         } else {
             System.exit(0);
         }
-    }
-    
- 
-    public void generateAndShowParkingCode() {
-        String code = "PARK" + (new Random().nextInt(9000) + 1000);
-        String message = "Your parking code is: " + code + "\n\n"
-                       + "Please leave your car on the conveyor.\n\n"
-                       + "Parking is available for 4 hours only.";
-        showPopup(message);
-    }
-
+    }  
 } 

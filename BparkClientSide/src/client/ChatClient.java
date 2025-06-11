@@ -23,6 +23,7 @@ public class ChatClient extends AbstractClient {
 
     private ChatIF clientUI;
     private BaseController controller;
+    String parkingCode = "1";
 
 
     /**
@@ -61,6 +62,7 @@ public class ChatClient extends AbstractClient {
      */
     @Override
     public void handleMessageFromServer(Object msg) {
+    	
         try {
             if (msg instanceof PasswordResetResponse resp) {
                 Platform.runLater(() ->
@@ -71,11 +73,22 @@ public class ChatClient extends AbstractClient {
             }
             if (msg instanceof String message) {
                 String baseMessage = message.contains("|") ? message.substring(0, message.indexOf("|")) : message;
+                if (message.startsWith("SUCSESSFUL_PARKING")) 
+                {
+                    String prefix = "SUCSESSFUL_PARKING";
+                    String codePart = message.substring(prefix.length());
+                    parkingCode = codePart.trim();
+                    baseMessage = prefix;
+                }
 
+            
                 switch (baseMessage) {
                     case "TERMINAL_LOGIN_SUCCESS":
+                    	TerminalController.getInstance().handleLoginResponse(message);
+                    	break;
                     case "TERMINAL_LOGIN_FAILURE":
                         TerminalController.getInstance().handleLoginResponse(message);
+                        TerminalController.getInstance().subscriberNotFoundCase();
                         break;
 
                     case "APP_LOGIN_FAILURE":
@@ -127,12 +140,17 @@ public class ChatClient extends AbstractClient {
                             TerminalController.getInstance().showPopup("Sorry, there are currently no parking spots available.")
                         );
                         break;
-
-                    case "SPOT_AVAILABLE":
+                        
+                    case "SUCSESSFUL_PARKING":
                         Platform.runLater(() ->
-                            TerminalController.getInstance().generateAndShowParkingCode()
-                        );
+                        TerminalController.getInstance().handleSucsessfulParking(parkingCode));
                         break;
+                        
+                    case "CAR_ALREADY_PARKED":
+                        Platform.runLater(() ->
+                        TerminalController.getInstance().handleCarAlreadyParked());
+                        break;
+
                         
                     case "EXTEND_SUCCESS":
                         String[] parts = message.split("\\|");
