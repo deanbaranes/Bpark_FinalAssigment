@@ -64,7 +64,10 @@ public class EchoServer extends AbstractServer {
                 handleSubscriberUpdate(update, client);
             } else if (msg instanceof RegisterMemberRequest request) {
                 handleRegisterMember(request, client);
+            } else if (msg instanceof Reservation req && req.getReservationId() == 0) { //new reservation
+                handleNewReservationRequest(req, client);
             }
+
             // ← חסימת PasswordResetRequest הוספת כאן
             else if (msg instanceof PasswordResetRequest req) {
             	System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());

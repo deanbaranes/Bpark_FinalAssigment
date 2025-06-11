@@ -40,7 +40,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Daniel2204");
+        		    "root", "Carmel2025!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -651,7 +651,7 @@ public class mysqlConnection {
             try (PreparedStatement stmt = conn.prepareStatement(query)) {
                 stmt.setString(1, subscriberId);
                 stmt.setDate(2, java.sql.Date.valueOf(entryDate));
-                stmt.setString(3, entryTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                stmt.setTime(3, java.sql.Time.valueOf(entryTime));
                 ResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
