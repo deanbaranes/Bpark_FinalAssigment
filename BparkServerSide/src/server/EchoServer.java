@@ -70,6 +70,12 @@ public class EchoServer extends AbstractServer {
             } else if (msg instanceof Reservation req && req.getReservationId() == 0) { //new reservation
                 handleNewReservationRequest(req, client);
             }
+              else if (msg instanceof Subscriber subscriber) {
+            	  handleNewSubscriberDropoffNoReserv(subscriber, client);
+            }
+
+          
+            
 
             else {
                 client.sendToClient("Unsupported message format.");
@@ -269,6 +275,27 @@ public class EchoServer extends AbstractServer {
                 ex.printStackTrace();
             }
         }
+    }
+    
+    /**
+     * Handles drop-off requests from subscribers who do not have an existing reservation.
+     * 
+     * Receives a Subscriber object from the client, attempts to create a new active parking 
+     * record for the subscriber in the database, and sends the result back to the client.
+     *
+     * @param subscriber The subscriber attempting to drop off a vehicle without a reservation.
+     * @param client The connection to the client who sent the request.
+     */
+    private void handleNewSubscriberDropoffNoReserv(Subscriber subscriber,ConnectionToClient client)
+    {
+    	try 
+    	{
+			client.sendToClient(mysqlConnection.createNewActiveParking(subscriber));
+		} 
+    	catch (IOException e) 
+    	{
+						e.printStackTrace();
+		}   	
     }
     
     private void handleNewReservationRequest(Reservation req, ConnectionToClient client) {

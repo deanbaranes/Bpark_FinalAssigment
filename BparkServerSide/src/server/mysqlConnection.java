@@ -1,16 +1,20 @@
 package server;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import common.ParkingHistory;
 import common.Reservation;
@@ -40,7 +44,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Carmel2025!");
+        		    "root", "Nmshonpass100!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -134,7 +138,7 @@ public class mysqlConnection {
             }
         }
     }
-  
+    
     /**
      * Retrieves subscriber information from the database based on the given subscriber ID.
      * Builds a formatted string containing all relevant subscriber fields if found.
@@ -361,7 +365,7 @@ public class mysqlConnection {
             return false;
         }
     }
-    
+     
     /*
     * Validates login credentials for a management user by checking the 'employees' table.
     * @param username The username entered by the manager.
@@ -657,9 +661,142 @@ public class mysqlConnection {
                     return rs.getInt(1) > 0;
                 }
             }
-        } catch (SQLException e) {
+        } 
+        catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
     }
+    
+    /**
+     * Creates a new active parking entry for a subscriber who arrives without a prior reservation.
+     * 
+     * This method performs the following steps:
+     * - Checks if the subscriber already has an active parking record.
+     * - Searches for the first available parking spot.
+     * - Generates a unique parking code based on subscriber ID and parking spot.
+     * - Ensures the generated parking code does not collide with existing codes.
+     * - Calculates entry and expected exit times (current time + 4 hours).
+     * - Inserts a new record into the active_parkings table.
+     * - Updates the parking_spots table to mark the selected spot as occupied.
+     *
+     * @param subscriber The subscriber attempting to create a new parking entry.
+     * @return 
+     *    - "CAR_ALREADY_PARKED" if the subscriber already has an active parking session.
+     *    - "NO_SPOTS_AVAILABLE" if there are no available parking spots.
+     *    - "SUCSESSFUL_PARKING" followed by the generated parking code if insertion succeeded.
+     *    - "ERROR" if an exception occurred during processing.
+     */
+    public static String createNewActiveParking(Subscriber subscriber) {
+        List<String> existingCodes = new ArrayList<>();
+        String query1 = "SELECT spot_number FROM parking_spots WHERE status = 'available' ORDER BY spot_number ASC LIMIT 1";
+        String query2 = "SELECT parking_code FROM active_parkings";
+        String query3 = "SELECT 1 FROM active_parkings WHERE subscriber_id = ?";
+
+        try (Connection conn = connectToDB()) 
+        {
+        	try (PreparedStatement stmt = conn.prepareStatement(query3)) 
+        	{
+        	    stmt.setString(1, subscriber.getSubscriber_id());
+        	    ResultSet rs = stmt.executeQuery();
+        	    if (rs.next()) {
+        	    	return "CAR_ALREADY_PARKED";
+        	    } 
+        	    else 
+        	    {
+        	    	try (PreparedStatement stmt1 = conn.prepareStatement(query1)) 
+                    {
+                        ResultSet parkingSpots = stmt1.executeQuery();
+                        if (!parkingSpots.next()) {
+                            return "NO_SPOTS_AVAILABLE";
+                        } else {
+                            int parkingSpot = parkingSpots.getInt("spot_number");
+                            String newParkingCode = generateParkingCode(subscriber.getSubscriber_id(), parkingSpot);
+                            try (PreparedStatement stmt2 = conn.prepareStatement(query2)) {
+                                ResultSet activeCodes = stmt2.executeQuery();
+                                while (activeCodes.next()) {
+                                    String parkingCode = activeCodes.getString("parking_code");
+                                    existingCodes.add(parkingCode);
+                                }
+                                while (existingCodes.contains(newParkingCode)) {
+                                    newParkingCode = generateParkingCode(subscriber.getSubscriber_id(), parkingSpot);
+                                }
+
+                                LocalDate entryDate = LocalDate.now();
+                                LocalTime entryTime = LocalTime.now();
+
+                                LocalDateTime entryDateTime = LocalDateTime.of(entryDate, entryTime);
+                                LocalDateTime expectedExitDateTime = entryDateTime.plusHours(4);
+
+                                LocalDate expectedExitDate = expectedExitDateTime.toLocalDate();
+                                LocalTime expectedExitTime = expectedExitDateTime.toLocalTime();
+
+                                String updateSpotStatusQuery = "UPDATE parking_spots SET status = 'occupied' WHERE spot_number = ?";
+                                String insertQuery = "INSERT INTO active_parkings " +
+                                        "(parking_code, subscriber_id, entry_date, entry_time, expected_exit_date, expected_exit_time, parking_spot, extended) " +
+                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+                                try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                                    insertStmt.setString(1, newParkingCode);
+                                    insertStmt.setString(2, subscriber.getSubscriber_id());
+                                    insertStmt.setDate(3, Date.valueOf(LocalDate.now()));
+                                    insertStmt.setTime(4, Time.valueOf(LocalTime.now()));
+                                    insertStmt.setDate(5, Date.valueOf(expectedExitDate));
+                                    insertStmt.setTime(6, Time.valueOf(expectedExitTime));
+                                    insertStmt.setInt(7, parkingSpot);
+                                    insertStmt.setInt(8, 0);
+                                    insertStmt.executeUpdate();
+                                    
+                                    try (PreparedStatement updateStmt = conn.prepareStatement(updateSpotStatusQuery))
+                                    {
+                                    updateStmt.setInt(1, parkingSpot);
+                                    updateStmt.executeUpdate();
+                                    }
+
+                                    return "SUCSESSFUL_PARKING" + newParkingCode;
+                                } catch (SQLException e) {
+                                    System.out.println("error in inserting new data to active_parkings");
+                                    e.printStackTrace();
+                                } 
+                            }
+                        }
+                    }
+        	    }
+        	}
+
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "ERROR";
+    }
+
+    
+    /**
+     * Generates a unique parking code for a new active parking entry.
+     * 
+     * The generated code is built from:
+     * - The subscriber ID.
+     * - The selected parking spot number.
+     * - A random component to help avoid collisions.
+     * - A hash function is used to mix the input values into a consistent 4-digit code.
+     * 
+     * Final format: "BPARKxxxx" where xxxx is a 4-digit number.
+     *
+     * @param subscriberId The ID of the subscriber requesting the parking.
+     * @param parkingSpot The allocated parking spot number.
+     * @return A formatted parking code string in the form "BPARKxxxx".
+     */
+    public static String generateParkingCode(String subscriberId, int parkingSpot) {
+        String baseString = subscriberId + parkingSpot;
+        int randomPart = new Random().nextInt(10000); 
+        String mixedString = baseString + randomPart;
+        int rawHash = mixedString.hashCode();
+        rawHash = Math.abs(rawHash);
+        int fourDigits = rawHash % 10000;
+        return String.format("BPARK%04d", fourDigits);
+    }
+
+
+    
 }

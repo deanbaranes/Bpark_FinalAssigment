@@ -13,7 +13,7 @@ public class Subscriber implements Serializable {
     private String credit_card;
 
     public Subscriber(String subscriber_id, String full_name, String email, String phone,
-                      String vehicle_number1,  String subscription_code,
+                      String vehicle_number1, String subscription_code,
                       int late_count, String credit_card) {
         this.subscriber_id = subscriber_id;
         this.full_name = full_name;
@@ -23,6 +23,17 @@ public class Subscriber implements Serializable {
         this.subscription_code = subscription_code;
         this.late_count = late_count;
         this.credit_card = credit_card;
+    }
+    public Subscriber(String subscriber_id, String subscription_code)
+    {
+        this.subscriber_id = subscriber_id;
+        this.subscription_code = subscription_code;
+        this.full_name = null;
+        this.email = null;
+        this.phone = null;
+        this.vehicle_number1 = null;
+        this.late_count = 0;
+        this.credit_card = null;
     }
 
     public String getSubscriber_id() {
