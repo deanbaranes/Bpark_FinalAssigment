@@ -17,6 +17,8 @@ import java.util.Random;
 import java.util.Stack;
 
 import common.LoginRequest;
+import common.PasswordResetRequest;
+import common.PasswordResetResponse;
 import common.Subscriber;
 
 public class TerminalController implements BaseController {
@@ -26,14 +28,15 @@ public class TerminalController implements BaseController {
     private static TerminalController instance;
     private Subscriber currentSubscriber = new Subscriber("000000000","DefultUserPassword");
     
+    
+
     // ===== MOCK DATA SECTION =====
     private final String validPickupCode = "AB123";
     // =============================
 
-
     // === VBoxes ===
     @FXML private VBox mainMenu, signInForm, spotsView,
-            selectServicePane, pickupPane,signInChoice,dropoffMethod;
+            selectServicePane, pickupPane,signInChoice,dropoffMethod,forgotView;
 
     // === Buttons ===
     @FXML private Button signInButton, showSpotsButton,
@@ -43,10 +46,10 @@ public class TerminalController implements BaseController {
 
     // === Labels ===
     @FXML private Label chooseServiceLabel, dropoffCarLabel,
-            pickupCarLabel, insertCodeLabel, LogOutLabel;
+            pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage;
 
     // === Input Fields ===
-    @FXML private TextField idField, parkingCodeField;
+    @FXML private TextField idField, parkingCodeField,resetEmailField;
     @FXML private PasswordField codeField;
 
     // === Text Areas and Texts ===
@@ -67,7 +70,7 @@ public class TerminalController implements BaseController {
     }
 
     private void showOnly(VBox target) {
-        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView}) {
             if (pane != null) {
                 pane.setVisible(false);
                 pane.setManaged(false);
@@ -145,6 +148,11 @@ public class TerminalController implements BaseController {
 		}
     }
     
+    @FXML
+    private void handleShowForgot() {
+        showOnly(forgotView);
+    }
+
     public void handleLoginResponse(String response) {
         Platform.runLater(() -> {
             if ("TERMINAL_LOGIN_SUCCESS".equals(response)) {
@@ -243,6 +251,33 @@ public class TerminalController implements BaseController {
         }
     }
 
+
+    /**
+     * Handles the "Send Reset" button click by validating the entered email
+     * and sending a PasswordResetRequest to the server.
+     * If the email field is empty, displays an error message.
+     * Any IOException during sendToServer is caught and reported to the user.
+     *
+     * @throws IllegalArgumentException if the email field is empty (handled by UI feedback)
+     */
+    @FXML
+    private void handleSendReset() {
+        String email = resetEmailField.getText().trim();
+        if (email.isEmpty()) {
+            resetMessage.setText("Please enter your email.");
+            resetMessage.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        try {
+            // שליחת ה־Request לשרת
+            client.sendToServer(new PasswordResetRequest(email));
+        } catch (IOException e) {
+            e.printStackTrace();
+            resetMessage.setText("Failed to send request.");
+            resetMessage.setStyle("-fx-text-fill: red;");
+        }
+    }
+
     public void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");
@@ -282,4 +317,29 @@ public class TerminalController implements BaseController {
             System.exit(0);
         }
     }  
+    
+  
+    /**
+     * Processes the server’s response to a password reset request and updates the UI accordingly.
+     * This method must be called on the JavaFX Application Thread; wrapping via Platform.runLater
+     * ensures thread safety when modifying UI controls.
+     *
+     * @param resp the PasswordResetResponse object containing:
+     *             
+     *               success – true if the reset email was sent successfully, false otherwise
+     *               message – the feedback text to display to the user
+     *             
+     */
+    public void handlePasswordResetResponse(PasswordResetResponse resp) {
+        Platform.runLater(() -> {
+            if (resp.isSuccess()) {
+                resetMessage.setText(resp.getMessage());
+                resetMessage.setStyle("-fx-text-fill: green;");
+            } else {
+                resetMessage.setText(resp.getMessage());
+                resetMessage.setStyle("-fx-text-fill: red;");
+            }
+        });
+    }
+
 } 

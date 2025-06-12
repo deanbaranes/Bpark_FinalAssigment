@@ -29,7 +29,28 @@
     	</HBox>
 	</VBox> 
 	
+	 <!-- FORGOT-PASSWORD VIEW -->
+	<VBox fx:id="forgotView"
+	      alignment="CENTER" spacing="10"
+	      AnchorPane.topAnchor="60.0"
+	      AnchorPane.leftAnchor="100.0"
+	      AnchorPane.rightAnchor="100.0"
+	      maxWidth="250"
+	      visible="false" managed="false">
 	
+	    <Label text="Reset Password:" style="-fx-font-size:24px;"/>
+	
+	    <Label text="Enter your email:" />
+	    <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180"/>
+	
+	    <Button text="Send reset link" onAction="#handleSendReset"
+	            prefWidth="140"/>
+	
+	    <Label fx:id="resetMessage" wrapText="true" maxWidth="250" style="-fx-text-fill: green;"/>
+	    
+	    <Button fx:id="btnBackFromForgot" text="Back" onAction="#handleBack" prefWidth="100"/>
+	</VBox>
+	 
     <!-- Sign In by hand -->
     <VBox fx:id="signInForm" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="80" AnchorPane.leftAnchor="200" AnchorPane.rightAnchor="200">
@@ -38,6 +59,7 @@
         <Label text="Insert Subscriber Code:"/>
         <PasswordField fx:id="codeField" maxWidth="180"/>
         <Button fx:id="submitButton" text="Submit" onAction="#handleSubmitLogin" prefWidth="100"/>
+        <Hyperlink fx:id="btnforgotpassword" text="Forgot password?" onAction="#handleShowForgot" />
     </VBox>
     
    

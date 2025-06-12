@@ -64,13 +64,17 @@ public class ChatClient extends AbstractClient {
     public void handleMessageFromServer(Object msg) {
     	
         try {
-            if (msg instanceof PasswordResetResponse resp) {
-                Platform.runLater(() ->
-                    ManagementController.getInstance()
-                        .handlePasswordResetResponse(resp)
-                );
-                return;
-            }
+        	if (msg instanceof PasswordResetResponse resp) {
+        	    Platform.runLater(() -> {
+        	        if (ManagementController.getInstance() != null) {
+        	            ManagementController.getInstance().handlePasswordResetResponse(resp);
+        	        }
+        	        if (TerminalController.getInstance() != null) {
+        	            TerminalController.getInstance().handlePasswordResetResponse(resp);
+        	        }
+        	    });
+        	    return;
+        	}
             if (msg instanceof String message) {
                 String baseMessage = message.contains("|") ? message.substring(0, message.indexOf("|")) : message;
                 if (message.startsWith("SUCSESSFUL_PARKING")) 
