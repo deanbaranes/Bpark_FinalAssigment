@@ -6,13 +6,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import common.LoginManagement;
 import common.LoginRequest;
 import common.ParkingHistory;
 import common.RegisterMemberRequest;
 import common.Reservation;
 import common.Subscriber;
+import common.UpdateReservationRequest;
 import common.ActiveParking;
 import common.EmailSender;
 import common.UpdateSubscriberDetailsRequest;
@@ -40,7 +40,7 @@ public class EchoServer extends AbstractServer {
     public EchoServer(int port) {
         super(port);
     }
-
+ 
     /**
      * Handles all incoming messages from clients and delegates processing
      * based on the message type (String commands, Login requests, etc.).
@@ -76,15 +76,17 @@ public class EchoServer extends AbstractServer {
                 handleRegisterMember(request, client);
             } else if (msg instanceof Reservation req && req.getReservationId() == 0) { //new reservation
                 handleNewReservationRequest(req, client);
-            }
-              else if (msg instanceof Subscriber subscriber) {
+            } else if (msg instanceof Subscriber subscriber) {
             	  handleNewSubscriberDropoffNoReserv(subscriber, client);
-            }
-
-          
-            
-
-            else {
+            } else if (msg instanceof UpdateReservationRequest ) {
+                UpdateReservationRequest req = (UpdateReservationRequest) msg;
+                boolean updated = mysqlConnection.updateReservationDateTime(
+                    req.getReservationId(), req.getNewDate(), req.getNewTime());
+                if (updated)
+                    client.sendToClient("UPDATE_SUCCESS");
+                else
+                    client.sendToClient("UPDATE_FAILED");
+            } else {
                 client.sendToClient("Unsupported message format.");
             }
         } catch (IOException e) {
@@ -191,10 +193,17 @@ public class EchoServer extends AbstractServer {
                 client.sendToClient("EXTEND_FAILED_UNKNOWN");
             }
         
-        } else {
-            client.sendToClient("Unrecognized command.");
-        }
+        } else if (command.startsWith("CANCEL_RESERVATION|")) {
+        	int reservationId = Integer.parseInt(command.split("\\|")[1]);
+            boolean success = mysqlConnection.cancelReservationById(reservationId);
+            if (success)
+                client.sendToClient("CANCEL_SUCCESS");
+            else
+                client.sendToClient("CANCEL_FAILED");
+    } else {
+        client.sendToClient("Unrecognized command.");
     }
+}
 
 
     /**
@@ -335,7 +344,7 @@ public class EchoServer extends AbstractServer {
             int spot = mysqlConnection.findAvailableSpot();
 
 
-            String code = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            String code = mysqlConnection.generateUniqueParkingCode(req.getSubscriberId(), spot);
             LocalDate exitDate = req.getEntryDate();
             LocalTime exitTime = req.getEntryTime().plusHours(RESERVATION_DURATION_HOURS); // usually 4 hours
 
@@ -359,6 +368,7 @@ public class EchoServer extends AbstractServer {
             );
 
             client.sendToClient(confirmed);
+           
 
         } catch (Exception e) {
             e.printStackTrace();

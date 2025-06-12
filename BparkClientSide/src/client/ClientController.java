@@ -21,14 +21,17 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Stack;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import common.LoginRequest;
 import common.ParkingHistory;
+import common.PasswordResetRequest;
+import common.PasswordResetResponse;
 import common.Reservation;
 import common.Subscriber;
+import common.UpdateReservationRequest;
 import common.UpdateSubscriberDetailsRequest;
 
 public class ClientController implements BaseController {
@@ -36,6 +39,7 @@ public class ClientController implements BaseController {
     private ChatClient client;
     private Subscriber currentSubscriber;
     private boolean isLoggedIn = false;
+    private Reservation reservationBeingEdited = null;
 
 
     /**
@@ -52,26 +56,34 @@ public class ClientController implements BaseController {
      * We use multiple panes to represent different "screens" within the same window.
      * Only one pane is visible at a time to simulate switching between screens.
      */
-    @FXML private VBox mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
+    @FXML private VBox mainMenu, signInForm, spotsView, forgotPasswordView, postLoginMenu, personalInfoView,
             editInfoForm, activityMenu, historyView, reservationsView,
             reservationForm, extendInfo;
 
     @FXML private Button signInButton, showSpotsButton, personalInfoButton, activityButton,
             scheduleButton, extendButton, logoutButton, editInfoButton,
-            submitButton, submitEditButton, historyButton, reservationsButton,
+            submitButton, submitEditButton, historyButton, reservationsButton, editReservationButton, cancelReservationButton,
             reserveSubmitButton, backButton;
 
-    @FXML private Label welcomeLabel, usernameLabel, emailLabel, phoneLabel,
+    @FXML private Label welcomeLabel, resetMessage, usernameLabel, emailLabel, phoneLabel,
             car1Label, creditCardLabel, LogOutLabel, 
             greetingLabelHistory, greetingLabelReservations, greetingLabelPersonal, greetingLabelEdit;
     
 
-    @FXML private TextField idField, editPhoneField, editEmailField,
+    @FXML private TextField resetEmailField, idField, editPhoneField, editEmailField,
             dateField, timeField;
 
     @FXML private TextArea spotsTextArea;
     
     @FXML private PasswordField codeField;
+    
+    @FXML private Hyperlink forgotPasswordLink;
+    
+    @FXML private ListView<Reservation> reservationListView;
+   
+    @FXML private ListView<ParkingHistory> historyListView;
+
+
 
     /**
      * Sets the ChatClient instance for server communication.
@@ -111,7 +123,7 @@ public class ClientController implements BaseController {
      * @param target the pane to show
      */
     private void showOnly(Pane target) {
-        for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
+        for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, forgotPasswordView, postLoginMenu, personalInfoView,
                 editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
             if (pane != null) {
                 pane.setVisible(false);
@@ -143,10 +155,64 @@ public class ClientController implements BaseController {
     }
 
     /** Button handlers for navigation */
-    @FXML private void handleSignInClick() {
+    @FXML 
+    private void handleSignInClick() {
     	idField.clear();
         codeField.clear();
     	navigateTo(signInForm);
+    }
+    @FXML 
+    private void handleShowForgotPasswordView() {
+    	showOnly(forgotPasswordView);
+    	
+    }
+    
+    /**
+     * Handles the "Send Reset" button click by validating the entered email
+     * and sending a PasswordResetRequest to the server.
+     * If the email field is empty, displays an error message.
+     * Any IOException during sendToServer is caught and reported to the user.
+     *
+     * @throws IllegalArgumentException if the email field is empty (handled by UI feedback)
+     */
+    @FXML
+    private void handleSendReset() {
+        String email = resetEmailField.getText().trim();
+        if (email.isEmpty()) {
+            resetMessage.setText("Please enter your email.");
+            resetMessage.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        try {
+            client.sendToServer(new PasswordResetRequest(email,"sub"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            resetMessage.setText("Failed to send request.");
+            resetMessage.setStyle("-fx-text-fill: red;");
+        }
+    }
+    
+    /**
+     * Processes the server’s response to a password reset request and updates the UI accordingly.
+     * This method must be called on the JavaFX Application Thread; wrapping via Platform.runLater
+     * ensures thread safety when modifying UI controls.
+     *
+     * @param resp the PasswordResetResponse object containing:
+     *             
+     *               success – true if the reset email was sent successfully, false otherwise
+     *               message – the feedback text to display to the user
+     *             
+     */
+    public void handlePasswordResetResponse(PasswordResetResponse resp) {
+        Platform.runLater(() -> {
+            if (resp.isSuccess()) {
+                resetMessage.setText(resp.getMessage());
+                resetMessage.setStyle("-fx-text-fill: green;");
+            } else {
+                resetMessage.setText(resp.getMessage());
+                resetMessage.setStyle("-fx-text-fill: red;");
+            }
+        });
     }
     
     @FXML
@@ -305,22 +371,30 @@ public class ClientController implements BaseController {
      */
     public void displayHistory(List<ParkingHistory> historyList) {
         Platform.runLater(() -> {
-            historyView.getChildren().clear(); // 
             greetingLabelHistory.setText("Hi " + currentSubscriber.getFull_name() + ", here is your parking history:");
-            historyView.getChildren().add(greetingLabelHistory);
-            showOnly(historyView); //  
+            showOnly(historyView); 
+
+            historyListView.getItems().clear(); 
 
             if (historyList.isEmpty()) {
-                historyView.getChildren().add(new Label("No parking history found."));
+                historyListView.setPlaceholder(new Label("No parking history found."));
             } else {
-                for (ParkingHistory h : historyList) {
-                    Label entry = new Label(formatHistory(h));
-                    entry.setWrapText(true);
-                    historyView.getChildren().add(entry);
-                }
+                historyListView.getItems().addAll(historyList);
+                historyListView.setCellFactory(listView -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(ParkingHistory h, boolean empty) {
+                        super.updateItem(h, empty);
+                        if (empty || h == null) {
+                            setText(null);
+                        } else {
+                            setText(formatHistory(h));
+                        }
+                    }
+                });
             }
         });
     }
+
 
     private String formatHistory(ParkingHistory h) {
         return String.format(
@@ -343,28 +417,35 @@ public class ClientController implements BaseController {
      */
     public void displayReservations(List<Reservation> reservationList) {
         Platform.runLater(() -> {
-        	reservationsView.getChildren().removeIf(node -> node != greetingLabelReservations);
             greetingLabelReservations.setText("Hi " + currentSubscriber.getFull_name() + ", here are your current reservations:");
-            showOnly(reservationsView); 
+            showOnly(reservationsView);
+
+            reservationListView.getItems().clear();
 
             if (reservationList.isEmpty()) {
-                reservationsView.getChildren().add(new Label("No existing reservations found."));
+                reservationListView.setPlaceholder(new Label("No existing reservations found."));
             } else {
-                for (Reservation r : reservationList) {
-                    Label entry = new Label(formatReservation(r));
-                    entry.setWrapText(true);
-                    reservationsView.getChildren().add(entry);
-                }
+                reservationListView.getItems().addAll(reservationList);
+                reservationListView.setCellFactory(listView -> new ListCell<>() {
+                    @Override
+                    protected void updateItem(Reservation r, boolean empty) {
+                        super.updateItem(r, empty);
+                        if (empty || r == null) {
+                            setText(null);
+                        } else {
+                            setText(formatReservation(r));
+                        }
+                    }
+                });
             }
         });
     }
 
+    
     private String formatReservation(Reservation r) {
         return String.format(
-        //  "Parking Code: %s | Parking Spot: %d | From: %s at %s, until: %s at %s\n",
             "Parking Code: %s | From: %s at %s, until: %s at %s\n",
             r.getParkingCode(),
-           // r.getParkingSpot(),
             r.getEntryDate(),
             r.getEntryTime(),
             r.getExitDate(),
@@ -372,6 +453,55 @@ public class ClientController implements BaseController {
         );
     }
     
+    @FXML
+    public void handleEditReservation() {
+        Reservation selected = reservationListView.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            showPopup("Please select a reservation to edit.");
+            return;
+        }
+
+        
+        reservationBeingEdited = selected;
+
+     
+        dateField.setText(selected.getEntryDate().toString());
+        timeField.setText(selected.getEntryTime().toString());
+
+        navigateTo(reservationForm);
+    }
+    
+    @FXML
+    public void handleCancelReservation() {
+        Reservation selected = reservationListView.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            showPopup("Please select a reservation to cancel.");
+            return;
+        }
+
+        String message = "Are you sure you want to cancel this reservation?\n\n" + formatReservation(selected);
+
+        if (showConfirmationPopup(message)) {
+            try {
+                client.sendToServer("CANCEL_RESERVATION|" + selected.getReservationId());
+            } catch (IOException e) {
+                e.printStackTrace();
+                showPopup("Error sending cancel request.");
+            }
+        }
+    }
+
+    public void refreshReservationList() {
+        try {
+            client.sendToServer("GET_RESERVATIONS|" + currentSubscriber.getSubscriber_id());
+        } catch (IOException e) {
+            e.printStackTrace();
+            showPopup("Failed to refresh reservations.");
+        }
+    }
+
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
             StringBuilder builder = new StringBuilder();
@@ -476,14 +606,24 @@ public class ClientController implements BaseController {
             return;
         }
 
-        Reservation newReservation = new Reservation(
-            currentSubscriber.getSubscriber_id(),
-            date,
-            time
-        );
-
         try {
-            client.sendToServer(newReservation);
+            if (reservationBeingEdited != null) {
+                UpdateReservationRequest updateRequest = new UpdateReservationRequest(
+                    reservationBeingEdited.getReservationId(), 
+                    date,
+                    time
+                );
+                client.sendToServer(updateRequest);
+                reservationBeingEdited = null;
+            } else {
+                Reservation newReservation = new Reservation(
+                    currentSubscriber.getSubscriber_id(),
+                    date,
+                    time
+                );
+                client.sendToServer(newReservation);
+            }
+
             dateField.clear();
             timeField.clear();
 
@@ -576,5 +716,35 @@ public class ClientController implements BaseController {
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
     }
+     
+     /**
+      * Shows a confirmation popup with Yes and Cancel buttons in a consistent format.
+      * @param message the content of the popup
+      * @return true if user confirmed (clicked Yes), false otherwise
+      */
+     boolean showConfirmationPopup(String message) {
+         Alert alert = new Alert(Alert.AlertType.NONE);
+         alert.setTitle("Confirmation");
+
+         ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+         ButtonType cancelButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+         alert.getDialogPane().getButtonTypes().addAll(yesButton, cancelButton);
+
+         Label content = new Label(message);
+         content.setWrapText(true);
+         content.setMaxWidth(300);
+         content.setMinHeight(100);
+         content.setStyle("-fx-text-alignment: center; -fx-alignment: center; -fx-font-size: 14px;");
+
+         VBox wrapper = new VBox(content);
+         wrapper.setAlignment(Pos.CENTER);
+         wrapper.setPrefSize(500, 180);
+
+         alert.getDialogPane().setContent(wrapper);
+
+         Optional<ButtonType> result = alert.showAndWait();
+         return result.isPresent() && result.get() == yesButton;
+     }
+
 
 }

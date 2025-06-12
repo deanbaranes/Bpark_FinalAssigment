@@ -40,11 +40,11 @@ public class mysqlConnection {
         } catch (Exception ex) {
             System.out.println("Driver definition failed");
         }
-
+ 
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Nmshonpass100!");
+        		    "root", "Carmel2025!");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -492,6 +492,10 @@ public class mysqlConnection {
      * Finds the number of the first available parking spot.
      * @return spot_number or throws an error if none found
      */
+    /**
+     * Finds the number of the first available parking spot.
+     * @return spot_number or throws an error if none found
+     */
     public static int findAvailableSpot() {
         String query = "SELECT spot_number FROM parking_spots WHERE status = 'available' LIMIT 1";
 
@@ -499,15 +503,22 @@ public class mysqlConnection {
              PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
 
+
             if (rs.next()) {
-                return rs.getInt("spot_number");
+                int spot = rs.getInt("spot_number");
+                return spot;
+            } else {
+                System.out.println(" No rows returned from query.");
             }
+
         } catch (SQLException e) {
+            System.out.println("SQL Exception while searching for available spot:");
             e.printStackTrace();
         }
 
         throw new RuntimeException("No available parking spots found.");
     }
+
 
     /**
      * Reserves a spot by updating its status and inserts a new reservation.
@@ -539,11 +550,9 @@ public class mysqlConnection {
                             "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
                 insert.setString(1, subscriberId);
                 insert.setString(2, code);
-                insert.setDate(3, java.sql.Date.valueOf(entryDate));
-                //insert.setString(4, entryTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                insert.setDate(3, java.sql.Date.valueOf(entryDate));          
                 insert.setTime(4, java.sql.Time.valueOf(entryTime));
-                insert.setDate(5, java.sql.Date.valueOf(exitDate));
-                //insert.setString(6, exitTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+                insert.setDate(5, java.sql.Date.valueOf(exitDate));              
                 insert.setTime(6, java.sql.Time.valueOf(exitTime));
                 insert.setInt(7, spotNumber);
                 insert.executeUpdate();
@@ -737,16 +746,14 @@ public class mysqlConnection {
                             return "NO_SPOTS_AVAILABLE";
                         } else {
                             int parkingSpot = parkingSpots.getInt("spot_number");
-                            String newParkingCode = generateParkingCode(subscriber.getSubscriber_id(), parkingSpot);
+                            String newParkingCode = generateUniqueParkingCode(subscriber.getSubscriber_id(), parkingSpot);
                             try (PreparedStatement stmt2 = conn.prepareStatement(query2)) {
                                 ResultSet activeCodes = stmt2.executeQuery();
                                 while (activeCodes.next()) {
                                     String parkingCode = activeCodes.getString("parking_code");
                                     existingCodes.add(parkingCode);
                                 }
-                                while (existingCodes.contains(newParkingCode)) {
-                                    newParkingCode = generateParkingCode(subscriber.getSubscriber_id(), parkingSpot);
-                                }
+                               
 
                                 LocalDate entryDate = LocalDate.now();
                                 LocalTime entryTime = LocalTime.now();
@@ -822,7 +829,112 @@ public class mysqlConnection {
         int fourDigits = rawHash % 10000;
         return String.format("BPARK%04d", fourDigits);
     }
+    /**
+     * Generates a unique parking code by combining subscriber ID and parking spot number,
+     * ensuring the generated code does not already exist in either the reservations
+     * or active_parkings tables.
+     *
+     * The method repeatedly calls generateParkingCode and verifies uniqueness by checking
+     * against both reservations and active parkings until a valid, unused code is created.
+     *
+     * @param subscriberId The ID of the subscriber requesting the reservation or parking.
+     * @param parkingSpot The number of the allocated parking spot.
+     * @return A unique parking code in the format "BPARKxxxx".
+     */
+    public static String generateUniqueParkingCode(String subscriberId, int parkingSpot) {
+        String code;
+        do {
+            code = generateParkingCode(subscriberId, parkingSpot);
+        } while (reservationCodeExists(code) || activeParkingCodeExists(code));
+        return code;
+    }
+    
+    
+    /**
+     * Checks whether a given parking code already exists in the reservations table.
+     *
+     * @param code The parking code to check for existence.
+     * @return true if the code exists in the reservations table, false otherwise.
+     */
+    public static boolean reservationCodeExists(String code) {
+        String query = "SELECT 1 FROM reservations WHERE parking_code = ?";
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, code);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
+    /**
+     * Checks whether a given parking code already exists in the active_parkings table.
+     *
+     * @param code The parking code to check for existence.
+     * @return true if the code exists in the active_parkings table, false otherwise.
+     */
+    public static boolean activeParkingCodeExists(String code) {
+        String query = "SELECT 1 FROM active_parkings WHERE parking_code = ?";
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, code);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
+
+
+    public static boolean updateReservationDateTime(int reservationId, LocalDate newDate, LocalTime newTime) {
+        String query = "UPDATE reservations SET entry_date = ?, entry_time = ?, exit_date = ?, exit_time = ? WHERE reservation_id = ?";
+
+        //calculate exit time
+        LocalDateTime entryDateTime = LocalDateTime.of(newDate, newTime);
+        LocalDateTime exitDateTime = entryDateTime.plusHours(4);
+        LocalDate newExitDate = exitDateTime.toLocalDate();
+        LocalTime newExitTime = exitDateTime.toLocalTime();
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setDate(1, Date.valueOf(newDate));
+            stmt.setTime(2, Time.valueOf(newTime));
+            stmt.setDate(3, Date.valueOf(newExitDate));
+            stmt.setTime(4, Time.valueOf(newExitTime));
+            stmt.setInt(5, reservationId);
+
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    public static boolean cancelReservationById(int reservationId) {
+        String deleteQuery = "DELETE FROM reservations WHERE reservation_id = ?";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+
+            stmt.setInt(1, reservationId);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     
 }

@@ -195,7 +195,32 @@ public class ChatClient extends AbstractClient {
                             ClientController.getInstance().showPopup("Sorry, an error occurred.\\nPlease try again.")
                         );
                         break;
+                        
+                    case "CANCEL_SUCCESS":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Reservation was successfully cancelled.");
+                            ClientController.getInstance().refreshReservationList();
+                        });
+                        break;
 
+                    case "CANCEL_FAILED":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Failed to cancel reservation. Please try again.");
+                        });
+                        break;
+                        
+                    case "UPDATE_SUCCESS":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Reservation updated successfully.");
+                            ClientController.getInstance().refreshReservationList();                        
+                        });
+                        break;
+
+                    case "UPDATE_FAILED":
+                        Platform.runLater(() -> {
+                            ClientController.getInstance().showPopup("Update failed. Please try again.");
+                        });
+                        break;
 
                     default:
                         if (message.startsWith("SUBSCRIBER_INFO:")) {

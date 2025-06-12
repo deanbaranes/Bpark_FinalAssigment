@@ -49,7 +49,7 @@
     <Label text="Enter your email:" />
     <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180"/>
 
-    <Button text="Send password to Email" onAction="#handleSendReset"
+    <Button text="Send password to mail" onAction="#handleSendReset"
             prefWidth="140"/>
 
     <Label fx:id="resetMessage" wrapText="true" maxWidth="250" style="-fx-text-fill: green;"/>

@@ -26,8 +26,29 @@
         <TextField fx:id="idField" maxWidth="180"/>
         <Label text="Insert Subscriber Code:"/>
         <PasswordField fx:id="codeField" maxWidth="180"/>
-        <Button fx:id="submitButton" text="Submit" onAction="#handleSubmitLogin" prefWidth="100"/>
+        <Hyperlink fx:id="forgotPasswordLink" text="Forgot my password" onAction="#handleShowForgotPasswordView" />
+        <Button fx:id="submitButton" text="Submit" onAction="#handleSubmitLogin" prefWidth="100"/> 
     </VBox>
+    
+     <!-- FORGOT-PASSWORD VIEW -->
+	<VBox fx:id="forgotPasswordView"
+	      alignment="CENTER" spacing="10"
+	      AnchorPane.topAnchor="60.0"
+	      AnchorPane.leftAnchor="100.0"
+	      AnchorPane.rightAnchor="100.0"
+	      maxWidth="250"
+	      visible="false" managed="false">
+	
+	    <Label text="Reset Password:" style="-fx-font-size:24px;"/>
+	
+	    <Label text="Enter your email:" />
+	    <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180"/>
+	
+	    <Button text="Send password to mail" onAction="#handleSendReset"
+	            prefWidth="140"/>
+	
+	    <Label fx:id="resetMessage" wrapText="true" maxWidth="250" style="-fx-text-fill: green;"/>
+	</VBox>
 
  	<!-- Spots View -->
     <VBox fx:id="spotsView" alignment="CENTER" spacing="20" visible="false" managed="false"
@@ -89,14 +110,19 @@
     <VBox fx:id="historyView" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label fx:id="greetingLabelHistory" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-        <Label text="No parking history found."/>
+        <ListView fx:id="historyListView" prefHeight="200" prefWidth="600"/>
+        
     </VBox>
 
     <!-- Reservations View -->
     <VBox fx:id="reservationsView" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label fx:id="greetingLabelReservations" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-        <Label text="No existing reservations found."/>
+		<HBox spacing="10" alignment="CENTER">
+   	    	<Button fx:id="editReservationButton" text="Edit reservation" onAction="#handleEditReservation"/>
+   			 <Button fx:id="cancelReservationButton" text="Cancel reservation" onAction="#handleCancelReservation"/>
+		</HBox>
+		<ListView fx:id="reservationListView" prefHeight="200" prefWidth="600"/>
     </VBox>
 
     <!-- Schedule Reservation -->
