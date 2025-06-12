@@ -84,8 +84,7 @@ public class ChatClient extends AbstractClient {
                     parkingCode = codePart.trim();
                     baseMessage = prefix;
                 }
-
-            
+                
                 switch (baseMessage) {
                     case "TERMINAL_LOGIN_SUCCESS":
                     	TerminalController.getInstance().handleLoginResponse(message);
@@ -93,6 +92,14 @@ public class ChatClient extends AbstractClient {
                     case "TERMINAL_LOGIN_FAILURE":
                         TerminalController.getInstance().handleLoginResponse(message);
                         TerminalController.getInstance().subscriberNotFoundCase();
+                        break;
+
+                    case "RESERVATION_CODE_EXISTS":
+                        TerminalController.getInstance().handleReservationCodeSuccess(message);
+                        break;
+
+                    case "RESERVATION_CODE_NOT_FOUND":
+                        TerminalController.getInstance().handleReservationCodeFailure(message);
                         break;
 
                     case "APP_LOGIN_FAILURE":

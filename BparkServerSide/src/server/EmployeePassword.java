@@ -12,11 +12,9 @@ public class EmployeePassword {
         this.conn = conn;
     }
 
-    /**
-     * שולף את הסיסמה עבור העובד עם הכתובת email הנתונה,
-     * או מחזיר null אם לא נמצא.
-     */
-    public String getPasswordForEmail(String email) throws SQLException {
+    
+    public String getPasswordForEmail(String email) throws SQLException 
+    {
         // 1. Debug print לפרמטר שנקלט
         System.out.println("[EmployeePassword] Searching for email → \"" + email + "\"");
 
@@ -39,4 +37,31 @@ public class EmployeePassword {
             }
         }
     }
+    
+        public String subscriptionCodeForEmail(String email) throws SQLException 
+        {
+        	
+            System.out.println("[EmployeePassword] Searching for email → \"" + email + "\"");
+
+            String sql = "SELECT subscription_code FROM subscribers WHERE email = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) 
+            {
+                ps.setString(1, email);
+
+                System.out.println("[EmployeePassword] Executing SQL: " + sql);
+
+                try (ResultSet rs = ps.executeQuery())
+                	{
+                    if (!rs.next()) {
+                        System.out.println("[EmployeePassword] No rows found for that email");
+                        return null;
+                    }
+                    String pwd = rs.getString("subscription_code");
+                    System.out.println("[EmployeePassword] Found password → " + pwd);
+                    return pwd;
+                	}
+            }
+        }
 }
+
+   

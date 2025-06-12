@@ -337,6 +337,32 @@ public class mysqlConnection {
         return reservations;
     }
 
+    /**
+     * Checks whether a reservation exists in the database based on the provided parking code.
+     *
+     * @param parkingCode The parking code to check.
+     * @return true if a reservation with the given code exists, false otherwise.
+     */
+    public static boolean doesReservationCodeExist(String parkingCode) {
+        String query = "SELECT 1 FROM reservations WHERE parking_code = ?";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, parkingCode);
+            ResultSet rs = stmt.executeQuery();
+            boolean exists = rs.next();
+            if (!exists)
+            {
+            	return rs.next();
+            }
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
     /*
      * Checks if a subscriber with the provided full name and subscription code exists in the database.

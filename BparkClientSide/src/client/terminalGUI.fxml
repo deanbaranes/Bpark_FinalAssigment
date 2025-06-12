@@ -43,12 +43,10 @@
 	    <Label text="Enter your email:" />
 	    <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180"/>
 	
-	    <Button text="Send reset link" onAction="#handleSendReset"
+	    <Button text="Send password to mail" onAction="#handleSendReset"
 	            prefWidth="140"/>
 	
 	    <Label fx:id="resetMessage" wrapText="true" maxWidth="250" style="-fx-text-fill: green;"/>
-	    
-	    <Button fx:id="btnBackFromForgot" text="Back" onAction="#handleBack" prefWidth="100"/>
 	</VBox>
 	 
     <!-- Sign In by hand -->
@@ -59,7 +57,7 @@
         <Label text="Insert Subscriber Code:"/>
         <PasswordField fx:id="codeField" maxWidth="180"/>
         <Button fx:id="submitButton" text="Submit" onAction="#handleSubmitLogin" prefWidth="100"/>
-        <Hyperlink fx:id="btnforgotpassword" text="Forgot password?" onAction="#handleShowForgot" />
+        <Hyperlink fx:id="btnforgotpassword" text="Forgot my password" onAction="#handleShowForgot" />
     </VBox>
     
    
@@ -96,6 +94,20 @@
 	    
 	</VBox>
 	
+		
+		<!-- Drop off has a Reservation Screen -->
+		<VBox fx:id="insertreservationcode" alignment="CENTER" spacing="30"
+		      AnchorPane.topAnchor="130" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100"
+		      visible="false" managed="false">
+		    <VBox alignment="CENTER" spacing="20">
+		     	<Label text="Insert parking code" />	
+		        <TextField fx:id="reservationCodeField" maxWidth="180"/>
+		        <Button fx:id="submitdropoffCodeButton" text="Submit" onAction="#handleSubmitReservationCode"/>
+		    </VBox>
+		</VBox>
+
+	
+	
 	<!-- Pickup View -->
     <VBox fx:id="pickupPane" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
@@ -105,6 +117,18 @@
         <Hyperlink fx:id="forgotPasswordLink" text="forgot my password" onAction="#handleForgotCode"/>
         <Button fx:id="submitPickupCodeButton" text="Submit" onAction="#handleSubmitPickupCode"/>
     </VBox>
+    
+    
+    	<!-- scanner Screen -->
+	<VBox fx:id="scannerPane" alignment="CENTER" spacing="30"
+	      AnchorPane.topAnchor="120" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+	    <VBox alignment="CENTER" spacing="30">
+	        <Label text="Please scan your identification card" />
+	        <Button fx:id="btnScan" text="Scan" prefWidth="120" onAction="#handleScanClick"/>
+	    </VBox>
+	    
+	</VBox>
+    
     
     <!-- Global Back Button -->
     <VBox alignment="CENTER" spacing="10" AnchorPane.bottomAnchor="60" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">

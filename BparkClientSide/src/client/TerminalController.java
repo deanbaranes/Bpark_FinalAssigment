@@ -23,7 +23,9 @@ import common.Subscriber;
 
 public class TerminalController implements BaseController {
 
-    private ChatClient client;
+	final public static String SCAN_LOG_ID = "900000001";
+	final public static String SCAN_LOG_PW = "carpass";
+	private ChatClient client;
     private final Stack<VBox> navigationStack = new Stack<>();
     private static TerminalController instance;
     private Subscriber currentSubscriber = new Subscriber("000000000","DefultUserPassword");
@@ -36,20 +38,21 @@ public class TerminalController implements BaseController {
 
     // === VBoxes ===
     @FXML private VBox mainMenu, signInForm, spotsView,
-            selectServicePane, pickupPane,signInChoice,dropoffMethod,forgotView;
+            selectServicePane, pickupPane,signInChoice,dropoffMethod,forgotView,insertreservationcode,
+            scannerPane;
 
     // === Buttons ===
     @FXML private Button signInButton, showSpotsButton,
             dropoffButton, pickupButton, submitButton, submitPickupCodeButton,
             backDropoffButton, backInsertCodeButton, backButton, exitButton,btnsignbyhand,signViaScanner,
-            btnYesReservation,btnNoReservation;
+            btnYesReservation,btnNoReservation,submitdropoffCodeButton,btnScan;
 
     // === Labels ===
     @FXML private Label chooseServiceLabel, dropoffCarLabel,
             pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage;
 
     // === Input Fields ===
-    @FXML private TextField idField, parkingCodeField,resetEmailField;
+    @FXML private TextField idField, parkingCodeField,resetEmailField,reservationCodeField;
     @FXML private PasswordField codeField;
 
     // === Text Areas and Texts ===
@@ -70,7 +73,7 @@ public class TerminalController implements BaseController {
     }
 
     private void showOnly(VBox target) {
-        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane}) {
             if (pane != null) {
                 pane.setVisible(false);
                 pane.setManaged(false);
@@ -81,7 +84,7 @@ public class TerminalController implements BaseController {
     }
 
     private void navigateTo(VBox next) {
-        for (VBox pane : new VBox[]{mainMenu,signInChoice, signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice, signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane}) {
             if (pane != null && pane.isVisible()) {
                 navigationStack.push(pane);
                 break;
@@ -111,9 +114,34 @@ public class TerminalController implements BaseController {
     
     @FXML
     private void handleSignInViaScannerClick() {
-    	idField.clear();
-        codeField.clear();
-        navigateTo(signInForm);
+        navigateTo(scannerPane);
+    }
+    
+    @FXML
+    private void handleScanClick() 
+    {
+    	Subscriber[] subscribers = new Subscriber[2];
+        Random random = new Random();
+        int index = random.nextInt(2);
+        Subscriber realSub = new Subscriber(SCAN_LOG_ID,SCAN_LOG_PW);
+        Subscriber fakeSub = new Subscriber("notRealID","notRealPW");
+        subscribers[0] = realSub;
+        subscribers[1] = fakeSub;
+        System.out.println("the index was: " + index);
+        if(index == 0 ) 
+        {
+        	currentSubscriber = realSub;
+        	try {
+            	client.sendToServer(new LoginRequest(SCAN_LOG_ID, SCAN_LOG_PW, "terminal"));
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
+        }
+        else 
+        {
+        	showPopup("No subscriber has been found.\n please try to scan again, or sign in manually");
+        	return;
+        }  
     }
     
     @FXML
@@ -150,7 +178,7 @@ public class TerminalController implements BaseController {
     
     @FXML
     private void handleShowForgot() {
-        showOnly(forgotView);
+    	navigateTo(forgotView);
     }
 
     public void handleLoginResponse(String response) {
@@ -164,6 +192,9 @@ public class TerminalController implements BaseController {
         });
     }
     
+    
+
+    
     @FXML
     private void handleDropoffMethodChoice() {
         navigateTo(dropoffMethod);
@@ -171,7 +202,7 @@ public class TerminalController implements BaseController {
     
     @FXML
     private void handleDropoffYesReserve() {
-    	showPopup("ongoing coding progress ");
+    	navigateTo(insertreservationcode);
     }
     
     
@@ -270,7 +301,7 @@ public class TerminalController implements BaseController {
         }
         try {
             // שליחת ה־Request לשרת
-            client.sendToServer(new PasswordResetRequest(email));
+            client.sendToServer(new PasswordResetRequest(email,"sub"));
         } catch (IOException e) {
             e.printStackTrace();
             resetMessage.setText("Failed to send request.");
@@ -303,6 +334,46 @@ public class TerminalController implements BaseController {
     	showPopup("Dropoff was successful.\n your parking code is: "+ parkingCode +"\n If you would like to extend your parking time by up to 4 additional hours,\n you can do so through the app. ");
     }
     
+    
+    /**
+     * Handles the submission of a reservation code during the drop-off process.
+     * <p>
+     * This method retrieves the user-entered reservation code from the input field
+     * and sends a CHECK_RESERVATION_CODE request to the server for validation.
+     * <p>
+     * If the field is empty, a UI popup informs the user to enter a code.
+     * Any IOException during sendToServer is caught and reported via a popup message.
+     *
+     * @throws IllegalArgumentException if the reservation code field is empty (handled by UI feedback)
+     */
+    @FXML
+    private void handleSubmitReservationCode() {
+        String reservationCode = reservationCodeField.getText().trim();
+        reservationCodeField.clear();
+        
+        if (reservationCode.isEmpty()) {
+            showPopup("Please enter the reservation code.");
+            return;
+        }
+        
+        try {
+            client.sendToServer("CHECK_RESERVATION_CODE|" + reservationCode);
+        } catch (IOException e) {
+            e.printStackTrace();
+            showPopup("Failed to send reservation code to server.");
+        }
+    }
+    
+    public void handleReservationCodeSuccess(String response) {
+        Platform.runLater(() -> showPopup("Dropoff was successful.\nUse your reservation code to pick up your car \n If you would like to extend your parking time by up to 4 additional hours,\n you can do so through the app. "));   
+
+    }
+
+    public void handleReservationCodeFailure(String response) {
+        Platform.runLater(() -> showPopup("There are no active reservations under this code.\n Please try again or press 'Forgot my password' \nto restore your password."));
+    }
+
+
     public void handleCarAlreadyParked() 
     {
     	handleBack();

@@ -34,7 +34,6 @@
 
     <Button fx:id="btnloginsubmit" text="Submit"
             onAction="#handleLoginManagementSubmit" prefWidth="100" />
-     <Button fx:id="btnback" text="Back" onAction="#handleBack" prefWidth="100" />
 </VBox>
 <!-- FORGOT-PASSWORD VIEW -->
 <VBox fx:id="forgotView"
@@ -50,15 +49,12 @@
     <Label text="Enter your email:" />
     <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180"/>
 
-    <Button text="Send reset link" onAction="#handleSendReset"
+    <Button text="Send password to Email" onAction="#handleSendReset"
             prefWidth="140"/>
 
     <Label fx:id="resetMessage" wrapText="true" maxWidth="250" style="-fx-text-fill: green;"/>
-    
-    <Button fx:id="btnBackFromForgot" text="Back" onAction="#handleBack" prefWidth="100"/>
+
 </VBox>
-
-
 
     <!-- MANAGER MAIN MENU VIEW -->
     <VBox fx:id="managerMenuView" alignment="CENTER" spacing="15"
@@ -72,7 +68,7 @@
 		<Button fx:id="btnregisternewmember" text="Register new member" onAction="#handleRegisterNewMember" prefWidth="200" />
 		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
-		<Button fx:id="btnback" text="Back" onAction="#handleBack" prefWidth="200" />
+
 
 
 
@@ -93,7 +89,7 @@
 
         </HBox>
         <TextArea fx:id="console_memberdeatils" prefHeight="180.0" prefWidth="500.0" />
-           <Button text="Back" onAction="#handleBack" prefWidth="150" />
+
     </VBox>
 
     <!-- PARKING DETAILS VIEW -->
@@ -108,7 +104,7 @@
 
         </HBox>
         <TextArea fx:id="console_parkingdetails" prefHeight="180.0" prefWidth="500.0" />
-        <Button text="Back" onAction="#handleBack" prefWidth="150" />
+
     </VBox>
 
 	 <!-- REGISTER MEMBER VIEW -->
@@ -131,8 +127,8 @@
 	    <TextField fx:id="textfield_creditcard" promptText="Credit card" maxWidth="250" />
 	    <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" maxWidth="250" />
 	    <VBox spacing="10" alignment="CENTER">
-			<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="150" />
-	        <Button text="Back" onAction="#handleBack" prefWidth="150" />
+			<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="100" />
+
 	    </VBox>
 	</VBox>
 
@@ -159,7 +155,7 @@
         <yAxis><NumberAxis side="LEFT" /></yAxis>
     </LineChart>
 
-    <Button text="Back" onAction="#handleBack" prefWidth="120" />
+
 </VBox>
 
 
@@ -185,10 +181,19 @@
         <yAxis><NumberAxis side="LEFT" /></yAxis>
     </LineChart>
 
-    <Button text="Back" onAction="#handleBack" prefWidth="120" />
+
 </VBox>
-
-
-
+<VBox spacing="10" alignment="CENTER"
+      AnchorPane.bottomAnchor="20.0"
+      AnchorPane.leftAnchor="100.0"
+      AnchorPane.rightAnchor="100.0">
+  <Button fx:id="btnback"
+          text="Back"
+          onAction="#handleBack"
+          prefWidth="100" prefHeight="20"/>
+  <Button text="Exit"
+          onAction="#handleExit"
+          prefWidth="100" prefHeight="20"/>
+</VBox>
 
 </AnchorPane>

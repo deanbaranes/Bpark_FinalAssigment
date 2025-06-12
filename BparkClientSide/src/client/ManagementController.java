@@ -140,7 +140,16 @@ public class ManagementController implements BaseController{
         navigationStack.clear();
         showOnly(loginView);
     }
-
+    
+    @FXML
+    private void handleExit() {
+        if (client != null) {
+            client.quit();
+        } else {
+            System.exit(0);
+        }
+    } 
+    
     @FXML
     private void handleViewMemberDetails() {
         navigateTo(memberDetailsView);
@@ -151,6 +160,7 @@ public class ManagementController implements BaseController{
         navigateTo(parkingDetailsView);
     }
 
+ 
     @FXML
     private void handleRegisterNewMember() {
         navigateTo(registerMemberView);
@@ -198,8 +208,7 @@ public class ManagementController implements BaseController{
             return;
         }
         try {
-            // שליחת ה־Request לשרת
-            client.sendToServer(new PasswordResetRequest(email));
+            client.sendToServer(new PasswordResetRequest(email,"reserve"));
         } catch (IOException e) {
             e.printStackTrace();
             resetMessage.setText("Failed to send request.");

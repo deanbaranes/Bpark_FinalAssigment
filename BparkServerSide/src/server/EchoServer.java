@@ -55,7 +55,14 @@ public class EchoServer extends AbstractServer {
 
         try {
             if (msg instanceof PasswordResetRequest req) {
-                handlePasswordReset(req, client);
+            	if(req.getPWtype().equals("sub"))
+            	{
+            		handleSubscriptionCodeReset(req,client);
+            	}
+            	else {
+            		   handlePasswordReset(req, client);
+            	}
+             
             }
             if (msg instanceof String command) {
                 handleStringCommand(command, client);
@@ -108,7 +115,19 @@ public class EchoServer extends AbstractServer {
         } else if (command.equals("REQUEST_AVAILABLE_SPOTS")) {
             client.sendToClient(mysqlConnection.getAvailableSpots());
             
-        } else if (command.equals("CHECK_PARKING_AVAILABILITY")) {
+        }
+        else if (command.startsWith("CHECK_RESERVATION_CODE|")) {
+            String reservationCode = command.split("\\|")[1].trim();
+            boolean exists = mysqlConnection.doesReservationCodeExist(reservationCode);
+
+            if (exists) {
+                client.sendToClient("RESERVATION_CODE_EXISTS");
+            } else {
+                client.sendToClient("RESERVATION_CODE_NOT_FOUND");
+            }
+        }
+
+        else if (command.equals("CHECK_PARKING_AVAILABILITY")) {
             List<String> availableSpots = mysqlConnection.getAvailableSpots();
             if (availableSpots.isEmpty()) {
                 client.sendToClient("NO_SPOTS_AVAILABLE");
@@ -421,7 +440,9 @@ public class EchoServer extends AbstractServer {
         }
     }
     
-    private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) {
+    private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) 
+    {
+   
         System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
         String email = req.getEmail();
 
@@ -437,6 +458,38 @@ public class EchoServer extends AbstractServer {
                 System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
                 client.sendToClient(new PasswordResetResponse(true,
                     "Your password has been sent to " + email));
+            }
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+				client.sendToClient(new PasswordResetResponse(false, "Server error."));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+    }
+    
+    
+    
+    
+    private void handleSubscriptionCodeReset(PasswordResetRequest req, ConnectionToClient client) 
+    {
+        System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
+        String email = req.getEmail();
+        try (Connection conn = mysqlConnection.connectToDB()) {
+            EmployeePassword ep = new EmployeePassword(conn);
+            String password = ep.subscriptionCodeForEmail(email);
+
+            if (password == null) {
+                client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
+            } else {
+                System.out.println("[EchoServer] → About to call sendPasswordEmail()");
+                new EmailSender().sendPasswordEmail(email, password);
+                System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
+                client.sendToClient(new PasswordResetResponse(true,
+                    "Your subscription code has been sent to " + email));
             }
         }
         catch (Exception ex) {
