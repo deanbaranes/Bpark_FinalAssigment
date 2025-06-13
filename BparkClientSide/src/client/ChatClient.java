@@ -4,6 +4,7 @@ import ocsf.client.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import common.ChatIF;
@@ -247,17 +248,39 @@ public class ChatClient extends AbstractClient {
 
 
             } else if (msg instanceof List<?> list) {
-                // Handle incoming list messages from the server
+            	/**
+                 * Handle incoming list messages from the server.
+                 * This block processes data returned from the server,
+                 * such as reservations, parking history, available spots, etc.
+                 */
                 if (list.isEmpty()) {
-                    // Show a message if no records were found
-                    if (controller instanceof ManagementController mgr) {
+                    /**
+                     * If the list is empty, determine the context and display an appropriate placeholder or message.
+                     * This avoids leaving outdated UI content on screen after data was removed (e.g., after cancellation).
+                     */
+                    if (controller instanceof ClientController clientController) {
                         Platform.runLater(() -> {
+                            /**
+                             * Determine which view is currently active and display the corresponding empty list placeholder.
+                             * - If reservation view is active, show "No existing reservations" placeholder.
+                             * - If history view is active, show "No parking history found" placeholder.
+                             */
+                            if (clientController.isShowingReservationView()) {
+                                clientController.displayReservations(new ArrayList<>());
+                            } else if (clientController.isShowingHistoryView()) {
+                                clientController.displayHistory(new ArrayList<>());
+                            }
+                        });
+                    } else if (controller instanceof ManagementController mgr) {
+                        Platform.runLater(() -> {
+                            /**
+                             * In management view, show a popup message if no data was found for the requested query.
+                             */
                             mgr.showPopup("No active parking records found for the given member number / parking number.");
                         });
                     }
                     return;
                 }
-
                 Object first = list.get(0);
 
                 if (first instanceof String) {

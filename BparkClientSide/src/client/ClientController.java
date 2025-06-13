@@ -408,6 +408,13 @@ public class ClientController implements BaseController {
     }
 
     /**
+     * Checks if the parking history view is currently displayed.
+     * @return true if the history view is visible; false otherwise.
+     */
+    public boolean isShowingHistoryView() {
+        return historyView.isVisible();
+    }
+    /**
      * displayReservations — Displays current reservations for the subscriber.
      * Description:
      * Clears the reservations pane, shows a personalized heading, and populates the
@@ -417,7 +424,11 @@ public class ClientController implements BaseController {
      */
     public void displayReservations(List<Reservation> reservationList) {
         Platform.runLater(() -> {
+            // Always show title and view
             greetingLabelReservations.setText("Hi " + currentSubscriber.getFull_name() + ", here are your current reservations:");
+            if (!reservationsView.getChildren().contains(greetingLabelReservations)) {
+                reservationsView.getChildren().add(0, greetingLabelReservations);
+            }
             showOnly(reservationsView);
 
             reservationListView.getItems().clear();
@@ -453,6 +464,13 @@ public class ClientController implements BaseController {
         );
     }
     
+    /**
+     * Checks if the reservations view is currently displayed.
+     * @return true if the reservations view is visible; false otherwise.
+     */
+    public boolean isShowingReservationView() {
+        return reservationsView.isVisible();
+    }
     @FXML
     public void handleEditReservation() {
         Reservation selected = reservationListView.getSelectionModel().getSelectedItem();
