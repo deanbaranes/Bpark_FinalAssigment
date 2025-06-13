@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * Controller for the main welcome screen.
  * Displays initial role selection (Clients or Management),
- * and provides an in-place sub-menu for client access type selection.
+ * and provides an in-place sub-menu for client access type selection..
  */
 public class MainWelcomeController {
 

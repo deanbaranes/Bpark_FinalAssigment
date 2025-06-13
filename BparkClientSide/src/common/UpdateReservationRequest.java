@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Represents a request to update an existing reservation's date and time.
+ * Represents a request to update an existing reservation's date and time..
  */
 public class UpdateReservationRequest implements Serializable {
     private final int reservationId;

@@ -7,7 +7,7 @@ import javafx.scene.control.TextArea;
 /**
  * ServerController manages the server-side GUI interactions.
  * It allows the user to start the server, view connected clients,
- * and exit the application.
+ * and exit the application..
  */
 public class ServerController {
 

@@ -6,7 +6,7 @@ import java.io.Serializable;
 /**
  * Represents a client request to update subscriber email and/or phone.
  * Contains the subscriber_id, and new values for email and phone.
- * Sent from client to server via OCSF and processed in EchoServer.
+ * Sent from client to server via OCSF and processed in EchoServer..
  */
 public class UpdateSubscriberDetailsRequest implements Serializable {
     private String subscriber_id;

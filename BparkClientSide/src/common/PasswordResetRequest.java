@@ -14,4 +14,4 @@ public class PasswordResetRequest implements Serializable {
     public String getEmail() { return email; }
     public String getPWtype() { return PWtype; }
 }
-
+//*

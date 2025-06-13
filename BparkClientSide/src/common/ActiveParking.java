@@ -3,7 +3,7 @@ package common;
 import java.io.Serializable;
 
 /**
- * Represents an active parking record as stored in the database.
+ * Represents an active parking record as stored in the database..
  */
 public class ActiveParking implements Serializable {
     private static final long serialVersionUID = 1L;

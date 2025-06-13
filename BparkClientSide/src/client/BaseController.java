@@ -8,7 +8,7 @@ public interface BaseController {
     /**
      * Injects the ChatClient into the controller after the FXML is loaded.
      * 
-     * @param client The ChatClient used for server communication.
+     * @param client The ChatClient used for server communication..
      */
     void setClient(ChatClient client);
 }

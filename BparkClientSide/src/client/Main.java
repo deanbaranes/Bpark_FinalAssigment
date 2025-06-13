@@ -10,7 +10,7 @@ import javafx.scene.Parent;
 
 /**
  * Main class for launching the JavaFX client application.
- * Loads the welcome screen GUI and defers connection logic to next screens.
+ * Loads the welcome screen GUI and defers connection logic to next screens..
  */
 public class Main extends Application {
 

@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * This class represents a request to register a new subscriber.
  * It contains all necessary fields to create a new member entry in the database.
- * Sent from client to server through the OCSF architecture.
+ * Sent from client to server through the OCSF architecture..
  */
 public class RegisterMemberRequest implements Serializable {
     private String firstName;

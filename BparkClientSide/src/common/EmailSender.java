@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 /**
- * שולח מייל דרך Gmail SMTP.
+ * שולח מייל דרך Gmail SMTP..
  */
 public class EmailSender {
 

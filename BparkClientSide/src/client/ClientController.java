@@ -365,7 +365,7 @@ public class ClientController implements BaseController {
      * displayHistory — Shows parking history for the logged-in subscriber.
      * Description:
      * Clears the history view, sets a greeting header, and displays a list of historical
-     * parking entries received from the server.
+     * parking entries received from the server..
      * Parameters:
      *   - historyList: List of ParkingHistory objects
      */

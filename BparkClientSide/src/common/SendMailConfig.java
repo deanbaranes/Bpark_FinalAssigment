@@ -1,6 +1,6 @@
 package common;
 /**
- * Configuration constants for Gmail SMTP.
+ * Configuration constants for Gmail SMTP..
  */
 public class SendMailConfig {
 	/**

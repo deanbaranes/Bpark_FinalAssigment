@@ -99,7 +99,7 @@
 
     </VBox>
 
-    <!-- PARKING DETAILS VIEW -->
+    <!-- PARKING DETAILS VIEW .-->
     <VBox fx:id="parkingDetailsView" alignment="CENTER" spacing="10"
           visible="false" managed="false"
           AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">

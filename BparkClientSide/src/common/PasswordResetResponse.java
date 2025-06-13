@@ -12,3 +12,4 @@ public class PasswordResetResponse implements Serializable {
     public boolean isSuccess() { return success; }
     public String getMessage() { return message; }
 }
+//*

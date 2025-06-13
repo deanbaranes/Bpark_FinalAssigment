@@ -77,7 +77,7 @@ public class mysqlConnection {
         }
         
     }
-    /**
+    /**.
      * Generates a random subscription code for new subscribers.
      * Format: SUB123456
      *

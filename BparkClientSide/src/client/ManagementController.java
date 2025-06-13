@@ -457,7 +457,7 @@ public class ManagementController implements BaseController{
      * - Credit card must be exactly 16 digits
      *
      * If validation passes, a RegisterMemberRequest object is created and sent to the server.
-     * Otherwise, a popup alert notifies the user of the specific error.
+     * Otherwise, a popup alert notifies the user of the specific error..
      */
     @FXML
     private void handleSubmitNewMember() {

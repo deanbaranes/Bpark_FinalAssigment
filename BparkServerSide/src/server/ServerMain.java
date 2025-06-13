@@ -14,7 +14,7 @@ public class ServerMain extends Application {
 
     /**
      * JavaFX start method that initializes and displays the server GUI.
-     * @param primaryStage The main window of the application.
+     * @param primaryStage The main window of the application..
      */
     @Override
     public void start(Stage primaryStage) {

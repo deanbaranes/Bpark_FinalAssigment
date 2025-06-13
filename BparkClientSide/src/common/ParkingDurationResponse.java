@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Response sent from server to client containing parking duration records..
+ * Response sent from server to client containing parking duration records
  */
 public class ParkingDurationResponse implements Serializable {
     private static final long serialVersionUID = 1L;

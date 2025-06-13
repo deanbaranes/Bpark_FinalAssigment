@@ -398,7 +398,7 @@ public class TerminalController implements BaseController {
      * @param resp the PasswordResetResponse object containing:
      *             
      *               success – true if the reset email was sent successfully, false otherwise
-     *               message – the feedback text to display to the user
+     *            .   message – the feedback text to display to the user
      *             
      */
     public void handlePasswordResetResponse(PasswordResetResponse resp) {

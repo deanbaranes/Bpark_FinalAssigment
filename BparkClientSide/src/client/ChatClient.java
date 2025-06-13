@@ -13,7 +13,7 @@ import javafx.application.Platform;
 /**
  * ChatClient represents the client-side connection to the EchoServer.
  * It manages communication with the server, handles server responses,
- * and tracks the current menu state to guide user interaction.
+ * and tracks the current menu state to guide user interaction..
  */
 public class ChatClient extends AbstractClient {
 

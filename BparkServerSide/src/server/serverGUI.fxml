@@ -12,7 +12,7 @@
       fx:controller="server.ServerController">
    <children>
 
-      <!-- Title Label -->
+      <!-- Title Label. -->
       <Label alignment="CENTER" text="Client Info" />
 
       <!-- HBox for buttons to be placed horizontally -->

@@ -6,7 +6,7 @@ import java.time.LocalTime;
 
 /**
  * Represents a reservation made by a subscriber.
- * Used to show upcoming or existing reservations in the client GUI.
+ * Used to show upcoming or existing reservations in the client GUI..
  */
 public class Reservation implements Serializable {
 

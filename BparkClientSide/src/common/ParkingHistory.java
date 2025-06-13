@@ -8,7 +8,7 @@ import java.time.LocalTime;
 
 /**
  * Represents a single parking history record for a subscriber.
- * Used to display past parking events in the client GUI.
+ * Used to display past parking events in the client GUI..
  */
 public class ParkingHistory implements Serializable {
 

@@ -6,7 +6,7 @@
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.MainWelcomeController"
             prefWidth="700" prefHeight="500">
 
-    <!-- Main Welcome Menu -->
+    <!-- Main Welcome Menu .-->
     <VBox fx:id="mainMenu" alignment="CENTER" spacing="20"
           AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
           AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
