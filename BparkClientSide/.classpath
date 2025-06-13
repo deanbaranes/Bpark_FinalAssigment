@@ -7,12 +7,12 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/javaFx21">
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JavaFxR">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/shona/git/Bpark_FinalAssigment/BparkServerSide/lib/jakarta.activation-2.0.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/shona/git/Bpark_FinalAssigment/BparkServerSide/lib/jakarta.mail-2.0.1.jar"/>
+	<classpathentry kind="lib" path="/BparkServerSide/lib/jakarta.activation-2.0.1.jar"/>
+	<classpathentry kind="lib" path="/BparkServerSide/lib/jakarta.mail-2.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

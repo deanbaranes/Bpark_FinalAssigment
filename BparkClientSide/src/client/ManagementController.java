@@ -15,9 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
-
 import java.util.List;
-
 import java.io.IOException;
 import java.util.Stack;
 
@@ -767,8 +765,6 @@ public class ManagementController implements BaseController{
             parkingDurationBarChart.getData().addAll(actualSeries, lateSeries, extendedSeries);
         });
     }
-
-
 }
     
 
