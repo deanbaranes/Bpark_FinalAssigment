@@ -2,12 +2,17 @@ package server;
 
 import java.io.*;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import common.LoginManagement;
 import common.LoginRequest;
+import common.ParkingDurationRecord;
+import common.ParkingDurationRequest;
+import common.ParkingDurationResponse;
 import common.ParkingHistory;
 import common.RegisterMemberRequest;
 import common.Reservation;
@@ -15,6 +20,8 @@ import common.Subscriber;
 import common.UpdateReservationRequest;
 import common.ActiveParking;
 import common.EmailSender;
+import common.GetSiteActivityRequest;
+import common.GetSiteActivityResponse;
 import common.UpdateSubscriberDetailsRequest;
 import common.PasswordResetResponse;
 import common.PasswordResetRequest;
@@ -78,7 +85,7 @@ public class EchoServer extends AbstractServer {
                 handleNewReservationRequest(req, client);
             } else if (msg instanceof Subscriber subscriber) {
             	  handleNewSubscriberDropoffNoReserv(subscriber, client);
-            } else if (msg instanceof UpdateReservationRequest ) {
+            } else if (msg instanceof UpdateReservationRequest) {
                 UpdateReservationRequest req = (UpdateReservationRequest) msg;
                 boolean updated = mysqlConnection.updateReservationDateTime(
                     req.getReservationId(), req.getNewDate(), req.getNewTime());
@@ -86,9 +93,22 @@ public class EchoServer extends AbstractServer {
                     client.sendToClient("UPDATE_SUCCESS");
                 else
                     client.sendToClient("UPDATE_FAILED");
-            } else {
+
+            } else if (msg instanceof GetSiteActivityRequest) {
+                handleSiteActivityRequest(client); 
+
+            }
+            else if (msg instanceof ParkingDurationRequest req) {
+                try (Connection conn = mysqlConnection.connectToDB()) {
+                    handleParkingDurationRequest(req, conn, client);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
                 client.sendToClient("Unsupported message format.");
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -512,4 +532,67 @@ public class EchoServer extends AbstractServer {
 			}
         }
     }
+    private void handleSiteActivityRequest(ConnectionToClient client) {
+        try {
+            List<Reservation> futureReservations = mysqlConnection.getFutureReservations();
+            List<ActiveParking> activeParkings = mysqlConnection.getActiveParkings();
+
+            GetSiteActivityResponse response = new GetSiteActivityResponse(futureReservations, activeParkings);
+            client.sendToClient(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                client.sendToClient("SITE_ACTIVITY_FAILED");
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        }
+    }
+    /**
+     * Handles a ParkingDurationRequest from a client by querying the database
+     * and returning a ParkingDurationResponse with detailed duration records.
+     *
+     * @param client The client connection that sent the request.
+     * @param req    The request containing year and month filters.
+     */
+    private void handleParkingDurationRequest(ParkingDurationRequest req, Connection conn, ConnectionToClient client) {
+        List<ParkingDurationRecord> records = new ArrayList<>();
+
+        String sql = """
+                SELECT parking_code,
+                       TIMESTAMPDIFF(MINUTE, CONCAT(entry_date, ' ', entry_time), CONCAT(exit_date, ' ', exit_time)) AS duration,
+                       late_duration,
+                       extended_duration,
+                       parking_spot
+                FROM parking_history
+                WHERE YEAR(entry_date) = ? AND MONTH(entry_date) = ?
+            """;
+
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, Integer.parseInt(req.getYear()));
+            stmt.setInt(2, Integer.parseInt(req.getMonth()));
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String code = rs.getString("parking_code");
+                int duration = rs.getInt("duration");
+                int late = rs.getInt("late_duration");
+                int extended = rs.getInt("extended_duration"); 
+                int spotNumber = rs.getInt("parking_spot");
+                ParkingDurationRecord record = new ParkingDurationRecord(code, duration, late, extended, spotNumber);
+
+                records.add(record);
+            }
+
+            client.sendToClient(new ParkingDurationResponse(records));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 }

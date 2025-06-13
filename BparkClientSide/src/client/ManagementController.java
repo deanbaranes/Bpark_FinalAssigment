@@ -3,6 +3,7 @@ package client;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -11,6 +12,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
+
 import java.util.List;
 
 import java.io.IOException;
@@ -20,8 +25,15 @@ import common.PasswordResetRequest;
 import common.PasswordResetResponse;
 import common.LoginManagement;
 import common.LoginRequest;
+import common.ParkingDurationRecord;
+import common.ParkingDurationRequest;
 import common.RegisterMemberRequest;
+import common.Reservation;
 import common.ActiveParking;
+import common.GetSiteActivityRequest;
+
+
+
 
 public class ManagementController implements BaseController{
 
@@ -38,6 +50,7 @@ public class ManagementController implements BaseController{
     @FXML private VBox parkingDetailsView;
     @FXML private VBox registerMemberView;
     @FXML private VBox memberStatusReportView;
+    @FXML private VBox siteActivityChartsView;
 
     // === Login ===
     @FXML private TextField usernametextfield;
@@ -67,19 +80,32 @@ public class ManagementController implements BaseController{
     @FXML private VBox parkingDurationView;
     @FXML private TextField parkingDurationYearField;
     @FXML private TextField parkingDurationMonthField;
+    @FXML private BarChart<String, Number> parkingDurationBarChart;
 
 
+;
+    
     // === Register New Member ===
     @FXML private Label label_register_member;
     @FXML private TextField textfield_creditcard,label_vehiclenumber_register2,textfield_firstname, textfield_lastname, textfield_id1, textfield_email, textfiled_phonenumber, label_vehiclenumber_register;
     @FXML private Button btnsignup;
 
-    // === Member Status Report ===
+ // === Site Activity View ===
+    @FXML private VBox siteActivityView;
+    @FXML private Button btnViewSiteActivity;
+    @FXML private ScrollPane scrollSiteActivity;
+
+    @FXML private TextArea console_siteactivity;
+
+    
+ // === Member Status Report ===
     @FXML private Label label_enteryear, label_entermoth;
     @FXML private TextField label_Enteryear, monthField;
     @FXML private Button btnsearchreport;
     @FXML private Text memberStatusTitle;
     @FXML private javafx.scene.chart.LineChart<?, ?> chart_memberstatus, parking_timechart;
+
+
 
     
     @Override
@@ -91,7 +117,10 @@ public class ManagementController implements BaseController{
     private void initialize() {
         instance = this;
         showOnly(loginView);
-      
+        parkingDurationBarChart.setVisible(false);
+        parkingDurationBarChart.setManaged(false);
+
+
     }
 
     /* Returns the singleton instance of the ManagementController */
@@ -111,7 +140,9 @@ public class ManagementController implements BaseController{
             registerMemberView,
             memberStatusReportView,
             parkingDurationView,
-            forgotView 
+            siteActivityView,    
+            forgotView
+       
         }) {
             if (pane != null) {
                 pane.setVisible(false);
@@ -127,7 +158,7 @@ public class ManagementController implements BaseController{
     */
 
     private void navigateTo(VBox next) {
-        for (VBox pane : new VBox[]{loginView, managerMenuView, memberDetailsView, parkingDetailsView, registerMemberView, memberStatusReportView}) {
+        for (VBox pane : new VBox[]{loginView, managerMenuView, memberDetailsView, parkingDetailsView, registerMemberView,siteActivityView ,memberStatusReportView,parkingDetailsView }) {
             if (pane != null && pane.isVisible()) {
                 navigationStack.push(pane);
                 break;
@@ -149,6 +180,32 @@ public class ManagementController implements BaseController{
             System.exit(0);
         }
     } 
+    @FXML
+    private void handleViewSiteActivity() {
+        navigateTo(siteActivityView);
+        try {
+            client.sendToServer(new GetSiteActivityRequest());
+        } catch (IOException e) {
+            showPopup("Failed to fetch site activity.");
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleViewMemberStatusReport() {
+        navigateTo(memberStatusReportView);
+    }
+    @FXML
+    private void handleBackFromCharts() {
+        navigateTo(siteActivityView);
+    }
+    
+
+    @FXML
+    private void handleViewParkingDuration() {
+        navigateTo(parkingDurationView);
+    }
+
     
     @FXML
     private void handleViewMemberDetails() {
@@ -167,16 +224,10 @@ public class ManagementController implements BaseController{
     }
 
 
-    @FXML
-    private void handleViewMemberStatusReport() {
-        navigateTo(memberStatusReportView);
-    }
+
     
 
-    @FXML
-    private void handleViewParkingDuration() {
-        navigateTo(parkingDurationView);
-    }
+
     /*
     Handles the "Back" button logic by navigating to the previous screen in the stack or returning to login/main welcome screen if the stack is empty.
     */
@@ -189,6 +240,17 @@ public class ManagementController implements BaseController{
     private void handleShowForgot() {
         showOnly(forgotView);
     }
+    
+    /**
+     * Returns the TextArea used to display parking details in the management UI.
+     * This is typically used to show search results or status messages related to active parking.
+     *
+     * @return The TextArea displaying parking details.
+     */
+    public TextArea getConsoleParkingDetails() {
+        return console_parkingdetails;
+    }
+
 
 
     /**
@@ -247,6 +309,7 @@ public class ManagementController implements BaseController{
             	parkingDurationMonthField.clear();
 
             }
+
             showOnly(previous);
             
         } else if (managerMenuView.isVisible()) {
@@ -469,13 +532,15 @@ public class ManagementController implements BaseController{
 
             btnmemberstatusreport.setVisible(true);
             btnmemberstatusreport.setManaged(true);
-
             // Show shared buttons
             btnmemberdetails.setVisible(true);
             btnmemberdetails.setManaged(true);
             
             btnparkingdetails.setVisible(true);
             btnparkingdetails.setManaged(true);
+            
+            btnViewSiteActivity.setVisible(true);   // ← רק למנהל
+            btnViewSiteActivity.setManaged(true);
 
         } else {
             // Show register button for attendant
@@ -489,12 +554,16 @@ public class ManagementController implements BaseController{
             btnmemberstatusreport.setVisible(false);
             btnmemberstatusreport.setManaged(false);
 
+            
             // Show shared buttons
             btnmemberdetails.setVisible(true);
             btnmemberdetails.setManaged(true);
             
             btnparkingdetails.setVisible(true);
             btnparkingdetails.setManaged(true);
+
+            btnViewSiteActivity.setVisible(false); 
+            btnViewSiteActivity.setManaged(false);
         }
     }
     
@@ -608,7 +677,101 @@ public class ManagementController implements BaseController{
     }
 
     
-    
+
+
+    public void displaySiteActivity(List<Reservation> future, List<ActiveParking> active) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("=== Future Reservations ===\n");
+        if (future.isEmpty()) {
+            sb.append("No future reservations found.\n");
+        } else {
+            for (Reservation r : future) {
+                sb.append(String.format("Subscriber ID: %s\nParking Code: %s\nStart: %s to %s\n\n",
+                    r.getSubscriberId(), r.getParkingCode(), r.getEntryDate(), r.getExitDate()));
+            }
+        }
+
+        sb.append("\n=== Active Parkings ===\n");
+        if (active.isEmpty()) {
+            sb.append("No active parkings found.\n");
+        } else {
+            for (ActiveParking a : active) {
+                sb.append(String.format("Parking Code: %s\nSubscriber ID: %s\nEntry Time: %s\n\n",
+                    a.getParkingCode(), a.getSubscriberId(), a.getEntryTime()));
+            }
+        }
+
+        Platform.runLater(() -> {
+            console_siteactivity.setText(sb.toString());
+        });
+    }
+
+    /**
+     * Triggered when the Search button is clicked on the Parking Duration screen.
+     * Sends a ParkingDurationRequest to the server with the selected year and month.
+     */
+    @FXML
+    private void handleSearchParkingDuration() {
+        String year = parkingDurationYearField.getText().trim();
+        String month = parkingDurationMonthField.getText().trim();
+
+        if (year.isEmpty() || month.isEmpty()) {
+            showPopup("Please enter both year and month.");
+            return;
+        }
+
+        try {
+            ParkingDurationRequest request = new ParkingDurationRequest(year, month);
+            client.sendToServer(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            showPopup("Failed to send request.");
+        }
+    }
+
+
+    /**
+     * Displays a stacked bar chart showing actual parking time,
+     * extended time, and late time for each parking spot.
+     *
+     * @param records List of parking duration records, each with actual, extended, and late durations
+     */
+
+    public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
+    	System.out.println("Search button clicked");
+
+    	parkingDurationBarChart.setVisible(true);
+    	parkingDurationBarChart.setManaged(true);
+
+        Platform.runLater(() -> {
+            parkingDurationBarChart.getData().clear();
+
+            XYChart.Series<String, Number> actualSeries = new XYChart.Series<>();
+            actualSeries.setName("Actual Duration");
+
+            XYChart.Series<String, Number> lateSeries = new XYChart.Series<>();
+            lateSeries.setName("Late Duration");
+
+            XYChart.Series<String, Number> extendedSeries = new XYChart.Series<>();
+            extendedSeries.setName("Extended Duration");
+            for (ParkingDurationRecord record : records) {
+                String label = "Spot " + record.getParkingSpot();
+
+                actualSeries.getData().add(new XYChart.Data<>(label, record.getDuration()));
+                lateSeries.getData().add(new XYChart.Data<>(label, record.getLateDuration()));
+                extendedSeries.getData().add(new XYChart.Data<>(label, record.getExtendedDuration()));
+
+            }
+
+
+            parkingDurationBarChart.getData().addAll(actualSeries, lateSeries, extendedSeries);
+        });
+    }
+
+
+
+
 }
     
 

@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -44,7 +45,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Carmel2025!");
+        		    "root", "Daniel2204");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -935,6 +936,163 @@ public class mysqlConnection {
             return false;
         }
     }
+    /**
+     * Retrieves all future reservations from the database.
+     * A future reservation is one where the entry date and time
+     * are after the current system timestamp.
+     *
+     * @return A list of Reservation objects representing upcoming reservations.
+     */
+    public static List<Reservation> getFutureReservations() {
+        List<Reservation> futureReservations = new ArrayList<>();
+
+        String sql = """
+            SELECT reservation_id, subscriber_id, parking_code, entry_date, entry_time,
+                   exit_date, exit_time, parking_spot
+            FROM reservations
+            WHERE TIMESTAMP(entry_date, entry_time) > NOW()
+        """;
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Reservation reservation = new Reservation(
+                    rs.getInt("reservation_id"),
+                    rs.getString("subscriber_id"),
+                    rs.getString("parking_code"),
+                    rs.getDate("entry_date").toLocalDate(),
+                    rs.getTime("entry_time").toLocalTime(),
+                    rs.getDate("exit_date").toLocalDate(),
+                    rs.getTime("exit_time").toLocalTime(),
+                    rs.getInt("parking_spot")
+                );
+                futureReservations.add(reservation);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return futureReservations;
+    }
+    /**
+     * Retrieves all currently active parking records from the database.
+     * Each record includes entry and expected exit details, along with the
+     * subscriber and spot information.
+     *
+     * @return A list of ActiveParking objects representing active parkings.
+     */
+    public static List<ActiveParking> getActiveParkings() {
+        List<ActiveParking> activeList = new ArrayList<>();
+
+        String sql = """
+            SELECT parking_code, subscriber_id, entry_date, entry_time,
+                   expected_exit_date, expected_exit_time, parking_spot, extended
+            FROM active_parkings
+        """;
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                ActiveParking ap = new ActiveParking(
+                    rs.getInt("parking_code"),
+                    rs.getInt("subscriber_id"),
+                    rs.getString("entry_date"),
+                    rs.getString("entry_time"),
+                    rs.getString("expected_exit_date"),
+                    rs.getString("expected_exit_time"),
+                    rs.getString("parking_spot"),
+                    rs.getBoolean("extended")
+                );
+                activeList.add(ap);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return activeList;
+    }
+    /**
+     * Retrieves a list of site activity records from the database.
+     * Each record includes the action, username, and timestamp of the activity.
+     * Results are ordered by timestamp in descending order.
+     *
+     * @return A list of formatted strings representing site activity events.
+     */
+
+   
+    /**
+     * Retrieves current active parking sessions and upcoming reservations from the database.
+     *
+     * @return A list of formatted strings representing active parking and future reservation records.
+     */
+    public static List<String> getSiteActivityData() {
+        List<String> result = new ArrayList<>();
+
+        // 1. Active parkings
+        String activeSql = "SELECT parking_code, subscriber_id, entry_date, entry_time, expected_exit_date, expected_exit_time, parking_spot, extended " +
+                           "FROM active_parkings";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(activeSql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            result.add("=== Active Parkings ===");
+            while (rs.next()) {
+                String line = String.format("Code: %s | Subscriber: %s | Entry: %s %s | Exit: %s %s | Spot: %d | Extended: %s",
+                        rs.getString("parking_code"),
+                        rs.getString("subscriber_id"),
+                        rs.getDate("entry_date"),
+                        rs.getTime("entry_time"),
+                        rs.getDate("expected_exit_date"),
+                        rs.getTime("expected_exit_time"),
+                        rs.getInt("parking_spot"),
+                        rs.getBoolean("extended") ? "Yes" : "No"
+                );
+                result.add(line);
+            }
+
+        } catch (SQLException e) {
+            result.add("Error retrieving active parking data.");
+            e.printStackTrace();
+        }
+
+        // 2. Upcoming reservations
+        String reservSql = "SELECT reservation_id, subscriber_id, parking_code, entry_date, entry_time, exit_date, exit_time, parking_spot " +
+                           "FROM reservations WHERE entry_date > CURDATE() ORDER BY entry_date, entry_time";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(reservSql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            result.add("=== Upcoming Reservations ===");
+            while (rs.next()) {
+                String line = String.format("Reservation #%d | Subscriber: %s | Parking: %s | From: %s %s | To: %s %s | Spot: %d",
+                        rs.getInt("reservation_id"),
+                        rs.getString("subscriber_id"),
+                        rs.getString("parking_code"),
+                        rs.getDate("entry_date"),
+                        rs.getTime("entry_time"),
+                        rs.getDate("exit_date"),
+                        rs.getTime("exit_time"),
+                        rs.getInt("parking_spot")
+                );
+                result.add(line);
+            }
+
+        } catch (SQLException e) {
+            result.add("Error retrieving reservation data.");
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 
     
 }
