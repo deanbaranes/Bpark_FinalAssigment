@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Represents a record of parking duration for reporting purposes.
- * Includes total duration, late duration, and whether the parking was extended.
+ * Includes total duration, late duration, and whether the parking was extended..
  */
 public class ParkingDurationRecord implements Serializable {
     private static final long serialVersionUID = 1L;

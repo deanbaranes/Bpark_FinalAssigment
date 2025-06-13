@@ -154,7 +154,7 @@
 
 
 
-<!-- MEMBER STATUS REPORT VIEW -->
+<!-- MEMBER STATUS REPORT VIEW. -->
 <VBox fx:id="memberStatusReportView" alignment="CENTER" spacing="6"
       visible="false" managed="false"
       AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">

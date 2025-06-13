@@ -32,7 +32,7 @@ import ocsf.server.*;
 /**
  * EchoServer is a server-side class that listens for client connections
  * and handles messages sent by the client. It uses the OCSF framework
- * and communicates with a MySQL database to retrieve and update order data.
+ * and communicates with a MySQL database to retrieve and update order data..
  */
 public class EchoServer extends AbstractServer {
 

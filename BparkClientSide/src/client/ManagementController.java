@@ -764,12 +764,9 @@ public class ManagementController implements BaseController{
 
             }
 
-
             parkingDurationBarChart.getData().addAll(actualSeries, lateSeries, extendedSeries);
         });
     }
-
-
 
 
 }

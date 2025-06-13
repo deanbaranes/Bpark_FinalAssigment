@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Request sent from client to server asking for parking duration report
- * for a specific year and month.
+ * for a specific year and month..
  */
 public class ParkingDurationRequest implements Serializable {
     private static final long serialVersionUID = 1L;

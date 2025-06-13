@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A response from the server containing:
  * - a list of future reservations
- * - a list of currently active parkings
+ * - a list of currently active parkings.
  */
 public class GetSiteActivityResponse implements Serializable {
     private static final long serialVersionUID = 1L;

@@ -81,7 +81,7 @@ public class mysqlConnection {
      * Generates a random subscription code for new subscribers.
      * Format: SUB123456
      *
-     * @return A unique subscription code string.
+     * @return A unique subscription code string..
      */
     private static String generateSubscriptionCode() {
         int randomNum = (int)(Math.random() * 1_000_000);
