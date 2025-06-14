@@ -348,11 +348,6 @@ public class mysqlConnection {
 
             stmt.setString(1, parkingCode);
             ResultSet rs = stmt.executeQuery();
-            boolean exists = rs.next();
-            if (!exists)
-            {
-            	return rs.next();
-            }
             return rs.next();
         } catch (SQLException e) {
             e.printStackTrace();
