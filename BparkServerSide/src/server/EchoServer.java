@@ -476,6 +476,7 @@ public class EchoServer extends AbstractServer {
         }
     }
     
+ 
     private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) 
     {
    
@@ -506,9 +507,6 @@ public class EchoServer extends AbstractServer {
 			}
         }
     }
-    
-    
-    
     
     private void handleSubscriptionCodeReset(PasswordResetRequest req, ConnectionToClient client) 
     {
