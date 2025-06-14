@@ -3,7 +3,7 @@ package server;
 import java.sql.Connection;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
+   
 /**
  * DBExecutor provides utility methods to simplify database access using a connection pool.
  * It ensures that connections are properly acquired from the pool and released after use,

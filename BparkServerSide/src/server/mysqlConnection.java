@@ -101,7 +101,7 @@ public class mysqlConnection {
 		int randomNum = (int) (Math.random() * 1_000_000);
 		return "SUB" + String.format("%06d", randomNum);
 	}
-
+    
 	/**
 	 * Registers a new subscriber in the database with the given details.
 	 *
