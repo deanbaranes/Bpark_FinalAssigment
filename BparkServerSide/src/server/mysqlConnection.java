@@ -6,17 +6,13 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Time;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import common.ParkingHistory;
 import common.Reservation;
 import common.Subscriber;
@@ -45,7 +41,7 @@ public class mysqlConnection {
         try { 
         	conn = DriverManager.getConnection(
         		    "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-        		    "root", "Daniel2204");
+        		    "root", "Aa123456");
             System.out.println("SQL connection succeed");
         } catch (SQLException ex) {
             System.out.println("SQLException: " + ex.getMessage());
@@ -921,21 +917,65 @@ public class mysqlConnection {
     }
 
 
+    /**
+     * Cancels a reservation by its ID.
+     * This method deletes the reservation from the `reservations` table and,
+     * if successful, updates the corresponding parking spot's status to 'available'.
+     *
+     * @param reservationId the ID of the reservation to cancel
+     * @return true if the cancellation and spot update were successful, false otherwise
+     */
     public static boolean cancelReservationById(int reservationId) {
+        String getSpotQuery = "SELECT parking_spot FROM reservations WHERE reservation_id = ?";
         String deleteQuery = "DELETE FROM reservations WHERE reservation_id = ?";
+        String updateSpotQuery = "UPDATE parking_spots SET status = 'available' WHERE spot_number = ?";
 
-        try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+        try (Connection conn = connectToDB()) {
+            conn.setAutoCommit(false); // Start transaction for safety
 
-            stmt.setInt(1, reservationId);
-            int rows = stmt.executeUpdate();
-            return rows > 0;
+            int spotNumber;
+
+            // Step 1: Retrieve the parking spot number before deleting the reservation
+            try (PreparedStatement getStmt = conn.prepareStatement(getSpotQuery)) {
+                getStmt.setInt(1, reservationId);
+                ResultSet rs = getStmt.executeQuery();
+
+                if (rs.next()) {
+                    spotNumber = rs.getInt("parking_spot");
+                } else {
+                    // No reservation found with the given ID
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            // Step 2: Delete the reservation
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+                deleteStmt.setInt(1, reservationId);
+                int deletedRows = deleteStmt.executeUpdate();
+
+                if (deletedRows == 0) {
+                    conn.rollback();
+                    return false; // No rows deleted
+                }
+            }
+
+            // Step 3: Update the parking spot status to 'available'
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSpotQuery)) {
+                updateStmt.setInt(1, spotNumber);
+                updateStmt.executeUpdate();
+            }
+
+            conn.commit(); // All steps successful
+            return true;
 
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
+    
+
     /**
      * Retrieves all future reservations from the database.
      * A future reservation is one where the entry date and time

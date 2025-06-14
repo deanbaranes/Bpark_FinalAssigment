@@ -2,8 +2,6 @@ package client;
 
 import ocsf.client.*;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +40,8 @@ public class ChatClient extends AbstractClient {
                         ManagementController.getInstance().handlePasswordResetResponse(resp);
                     if (TerminalController.getInstance() != null)
                         TerminalController.getInstance().handlePasswordResetResponse(resp);
+                    if (ClientController.getInstance() != null)
+                        ClientController.getInstance().handlePasswordResetResponse(resp);
                 });
                 return;
             }

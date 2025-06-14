@@ -23,7 +23,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
-import java.util.regex.Pattern;
 
 import common.LoginRequest;
 import common.ParkingHistory;
@@ -357,6 +356,7 @@ public class ClientController implements BaseController {
             
             welcomeLabel.setText("Welcome, " + subscriber.getFull_name() + "!");
             navigationStack.clear();
+            navigationStack.push(signInForm);
             showOnly(postLoginMenu);
         });
     }
@@ -708,8 +708,21 @@ public class ClientController implements BaseController {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            } else {
+                // 👇 זה מה שחסר לך!
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWelcome.fxml"));
+                    Parent root = loader.load();
+                    MainWelcomeController controller = loader.getController();
+                    controller.showClientSubMenu(); // ← מחזיר ל־Choose Access Type
+                    Stage stage = (Stage) backButton.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("BPARK - Welcome");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
+        } 
     }
 
     /**

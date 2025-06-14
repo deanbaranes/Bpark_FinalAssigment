@@ -1,8 +1,6 @@
 package common;
 
 import java.io.Serializable;
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalTime;
 

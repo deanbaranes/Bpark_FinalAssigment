@@ -190,9 +190,9 @@
 	<Button fx:id="btnSearchParkingDuration" text="Search" onAction="#handleSearchParkingDuration" />
 
     <BarChart fx:id="parkingDurationBarChart"
-          title="Parking Duration Report"
+          
           categoryGap="10" barGap="5"
-          prefHeight="400" prefWidth="600"
+          prefHeight="370" prefWidth="600"
           animated="false">
     <xAxis>
         <CategoryAxis label="Parking Spot"/>
@@ -201,12 +201,10 @@
         <NumberAxis label="Time (minutes)"/>
     </yAxis>
 </BarChart>
-    
-    
-    
-
+<Region prefHeight="40"/> 
 </VBox>
-	
+
+
 
 
 <VBox spacing="10" alignment="CENTER"

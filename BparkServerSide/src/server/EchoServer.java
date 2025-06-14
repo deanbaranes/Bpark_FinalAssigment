@@ -365,8 +365,14 @@ public class EchoServer extends AbstractServer {
 
 
             String code = mysqlConnection.generateUniqueParkingCode(req.getSubscriberId(), spot);
+            //LocalDate exitDate = req.getEntryDate();
+            //LocalTime exitTime = req.getEntryTime().plusHours(RESERVATION_DURATION_HOURS); // usually 4 hours
+            LocalTime entryTime = req.getEntryTime();
+            LocalTime exitTime = entryTime.plusHours(RESERVATION_DURATION_HOURS);
             LocalDate exitDate = req.getEntryDate();
-            LocalTime exitTime = req.getEntryTime().plusHours(RESERVATION_DURATION_HOURS); // usually 4 hours
+            if (exitTime.isBefore(entryTime)) {
+                exitDate = exitDate.plusDays(1);
+            }
 
             // Insert reservation into DB and update spot
             mysqlConnection.insertReservationAndUpdateSpot(
