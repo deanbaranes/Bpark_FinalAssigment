@@ -9,7 +9,7 @@ import java.util.function.Function;
  * It ensures that connections are properly acquired from the pool and released after use,
  * minimizing boilerplate and reducing the risk of resource leaks.
  */
-public class DBExecutor {
+public class DBExecutor {    
 
     /**
      * Executes a database operation that returns a value (e.g. SELECT).

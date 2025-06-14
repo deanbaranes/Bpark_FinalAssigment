@@ -506,7 +506,7 @@ public class EchoServer extends AbstractServer {
 				e.printStackTrace();
 			}
         }
-    }
+    }   
     
     private void handleSubscriptionCodeReset(PasswordResetRequest req, ConnectionToClient client) 
     {
