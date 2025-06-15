@@ -1,17 +1,14 @@
+// MemberStatusRequest.java
 package common;
 
 import java.io.Serializable;
 
-/**
- * Request sent from client to server asking for parking duration report
- * for a specific year and month...
- */
-public class ParkingDurationRequest implements Serializable {
-
+public class MemberStatusReportRequest implements Serializable {
+  
 	private int year;
     private int month;
 
-    public ParkingDurationRequest(int year, int month) {
+    public MemberStatusReportRequest(int year, int month) {
         this.year = year;
         this.month = month;
     }

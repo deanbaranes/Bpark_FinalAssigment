@@ -181,6 +181,10 @@ public class ChatClient extends AbstractClient {
                 List<ParkingDurationRecord> records = response.getRecords();
                 Platform.runLater(() -> ManagementController.getInstance().displayParkingDurationBarChart(records));
             }
+            else if (msg instanceof MemberStatusReportResponse response) {
+                List<DailySubscriberCount> records = response.getReport();
+                Platform.runLater(() -> ManagementController.getInstance().displayMemberStatusBarChart(records));
+            }
 
             else if (msg instanceof List<?> list) {
                 if (list.isEmpty()) {

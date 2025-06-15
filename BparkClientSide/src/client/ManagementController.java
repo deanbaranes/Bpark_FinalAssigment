@@ -3,31 +3,31 @@ package client;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
-import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import java.util.List;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Stack;
 
 import common.PasswordResetRequest;
 import common.PasswordResetResponse;
 import common.LoginManagement;
-import common.LoginRequest;
+import common.MemberStatusReportRequest;
 import common.ParkingDurationRecord;
 import common.ParkingDurationRequest;
 import common.RegisterMemberRequest;
 import common.Reservation;
 import common.ActiveParking;
+import common.DailySubscriberCount;
 import common.GetSiteActivityRequest;
 
 
@@ -49,6 +49,7 @@ public class ManagementController implements BaseController{
     @FXML private VBox registerMemberView;
     @FXML private VBox memberStatusReportView;
     @FXML private VBox siteActivityChartsView;
+    @FXML private VBox parkingDurationView;
 
     // === Login ===
     @FXML private TextField usernametextfield;
@@ -75,15 +76,9 @@ public class ManagementController implements BaseController{
     @FXML private Button btnsearch_parkingdetails;
     @FXML private TextArea console_parkingdetails;
     @FXML private Label parkingDurationTitle;
-    @FXML private VBox parkingDurationView;
     @FXML private TextField parkingDurationYearField;
     @FXML private TextField parkingDurationMonthField;
-    @FXML private BarChart<String, Number> parkingDurationBarChart;
 
-    
-
-;
-    
     // === Register New Member ===
     @FXML private Label label_register_member;
     @FXML private TextField textfield_creditcard,label_vehiclenumber_register2,textfield_firstname, textfield_lastname, textfield_id1, textfield_email, textfiled_phonenumber, label_vehiclenumber_register;
@@ -93,16 +88,19 @@ public class ManagementController implements BaseController{
     @FXML private VBox siteActivityView;
     @FXML private Button btnViewSiteActivity;
     @FXML private ScrollPane scrollSiteActivity;
-
     @FXML private TextArea console_siteactivity;
 
     
- // === Member Status Report ===
-    @FXML private Label label_enteryear, label_entermoth;
-    @FXML private TextField label_Enteryear, monthField;
-    @FXML private Button btnsearchreport;
-    @FXML private Text memberStatusTitle;
-    @FXML private javafx.scene.chart.LineChart<?, ?> chart_memberstatus, parking_timechart;
+ // === Member Status Report View ===
+    @FXML private Label label_memberStatusTitle;
+    @FXML private TextField statusReportYearField, statusReportMonthField;
+    @FXML private Button btnSearchStatusReport;
+    @FXML private BarChart<String, Number> memberStatusBarChart;
+   
+    // === Parking Duration Report View ===
+    @FXML private Label label_parkingDurationTitle;
+    @FXML private Button btnSearchParkingDuration;
+    @FXML private BarChart<String, Number> parkingDurationBarChart;
 
 
     
@@ -117,7 +115,8 @@ public class ManagementController implements BaseController{
         showOnly(loginView);
         parkingDurationBarChart.setVisible(false);
         parkingDurationBarChart.setManaged(false);
-
+        memberStatusBarChart.setVisible(false);
+        memberStatusBarChart.setManaged(false);
 
     }
     
@@ -191,13 +190,16 @@ public class ManagementController implements BaseController{
     
     @FXML
     private void handleViewMemberStatusReport() {
+    	parkingDurationBarChart.getData().clear();
+        parkingDurationBarChart.setVisible(false);   
+        parkingDurationBarChart.setManaged(false);  
         navigateTo(memberStatusReportView);
-    }
-    @FXML
-    private void handleBackFromCharts() {
-        navigateTo(siteActivityView);
-    }
-    
+        // Enlarge the window specifically for the parking duration report screen,
+        // to ensure the full chart and controls are comfortably visible.
+        Stage stage = (Stage) parkingDurationView.getScene().getWindow();
+        stage.setWidth(900);  // Expanded width for better chart visibility
+        stage.setHeight(700); // Expanded height to accommodate chart and controls
+    }    
 
     @FXML
     private void handleViewParkingDuration() {
@@ -212,6 +214,11 @@ public class ManagementController implements BaseController{
         stage.setWidth(900);  // Expanded width for better chart visibility
         stage.setHeight(700); // Expanded height to accommodate chart and controls
 
+    }
+    
+    @FXML
+    private void handleBackFromCharts() {
+        navigateTo(siteActivityView);
     }
 
     @FXML
@@ -231,18 +238,6 @@ public class ManagementController implements BaseController{
     }
 
 
-
-    
-
-
-    /*
-    Handles the "Back" button logic by navigating to the previous screen in the stack or returning to login/main welcome screen if the stack is empty.
-    */
-
-    /**
-     * Triggered by clicking the "Forgot password?" hyperlink.
-     * Switches the UI to the forgotView pane.
-     */
     @FXML
     private void handleShowForgot() {
         showOnly(forgotView);
@@ -357,6 +352,7 @@ public class ManagementController implements BaseController{
             }
         }
     }
+    
     /**
      * Handles the click on the 'Search' button in the parking details view.
      * Sends a request to the server to fetch active parking data based on input.
@@ -723,65 +719,153 @@ public class ManagementController implements BaseController{
 
     /**
      * Triggered when the Search button is clicked on the Parking Duration screen.
-     * Sends a ParkingDurationRequest to the server with the selected year and month.
+     * Validates the input fields and sends a ParkingDurationRequest to the server
+     * with the selected year and month as integers.
      */
     @FXML
     private void handleSearchParkingDuration() {
-        String year = parkingDurationYearField.getText().trim();
-        String month = parkingDurationMonthField.getText().trim();
+        String yearStr = parkingDurationYearField.getText().trim();
+        String monthStr = parkingDurationMonthField.getText().trim();
 
-        if (year.isEmpty() || month.isEmpty()) {
+        if (yearStr.isEmpty() || monthStr.isEmpty()) {
             showPopup("Please enter both year and month.");
             return;
         }
 
         try {
+            int year = Integer.parseInt(yearStr);
+            int month = Integer.parseInt(monthStr);
+
+            LocalDate today = LocalDate.now();
+            YearMonth inputMonth = YearMonth.of(year, month);
+            LocalDate lastDayOfInput = inputMonth.atEndOfMonth();
+
+            if (!today.isAfter(lastDayOfInput)) {
+                // Clear existing chart and input fields
+            	parkingDurationBarChart.getData().clear();
+                parkingDurationYearField.clear();
+                parkingDurationMonthField.clear();
+                
+                showPopup("The report for this month is not yet available.");
+                return;
+            }
+            
             ParkingDurationRequest request = new ParkingDurationRequest(year, month);
             client.sendToServer(request);
+        } catch (NumberFormatException e) {
+            showPopup("Invalid input: Year and Month must be numbers.");
         } catch (Exception e) {
             e.printStackTrace();
             showPopup("Failed to send request.");
         }
     }
 
-
     /**
      * Displays a stacked bar chart showing actual parking time,
-     * extended time, and late time for each parking spot.
+     * late time, and extended time per day of the month.
+     * Durations are converted from minutes to hours with one decimal precision.
      *
-     * @param records List of parking duration records, each with actual, extended, and late durations
+     * @param records List of ParkingDurationRecord containing daily parking metrics
      */
-
-    public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
-    	System.out.println("Search button clicked");
-
-    	parkingDurationBarChart.setVisible(true);
-    	parkingDurationBarChart.setManaged(true);
-
+    @SuppressWarnings("unchecked")
+	public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
         Platform.runLater(() -> {
+            parkingDurationBarChart.setVisible(true);
+            parkingDurationBarChart.setManaged(true);
             parkingDurationBarChart.getData().clear();
 
             XYChart.Series<String, Number> actualSeries = new XYChart.Series<>();
-            actualSeries.setName("Actual Duration");
+            actualSeries.setName("Actual Duration (hours)");
 
             XYChart.Series<String, Number> lateSeries = new XYChart.Series<>();
-            lateSeries.setName("Late Duration");
+            lateSeries.setName("Late Duration (hours)");
 
             XYChart.Series<String, Number> extendedSeries = new XYChart.Series<>();
-            extendedSeries.setName("Extended Duration");
+            extendedSeries.setName("Extended Duration (hours)");
+
             for (ParkingDurationRecord record : records) {
-                String label = "Spot " + record.getParkingSpot();
+                String label = String.valueOf(record.getDayOfMonth());
 
-                actualSeries.getData().add(new XYChart.Data<>(label, record.getDuration()));
-                lateSeries.getData().add(new XYChart.Data<>(label, record.getLateDuration()));
-                extendedSeries.getData().add(new XYChart.Data<>(label, record.getExtendedDuration()));
+                // Convert durations from minutes to hours (rounded to 1 decimal)
+                double actualHours = Math.round(record.getDuration() / 60.0 * 10.0) / 10.0;
+                double lateHours = Math.round(record.getLateDuration() / 60.0 * 10.0) / 10.0;
+                double extendedHours = Math.round(record.getExtendedDuration() / 60.0 * 10.0) / 10.0;
 
+                actualSeries.getData().add(new XYChart.Data<>(label, actualHours));
+                lateSeries.getData().add(new XYChart.Data<>(label, lateHours));
+                extendedSeries.getData().add(new XYChart.Data<>(label, extendedHours));
             }
+
             parkingDurationBarChart.getData().addAll(actualSeries, lateSeries, extendedSeries);
-            
         });
     }
+
+    /**
+     * Triggered when the Search button is clicked on the Member Status Report screen.
+     * Validates the input fields and sends a MemberStatusReportRequest to the server
+     * with the selected year and month as integers.
+     */
+    @FXML
+    private void handleSearchMemberStatusReport() {
+        String yearStr = statusReportYearField.getText().trim();
+        String monthStr = statusReportMonthField.getText().trim();
+
+        if (yearStr.isEmpty() || monthStr.isEmpty()) {
+            showPopup("Please enter both year and month.");
+            return;
+        }
+
+        try {
+            int year = Integer.parseInt(yearStr);
+            int month = Integer.parseInt(monthStr);
+            
+            LocalDate today = LocalDate.now();
+            YearMonth inputMonth = YearMonth.of(year, month);
+            LocalDate lastDayOfInput = inputMonth.atEndOfMonth();
+
+            if (!today.isAfter(lastDayOfInput)) {
+                // Clear existing chart and input fields
+                memberStatusBarChart.getData().clear();
+                statusReportYearField.clear();
+                statusReportMonthField.clear();
+                
+                showPopup("The report for this month is not yet available.");
+                return;
+            }
+
+            MemberStatusReportRequest request = new MemberStatusReportRequest(year, month);
+            client.sendToServer(request);
+        } catch (NumberFormatException e) {
+            showPopup("Invalid input: Year and Month must be numbers.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showPopup("Failed to send report request.");
+        }
+    }
+
+    /**
+     * Displays a bar chart showing the number of subscribers who parked each day of the month.
+     *
+     * @param records List of DailySubscriberCount representing how many subscribers parked per day
+     */
+    public void displayMemberStatusBarChart(List<DailySubscriberCount> records) {
+        Platform.runLater(() -> {
+            memberStatusBarChart.setVisible(true);
+            memberStatusBarChart.setManaged(true);
+            memberStatusBarChart.getData().clear();
+
+            XYChart.Series<String, Number> memberSeries = new XYChart.Series<>();
+            memberSeries.setName("Subscribers per Day");
+
+            for (DailySubscriberCount record : records) {
+                String dayLabel = String.valueOf(record.getDay());
+                memberSeries.getData().add(new XYChart.Data<>(dayLabel, record.getSubscriberCount()));
+            }
+
+            memberStatusBarChart.getData().add(memberSeries);
+        });
+    }
+
 }
     
-
 

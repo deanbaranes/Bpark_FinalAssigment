@@ -43,6 +43,8 @@
     <Button fx:id="btnloginsubmit" text="Submit"
             onAction="#handleLoginManagementSubmit" prefWidth="100" />
 </VBox>
+
+
 <!-- FORGOT-PASSWORD VIEW -->
 <VBox fx:id="forgotView"
       alignment="CENTER" spacing="10"
@@ -77,9 +79,8 @@
 		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
 		<Button fx:id="btnViewSiteActivity" text="View Site Activity" onAction="#handleViewSiteActivity" prefWidth="200" />
-
-
     </VBox>
+
 
     <!-- MEMBER DETAILS VIEW -->
     <VBox fx:id="memberDetailsView" alignment="CENTER" spacing="10"
@@ -92,12 +93,12 @@
             <Label fx:id="labelsearchby_id" text="Search by ID:" />
             <TextField fx:id="searchbyidtext" />
 		<Button fx:id="btnsearch_memberdetails" text="Search" onAction="#handleSearchMemberDetails" />
-
-
         </HBox>
+        
         <TextArea fx:id="console_memberdeatils" prefHeight="180.0" prefWidth="500.0" />
 
     </VBox>
+
 
     <!-- PARKING DETAILS VIEW .-->
     <VBox fx:id="parkingDetailsView" alignment="CENTER" spacing="10"
@@ -138,6 +139,7 @@
 
 	    </VBox>
 	</VBox>
+
 	
 <VBox fx:id="siteActivityView" visible="false" managed="false" AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="40.0"
       AnchorPane.rightAnchor="40.0" AnchorPane.bottomAnchor="20.0" spacing="20" alignment="TOP_CENTER">
@@ -169,8 +171,21 @@
     <Label text="Enter month:" />
     <TextField fx:id="statusReportMonthField" maxWidth="200" />
 
-    <Button fx:id="btnSearchStatusReport" text="Search" prefWidth="120" />
+    <Button fx:id="btnSearchStatusReport" text="Search" prefWidth="120" onAction="#handleSearchMemberStatusReport" />
+	<BarChart fx:id="memberStatusBarChart"
+              categoryGap="10" barGap="5"
+              prefHeight="370" prefWidth="600"
+              animated="false">
+        <xAxis>
+            <CategoryAxis label="Day of Month"/>
+        </xAxis>
+        <yAxis>
+    <NumberAxis label="Number of Subscribers" tickUnit="1" minorTickVisible="false"  forceZeroInRange="false" />
+</yAxis>
 
+    </BarChart>
+
+    <Region prefHeight="40"/>
 </VBox>
 
 <!-- PARKING DURATION REPORT VIEW -->
@@ -195,16 +210,14 @@
           prefHeight="370" prefWidth="600"
           animated="false">
     <xAxis>
-        <CategoryAxis label="Parking Spot"/>
+        <CategoryAxis label="Day of Month"/>
     </xAxis>
     <yAxis>
-        <NumberAxis label="Time (minutes)"/>
+        <NumberAxis label="Duration (hours)"/>
     </yAxis>
-</BarChart>
-<Region prefHeight="40"/> 
+	</BarChart>
+	<Region prefHeight="40"/> 
 </VBox>
-
-
 
 
 <VBox spacing="10" alignment="CENTER"

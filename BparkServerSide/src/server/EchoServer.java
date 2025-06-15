@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import common.LoginManagement;
 import common.LoginRequest;
+import common.MemberStatusReportRequest;
+import common.MemberStatusReportResponse;
 import common.ParkingDurationRecord;
 import common.ParkingDurationRequest;
 import common.ParkingDurationResponse;
@@ -19,6 +21,7 @@ import common.Reservation;
 import common.Subscriber;
 import common.UpdateReservationRequest;
 import common.ActiveParking;
+import common.DailySubscriberCount;
 import common.EmailSender;
 import common.GetSiteActivityRequest;
 import common.GetSiteActivityResponse;
@@ -97,17 +100,16 @@ public class EchoServer extends AbstractServer {
             } else if (msg instanceof GetSiteActivityRequest) {
                 handleSiteActivityRequest(client); 
 
+            }  else if (msg instanceof ParkingDurationRequest request) {
+                handleParkingDurationRequest(request, client);
+            } else if (msg instanceof MemberStatusReportRequest request) {
+                handleMemberStatusReportRequest(request, client);
             }
-            else if (msg instanceof ParkingDurationRequest req) {
-                try (Connection conn = mysqlConnection.connectToDB()) {
-                    handleParkingDurationRequest(req, conn, client);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+
+
             else {
                 client.sendToClient("Unsupported message format.");
-            }
+            	 }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -591,41 +593,28 @@ public class EchoServer extends AbstractServer {
      * @param client The client connection that sent the request.
      * @param req    The request containing year and month filters.
      */
-    private void handleParkingDurationRequest(ParkingDurationRequest req, Connection conn, ConnectionToClient client) {
-        List<ParkingDurationRecord> records = new ArrayList<>();
-
-        String sql = """
-                SELECT parking_code,
-                       TIMESTAMPDIFF(MINUTE, CONCAT(entry_date, ' ', entry_time), CONCAT(exit_date, ' ', exit_time)) AS duration,
-                       late_duration,
-                       extended_duration,
-                       parking_spot
-                FROM parking_history
-                WHERE YEAR(entry_date) = ? AND MONTH(entry_date) = ?
-            """;
-
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, Integer.parseInt(req.getYear()));
-            stmt.setInt(2, Integer.parseInt(req.getMonth()));
-
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                String code = rs.getString("parking_code");
-                int duration = rs.getInt("duration");
-                int late = rs.getInt("late_duration");
-                int extended = rs.getInt("extended_duration"); 
-                int spotNumber = rs.getInt("parking_spot");
-                ParkingDurationRecord record = new ParkingDurationRecord(code, duration, late, extended, spotNumber);
-
-                records.add(record);
-            }
-
-            client.sendToClient(new ParkingDurationResponse(records));
-
-        } catch (Exception e) {
+    private void handleParkingDurationRequest(ParkingDurationRequest req, ConnectionToClient client) {
+        MonthlyReportHandler handler = new MonthlyReportHandler();
+        ParkingDurationResponse response = handler.handleParkingDurationRequest(req);
+        
+        try {
+            client.sendToClient(response);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+    private void handleMemberStatusReportRequest(MemberStatusReportRequest req, ConnectionToClient client) {
+        MonthlyReportHandler handler = new MonthlyReportHandler();
+        MemberStatusReportResponse response = handler.handleMemberStatusRequest(req);
+
+        try {
+            client.sendToClient(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
