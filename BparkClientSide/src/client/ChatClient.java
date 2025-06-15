@@ -73,11 +73,11 @@ public class ChatClient extends AbstractClient {
                         TerminalController.getInstance().handleLoginResponse(message);
                         TerminalController.getInstance().subscriberNotFoundCase();
                         break;
-                    case "RESERVATION_CODE_EXISTS":
-                        TerminalController.getInstance().handleReservationCodeSuccess(message);
+                    case "ACTIVATION_RESULT":
+                    	TerminalController.getInstance().handleReservationActivationResult(message);
                         break;
-                    case "RESERVATION_CODE_NOT_FOUND":
-                        TerminalController.getInstance().handleReservationCodeFailure(message);
+                    case "PICKUP_RESULT":
+                    	TerminalController.getInstance().handlePickupResult(message);
                         break;
                     case "APP_LOGIN_FAILURE":
                         Platform.runLater(() -> ClientController.getInstance().showPopup("Invalid ID or Subscriber Code."));

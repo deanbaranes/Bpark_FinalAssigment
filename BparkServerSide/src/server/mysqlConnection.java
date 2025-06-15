@@ -360,30 +360,190 @@ public class mysqlConnection {
 	        return reservations;
 	    });
 	}
+	
+	
 	/**
-	 * Checks whether a reservation exists in the database based on the provided
-	 * parking code.
-	 *
-	 * @param parkingCode The parking code to check.
-	 * @return true if a reservation with the given code exists, false otherwise.
-	 */
-	public static boolean doesReservationCodeExist(String parkingCode) {
-	    return DBExecutor.execute(conn -> {
-	        String query = "SELECT 1 FROM reservations WHERE parking_code = ?";
-	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-	            // Set the parking code parameter in the query
-	            stmt.setString(1, parkingCode);
+     * Processes a pickup request based on parking code.
+     *
+     * This method performs the following steps:
+     * 1. Checks if an active parking exists for the provided parking code.
+     * 2. Retrieves the full parking details and subscriber information.
+     * 3. Inserts the parking session into the parking history table.
+     * 4. Deletes the active parking record.
+     * 5. Updates the parking spot to available.
+     *
+     * @param parkingCode The parking code to process.
+     * @return "SUCCESS" if successfully picked up, "FAILURE" otherwise.
+     */
+    public static String processPickupRequest(String parkingCode) {
+        String query = "SELECT * FROM active_parkings WHERE parking_code = ?";
 
-	            // Execute the query – if a result is returned, the code exists
-	            ResultSet rs = stmt.executeQuery();
-	            return rs.next(); // true if at least one result
-	        } catch (SQLException e) {
-	            // Log any SQL error and return false
-	            e.printStackTrace();
-	            return false;
-	        }
-	    });
-	}
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, parkingCode);
+            ResultSet rs = stmt.executeQuery();
+
+            if (!rs.next()) {
+                return "FAILURE";
+            }
+
+            String subscriberId = rs.getString("subscriber_id");
+            int parkingSpot = rs.getInt("parking_spot");
+            LocalDate entryDate = rs.getDate("entry_date").toLocalDate();
+            LocalTime entryTime = rs.getTime("entry_time").toLocalTime();
+            LocalDate exitDate = LocalDate.now();
+            LocalTime exitTime = LocalTime.now();
+
+          
+            // --- שליפת vehicle_number מהטבלה subscribers ---
+            String vehicleQuery = "SELECT vehicle_number1 FROM subscribers WHERE subscriber_id = ?";
+            String vehicleNumber = null;
+            try (PreparedStatement vehicleStmt = conn.prepareStatement(vehicleQuery)) {
+                vehicleStmt.setString(1, subscriberId);
+                ResultSet vehicleRs = vehicleStmt.executeQuery();
+                if (vehicleRs.next()) {
+                    vehicleNumber = vehicleRs.getString("vehicle_number1");
+                }
+            }
+
+            // --- הכנסה ל־parking_history ---
+            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time) VALUES (?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
+                historyStmt.setString(1, subscriberId);
+                historyStmt.setString(2, vehicleNumber);
+                historyStmt.setDate(3, Date.valueOf(entryDate));
+                historyStmt.setTime(4, Time.valueOf(entryTime));
+                historyStmt.setDate(5, Date.valueOf(exitDate));
+                historyStmt.setTime(6, Time.valueOf(exitTime));
+                historyStmt.executeUpdate();
+            }
+            
+            String deleteQuery = "DELETE FROM active_parkings WHERE parking_code = ?";
+            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+                deleteStmt.setString(1, parkingCode);
+                deleteStmt.executeUpdate();
+            }
+
+            updateParkingSpotStatus(parkingSpot, "available");
+            
+            return "SUCCESS";
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "FAILURE";
+        }
+    }
+
+    
+    /**
+     * Processes a reservation check-in and moves it to active parking with real-time timestamps.
+     *
+     * This method performs the following steps:
+     * 1. Validates whether a reservation exists for the provided parking code.
+     * 2. If found, retrieves reservation details (subscriber_id, parking_spot).
+     * 3. Inserts a new active parking record into the active_parkings table using the current date and time.
+     * 4. Updates the parking spot status from 'reserved' to 'occupied'.
+     * 5. Deletes the reservation from the reservations table.
+     *
+     * @param parkingCode The reservation parking code to process.
+     * @return "SUCCESS" if successfully moved to active parking,
+     *         "INVALID_CODE" if no reservation found,
+     *         "ERROR" if any SQL exception occurred.
+     */
+    public static String moveReservationToActive(String parkingCode) {
+        String query = "SELECT * FROM reservations WHERE parking_code = ?";
+
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, parkingCode);
+            ResultSet rs = stmt.executeQuery();
+
+            if (!rs.next()) {
+                return "INVALID_CODE";
+            }
+
+            String subscriberId = rs.getString("subscriber_id");
+            int parkingSpot = rs.getInt("parking_spot");
+
+            // Calculate real-time entry and exit timestamps
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime expectedExitDateTime = now.plusHours(4);
+
+            LocalDate entryDate = now.toLocalDate();
+            LocalTime entryTime = now.toLocalTime();
+            LocalDate expectedExitDate = expectedExitDateTime.toLocalDate();
+            LocalTime expectedExitTime = expectedExitDateTime.toLocalTime();
+
+            String insertQuery = "INSERT INTO active_parkings (parking_code, subscriber_id, entry_date, entry_time, expected_exit_date, expected_exit_time, parking_spot, extended) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+                insertStmt.setString(1, parkingCode);
+                insertStmt.setString(2, subscriberId);
+                insertStmt.setDate(3, Date.valueOf(entryDate));
+                insertStmt.setTime(4, Time.valueOf(entryTime));
+                insertStmt.setDate(5, Date.valueOf(expectedExitDate));
+                insertStmt.setTime(6, Time.valueOf(expectedExitTime));
+                insertStmt.setInt(7, parkingSpot);
+                insertStmt.setBoolean(8, false);
+
+                insertStmt.executeUpdate();
+            }
+
+            updateParkingSpotStatus(parkingSpot, "occupied");
+            cancelReservation(parkingCode);
+
+            return "SUCCESS";
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "ERROR";
+        }
+    }
+
+    
+    /**
+     * Updates the status of a parking spot in the parking_spots table.
+     *
+     * @param parkingSpot The spot number to update.
+     * @param newStatus The new status to assign (e.g., "available", "reserved", "occupied").
+     */
+    public static void updateParkingSpotStatus(int parkingSpot, String newStatus) {
+        String query = "UPDATE parking_spots SET status = ? WHERE spot_number = ?";
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, newStatus);
+            stmt.setInt(2, parkingSpot);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+   
+    /**
+     * Deletes a reservation from the reservations table based on the provided parking code.
+     *
+     * @param parkingCode The parking code of the reservation to delete.
+     */
+    public static void cancelReservation(String parkingCode) {
+        String deleteQuery = "DELETE FROM reservations WHERE parking_code = ?";
+        try (Connection conn = connectToDB();
+             PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+
+            stmt.setString(1, parkingCode);
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+	
+	
+	
 
 	/*
 	 * Checks if a subscriber with the provided full name and subscription code

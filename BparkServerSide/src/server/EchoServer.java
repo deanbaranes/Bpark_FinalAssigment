@@ -138,7 +138,7 @@ public class EchoServer extends AbstractServer {
             client.sendToClient(mysqlConnection.getAvailableSpots());
             
         }
-        else if (command.startsWith("CHECK_RESERVATION_CODE|")) {
+        /**else if (command.startsWith("CHECK_RESERVATION_CODE|")) {
             String reservationCode = command.split("\\|")[1].trim();
             boolean exists = mysqlConnection.doesReservationCodeExist(reservationCode);
 
@@ -147,6 +147,20 @@ public class EchoServer extends AbstractServer {
             } else {
                 client.sendToClient("RESERVATION_CODE_NOT_FOUND");
             }
+        }**/
+        
+        else if (command.startsWith("CHECK_PICKUP_CODE|")) {
+            String pickupCode = command.split("\\|")[1].trim();
+            String pickupResult = mysqlConnection.processPickupRequest(pickupCode);
+            System.out.println(" my test" + pickupResult);
+            client.sendToClient("PICKUP_RESULT|" + pickupResult);
+        }
+        else if (command.startsWith("ACTIVATE_RESERVATION_CODE|")) {
+            String reservationCode = command.split("\\|")[1].trim();
+            String result = mysqlConnection.moveReservationToActive(reservationCode);
+            System.out.println("Reservation activation result from MySQL: " + result);
+
+            client.sendToClient("ACTIVATION_RESULT|" + result);
         }
 
         else if (command.equals("CHECK_PARKING_AVAILABILITY")) {
@@ -346,6 +360,24 @@ public class EchoServer extends AbstractServer {
 		}   	
     }
     
+    
+    /**
+     * Handles a new reservation request sent from the client.
+     * 
+     * The method performs the following steps:
+     * 1. Retrieves the total and available parking spots from the database.
+     * 2. If less than 40% of the total spots are available, rejects the reservation.
+     * 3. Checks if a reservation already exists for the same subscriber at the requested date and time.
+     * 4. If both checks pass, finds the next available parking spot.
+     * 5. Generates a unique parking code for the new reservation.
+     * 6. Inserts the reservation into the database and updates the parking spot status.
+     * 7. Sends the confirmed reservation back to the client.
+     * 
+     * If any exception occurs during processing, sends a server error response to the client.
+     *
+     * @param req    The Reservation object received from the client.
+     * @param client The client connection to send the response back to.
+     */
     private void handleNewReservationRequest(Reservation req, ConnectionToClient client) {
         try {
             int totalSpots = mysqlConnection.getTotalParkingSpots();
@@ -596,7 +628,4 @@ public class EchoServer extends AbstractServer {
             e.printStackTrace();
         }
     }
-
-
-
 }
