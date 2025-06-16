@@ -267,6 +267,42 @@ public class mysqlConnection {
 	}
 
 	/**
+	 * Checks if the given subscriber ID has an active parking record.
+	 *
+	 * @param subscriberId The ID of the subscriber to check.
+	 * @return "HAS ACTIVE PARKING" if found, otherwise "NO ACTIVE PARKING"
+	 * @throws SQLException if a database access error occurs
+	 */
+	/**
+	 * Checks if the given subscriber ID has an active parking record.
+	 *
+	 * @param subscriberId The ID of the subscriber to check.
+	 * @return "HAS ACTIVE PARKING" if found, otherwise "NO ACTIVE PARKING"
+	 */
+	public static String isSubscriberInActiveParking(String subscriberId) {
+	    String sql = "SELECT 1 FROM active_parkings WHERE subscriber_id = ? LIMIT 1";
+
+	    try (Connection conn = connectToDB();
+	         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+	        stmt.setString(1, subscriberId);
+	        
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                return "HAS ACTIVE PARKING";
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    
+	    return "NO ACTIVE PARKING";
+	}
+
+
+
+
+	/**
 	 * Retrieves the parking history records for a specific subscriber. This method
 	 * queries the parking_history table in the database using the provided
 	 * subscriber ID, and constructs a list of ParkingHistory objects representing
@@ -408,7 +444,7 @@ public class mysqlConnection {
             }
 
             // --- הכנסה ל־parking_history ---
-            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time) VALUES (?, ?, ?, ?, ?, ?)";
+            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_code) VALUES (?, ?, ?, ?, ?, ?,?)";
             try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
                 historyStmt.setString(1, subscriberId);
                 historyStmt.setString(2, vehicleNumber);
@@ -416,6 +452,7 @@ public class mysqlConnection {
                 historyStmt.setTime(4, Time.valueOf(entryTime));
                 historyStmt.setDate(5, Date.valueOf(exitDate));
                 historyStmt.setTime(6, Time.valueOf(exitTime));
+                historyStmt.setString(7, (parkingCode));
                 historyStmt.executeUpdate();
             }
             

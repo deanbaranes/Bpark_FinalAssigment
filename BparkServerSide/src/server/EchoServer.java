@@ -4,6 +4,7 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -69,6 +70,9 @@ public class EchoServer extends AbstractServer {
             	{
             		handleSubscriptionCodeReset(req,client);
             	}
+            	else if(req.getPWtype().equals("pcode")) {
+                    handleParkingCodeReset(req, client);
+            	}
             	else {
             		   handlePasswordReset(req, client);
             	}
@@ -133,7 +137,13 @@ public class EchoServer extends AbstractServer {
         } else if (command.startsWith("GET_HISTORY|")) {
             String id = command.split("\\|")[1];
             client.sendToClient(mysqlConnection.getHistoryForSubscriber(id));
-        } else if (command.startsWith("GET_RESERVATIONS|")) {
+        }
+    	  else if (command.startsWith("CHECK_IF_ACTIVE_PARKING|")) {
+	        String id = command.split("\\|")[1];
+            String result1 = mysqlConnection.isSubscriberInActiveParking(id);
+            client.sendToClient(result1);
+ 
+        }  else if (command.startsWith("GET_RESERVATIONS|")) {
             String id = command.split("\\|")[1];
             client.sendToClient(mysqlConnection.getReservationsForSubscriber(id));
         } else if (command.equals("REQUEST_AVAILABLE_SPOTS")) {
@@ -570,6 +580,39 @@ public class EchoServer extends AbstractServer {
 			}
         }
     }
+    
+    
+    
+    private void handleParkingCodeReset(PasswordResetRequest req, ConnectionToClient client) 
+    {
+        System.out.println("[EchoServer] → Got ParkingCodeResetRequest for: " + req.getEmail());
+        String email = req.getEmail();
+        try (Connection conn = mysqlConnection.connectToDB()) {
+            EmployeePassword ep = new EmployeePassword(conn);
+            String parkingCode = ep.parkingCodeForEmail(email);
+
+            if (parkingCode == null) {
+                client.sendToClient(new PasswordResetResponse(false, "No reservation found for that email."));
+            } else {
+                System.out.println("[EchoServer] → About to call sendParkingCodeEmail()");
+                new EmailSender().sendParkingCodeEmail(email, parkingCode);
+                System.out.println("[EchoServer] → sendParkingCodeEmail() completed successfully");
+                client.sendToClient(new PasswordResetResponse(true,
+                    "Your parking code has been sent to " + email));
+            }
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+                client.sendToClient(new PasswordResetResponse(false, "Server error."));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    
+    
     private void handleSiteActivityRequest(ConnectionToClient client) {
         try {
             List<Reservation> futureReservations = mysqlConnection.getFutureReservations();

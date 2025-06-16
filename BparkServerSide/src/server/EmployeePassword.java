@@ -62,6 +62,31 @@ public class EmployeePassword {
                 	}
             }
         }
+     
+
+        public String parkingCodeForEmail(String email) throws SQLException {
+            String sql = """
+                SELECT ap.parking_code 
+                FROM active_parkings ap
+                JOIN subscribers s ON ap.subscriber_id = s.subscriber_id
+                WHERE s.email = ?
+                """;
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, email);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("parking_code");
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        }
+
+
+
+
 }
 
    

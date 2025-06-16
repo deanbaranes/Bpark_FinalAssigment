@@ -39,20 +39,20 @@ public class TerminalController implements BaseController {
     // === VBoxes ===
     @FXML private VBox mainMenu, signInForm, spotsView,
             selectServicePane, pickupPane,signInChoice,dropoffMethod,forgotView,insertreservationcode,
-            scannerPane;
+            scannerPane,forgotParkingCodeView;
 
     // === Buttons ===
     @FXML private Button signInButton, showSpotsButton,
             dropoffButton, pickupButton, submitButton, submitPickupCodeButton,
             backDropoffButton, backInsertCodeButton, backButton, exitButton,btnsignbyhand,signViaScanner,
-            btnYesReservation,btnNoReservation,submitdropoffCodeButton,btnScan;
+            btnYesReservation,btnNoReservation,submitdropoffCodeButton,btnScan,sendParkingCodeButton;
 
     // === Labels ===
     @FXML private Label chooseServiceLabel, dropoffCarLabel,
-            pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage,errorMessageLabel;
+            pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage,errorMessageLabel,parkingCodeMessage;
 
     // === Input Fields ===
-    @FXML private TextField idField, parkingCodeField,resetEmailField,reservationCodeField;
+    @FXML private TextField idField, parkingCodeField,resetEmailField,reservationCodeField,parkingCodeEmailField;
     @FXML private PasswordField codeField;
 
     // === Text Areas and Texts ===
@@ -73,7 +73,7 @@ public class TerminalController implements BaseController {
     }
 
     private void showOnly(VBox target) {
-        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane,forgotParkingCodeView}) {
             if (pane != null) {
                 pane.setVisible(false);
                 pane.setManaged(false);
@@ -84,7 +84,7 @@ public class TerminalController implements BaseController {
     }
 
     private void navigateTo(VBox next) {
-        for (VBox pane : new VBox[]{mainMenu,signInChoice, signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane}) {
+        for (VBox pane : new VBox[]{mainMenu,signInChoice, signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane,forgotParkingCodeView}) {
             if (pane != null && pane.isVisible()) {
                 navigationStack.push(pane);
                 break;
@@ -116,6 +116,8 @@ public class TerminalController implements BaseController {
     private void handleSignInViaScannerClick() {
         navigateTo(scannerPane);
     }
+    
+   
     /**
      * Handles the scan button click to simulate subscriber login via scanning.
      * 
@@ -231,10 +233,40 @@ public class TerminalController implements BaseController {
     	navigateTo(forgotView);
     }
     
+    /**
+     * Handles the user's choice to start a Dropoff process.
+     * 
+     * This method checks if the current subscriber already has an active parking.
+     * If so, the server will return the appropriate response ("HAS ACTIVE PARKING" or "NO ACTIVE PARKING").
+     * The check is performed by sending a command to the server with the subscriber's ID.
+     */
     @FXML
     private void handleDropoffMethodChoice() {
-        navigateTo(dropoffMethod);
+        try {
+            client.sendToServer("CHECK_IF_ACTIVE_PARKING|" + currentSubscriber.getSubscriber_id());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    /**
+     * Processes the server's response regarding active parking.
+     * 
+     * If the subscriber already has an active parking, a popup is shown to notify the user.
+     * If there is no active parking, the UI navigates to the dropoff method screen.
+     * 
+     * @param response The response string from the server ("HAS ACTIVE PARKING" or "NO ACTIVE PARKING")
+     */
+    public void handleActiveParkingResponse(String response) {
+        Platform.runLater(() -> {
+            if (response.equals("HAS ACTIVE PARKING")) {
+                showPopup("There is an active parking under your name already.");
+            } else if (response.equals("NO ACTIVE PARKING")) {
+                navigateTo(dropoffMethod);
+            }
+        });
+    }
+
     
     @FXML
     private void handleDropoffYesReserve() {
@@ -288,17 +320,6 @@ public class TerminalController implements BaseController {
         });
     }
 
-    @FXML
-    private void handleForgotCode() {
-        String emailInput = parkingCodeField.getText().trim();
-
-        if (emailInput.isEmpty()) {
-            errorMessageLabel.setText("Please enter your email.");
-            return;
-        }
-        errorMessageLabel.setText("");
-        
-    }
 
     /**
      * Handles the "Back" button navigation behavior within the terminal client.
@@ -357,6 +378,30 @@ public class TerminalController implements BaseController {
             resetMessage.setStyle("-fx-text-fill: red;");
         }
     }
+
+    @FXML
+    private void handleForgotCode() {
+    	navigateTo(forgotParkingCodeView);
+    }
+ 
+    @FXML
+    private void handleSendParkingCode() {
+        String emailInput = parkingCodeEmailField.getText().trim();
+        if (emailInput.isEmpty()) {
+            parkingCodeMessage.setText("Please enter your email.");
+            parkingCodeMessage.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        try {
+            client.sendToServer(new PasswordResetRequest(emailInput, "pcode"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            parkingCodeMessage.setText("Failed to send request.");
+            parkingCodeMessage.setStyle("-fx-text-fill: red;");
+        }
+    }
+
+
     /**
      * Displays a popup window with a custom message.
      * 
@@ -501,7 +546,7 @@ public class TerminalController implements BaseController {
                 cleanResult = result.substring("PICKUP_RESULT|".length());
             }
             if (cleanResult.equals("SUCCESS")) {
-            	navigateTo(selectServicePane);
+            	navigateTo(signInChoice);
                 showPopup("We're bringing your car now. Please wait at the delivery point.");
             } else {
                 showPopup("Incorrect parking code. Please try again.");
@@ -525,27 +570,20 @@ public class TerminalController implements BaseController {
     }  
    
   
-    /**
-     * Processes the server’s response to a password reset request and updates the UI accordingly.
-     * This method must be called on the JavaFX Application Thread; wrapping via Platform.runLater
-     * ensures thread safety when modifying UI controls.
-     *
-     * @param resp the PasswordResetResponse object containing:
-     *             
-     *               success – true if the reset email was sent successfully, false otherwise
-     *            .   message – the feedback text to display to the user
-     *             
-     */
     public void handlePasswordResetResponse(PasswordResetResponse resp) {
         Platform.runLater(() -> {
+            Label targetLabel = parkingCodeMessage;
+
             if (resp.isSuccess()) {
-                resetMessage.setText(resp.getMessage());
-                resetMessage.setStyle("-fx-text-fill: green;");
+                targetLabel.setText(resp.getMessage());
+                targetLabel.setStyle("-fx-text-fill: green;");
             } else {
-                resetMessage.setText(resp.getMessage());
-                resetMessage.setStyle("-fx-text-fill: red;");
+                targetLabel.setText(resp.getMessage());
+                targetLabel.setStyle("-fx-text-fill: red;");
             }
         });
     }
+
+
 
 }

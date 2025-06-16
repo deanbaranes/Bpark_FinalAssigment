@@ -77,4 +77,33 @@ public class EmailSender {
             throw e;
         }
     }
+    
+    public void sendParkingCodeEmail(String toEmail, String parkingCode) throws MessagingException, UnsupportedEncodingException {
+        try {
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(SendMailConfig.USERNAME, SendMailConfig.SENDER_NAME));
+            msg.setRecipients(
+                Message.RecipientType.TO,
+                InternetAddress.parse(toEmail, false)
+            );
+            msg.setSubject("BPARK Parking Code Retrieval");
+            msg.setText(
+                "Hello,\n\n" +
+                "Your parking code is: " + parkingCode + "\n\n" +
+                "Best regards,\n" +
+                SendMailConfig.SENDER_NAME
+            );
+
+            System.out.println("[EmailSender] → Transport.send() (ParkingCode)");
+            Transport.send(msg);
+            System.out.println("[EmailSender] Parking code email sent successfully to " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("[EmailSender] Failed to send parking code email to " + toEmail);
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    
+    
 }

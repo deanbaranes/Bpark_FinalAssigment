@@ -73,6 +73,13 @@ public class ChatClient extends AbstractClient {
                         TerminalController.getInstance().handleLoginResponse(message);
                         TerminalController.getInstance().subscriberNotFoundCase();
                         break;
+                    
+                    case "HAS ACTIVE PARKING":
+                    	TerminalController.getInstance().handleActiveParkingResponse(message);
+                        break;
+                    case "NO ACTIVE PARKING":
+                    	TerminalController.getInstance().handleActiveParkingResponse(message);
+                        break;
                     case "ACTIVATION_RESULT":
                     	TerminalController.getInstance().handleReservationActivationResult(message);
                         break;
