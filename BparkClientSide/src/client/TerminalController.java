@@ -49,7 +49,7 @@ public class TerminalController implements BaseController {
 
     // === Labels ===
     @FXML private Label chooseServiceLabel, dropoffCarLabel,
-            pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage;
+            pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage,errorMessageLabel;
 
     // === Input Fields ===
     @FXML private TextField idField, parkingCodeField,resetEmailField,reservationCodeField;
@@ -288,16 +288,18 @@ public class TerminalController implements BaseController {
         });
     }
 
-  
-    
- 
-
     @FXML
     private void handleForgotCode() {
-        showPopup("A message with your parking code has been sent to your email and phone.");
+        String emailInput = parkingCodeField.getText().trim();
+
+        if (emailInput.isEmpty()) {
+            errorMessageLabel.setText("Please enter your email.");
+            return;
+        }
+        errorMessageLabel.setText("");
+        
     }
-    
-    
+
     /**
      * Handles the "Back" button navigation behavior within the terminal client.
      * 

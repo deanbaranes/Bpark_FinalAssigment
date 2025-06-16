@@ -108,18 +108,18 @@
 		</VBox>
 
 	
-	
-	<!-- Pickup View -->
-    <VBox fx:id="pickupPane" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-        <Label fx:id="pickupCarLabel" text="Pickup car"/>
-        <Label fx:id="insertCodeLabel" text="Insert parking code please:"/>
-        <TextField fx:id="parkingCodeField" maxWidth="200"/>
-        <Hyperlink fx:id="forgotPasswordLink" text="forgot my password" onAction="#handleForgotCode"/>
-        <Button fx:id="submitPickupCodeButton" text="Submit" onAction="#handleSubmitPickupCode"/>
-    </VBox>
-    
-    
+		
+	<VBox fx:id="pickupPane" alignment="CENTER" spacing="10" visible="false" managed="false"
+	      AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+	      
+	    <Label fx:id="pickupCarLabel" text="Pickup car"/>
+	    <Label fx:id="insertCodeLabel" text="Insert parking code please:"/>
+	    <TextField fx:id="parkingCodeField" maxWidth="200"/>
+	    <Label fx:id="errorMessageLabel" text="" style="-fx-text-fill: red;" />
+	    <Hyperlink fx:id="forgotPasswordLink" text="forgot my password" onAction="#handleForgotCode"/>
+	    <Button fx:id="submitPickupCodeButton" text="Submit" onAction="#handleSubmitPickupCode"/>
+	</VBox>
+
     	<!-- scanner Screen -->
 	<VBox fx:id="scannerPane" alignment="CENTER" spacing="30"
 	      AnchorPane.topAnchor="120" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
