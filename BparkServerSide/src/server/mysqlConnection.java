@@ -427,7 +427,7 @@ public class mysqlConnection {
 	            }
 
 	            // הכנסה ל־history
-	            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_code) VALUES (?, ?, ?, ?, ?, ?, ?)";
+	            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_spot) VALUES (?, ?, ?, ?, ?, ?, ?)";
 	            try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
 	                historyStmt.setString(1, subscriberId);
 	                historyStmt.setString(2, vehicleNumber);
@@ -435,7 +435,7 @@ public class mysqlConnection {
 	                historyStmt.setTime(4, Time.valueOf(entryTime));
 	                historyStmt.setDate(5, Date.valueOf(exitDate));
 	                historyStmt.setTime(6, Time.valueOf(exitTime));
-	                historyStmt.setString(7, parkingCode);
+	                historyStmt.setInt(7, parkingSpot);
 	                historyStmt.executeUpdate();
 	            }
 

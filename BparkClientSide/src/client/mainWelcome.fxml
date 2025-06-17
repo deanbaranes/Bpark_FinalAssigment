@@ -4,7 +4,7 @@
 <?import javafx.scene.text.*?>
  
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.MainWelcomeController"
-            prefWidth="700" prefHeight="500">
+            prefWidth="900" prefHeight="700">
 
     <!-- Main Welcome Menu .-->
     <VBox fx:id="mainMenu" alignment="CENTER" spacing="20"
@@ -16,7 +16,7 @@
         </Label>
 
         <Label text="Please select your role:">
-            <font><Font size="16"/></font>
+            <font><Font size="20"/></font>
         </Label>
 
         <HBox alignment="CENTER" spacing="30">
@@ -33,11 +33,11 @@
           AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
           AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
 
-        <Label text="Choose Access Type:">
-            <font><Font size="18"/></font>
+        <Label text="Where are you logging in from?">
+            <font><Font size="20"/></font>
         </Label>
 
-        <HBox alignment="CENTER" spacing="40">
+        <HBox alignment="CENTER" spacing="30">
             <Button fx:id="terminalButton" text="Terminal" onAction="#handleTerminalAccess" prefWidth="160"/>
             <Button fx:id="appButton" text="App (Remote)" onAction="#handleAppAccess" prefWidth="160"/>
         </HBox>

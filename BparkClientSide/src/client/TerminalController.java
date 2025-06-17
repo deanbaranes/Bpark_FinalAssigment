@@ -23,18 +23,14 @@ import common.Subscriber;
 
 public class TerminalController implements BaseController {
 
-	final public static String SCAN_LOG_ID = "900000001";
-	final public static String SCAN_LOG_PW = "carpass";
+	final public static String SCAN_LOG_ID = "211273813";
+	final public static String SCAN_LOG_PW = "SUB1005";
 	private ChatClient client;
     private final Stack<VBox> navigationStack = new Stack<>();
     private static TerminalController instance;
     private Subscriber currentSubscriber = new Subscriber("000000000","DefultUserPassword");
     
-    
-
-    // ===== MOCK DATA SECTION =====
-    private final String validPickupCode = "AB123";
-    // =============================
+ 
 
     // === VBoxes ===
     @FXML private VBox mainMenu, signInForm, spotsView,
@@ -48,8 +44,9 @@ public class TerminalController implements BaseController {
             btnYesReservation,btnNoReservation,submitdropoffCodeButton,btnScan,sendParkingCodeButton;
 
     // === Labels ===
-    @FXML private Label chooseServiceLabel, dropoffCarLabel,
-            pickupCarLabel, insertCodeLabel, LogOutLabel,resetMessage,errorMessageLabel,parkingCodeMessage;
+    @FXML private Label welcomeLabelTerminal, chooseServiceLabel, dropoffCarLabel, pickupCarLabel, insertCodeLabel,
+    LogOutLabel,resetMessage,errorMessageLabel,parkingCodeMessage, loginlabel;
+    
 
     // === Input Fields ===
     @FXML private TextField idField, parkingCodeField,resetEmailField,reservationCodeField,parkingCodeEmailField;
@@ -425,7 +422,7 @@ public class TerminalController implements BaseController {
 
         VBox wrapper = new VBox(content);
         wrapper.setAlignment(Pos.CENTER);
-        wrapper.setPrefSize(320, 150);
+        wrapper.setPrefSize(500, 180);
 
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
@@ -442,7 +439,8 @@ public class TerminalController implements BaseController {
 
     public void handleSucsessfulParking(String parkingCode) 
     {
-    	handleBack();
+    	showOnly(mainMenu);
+        navigationStack.clear();
     	showPopup("Dropoff was successful.\n your parking code is: "+ parkingCode +"\n If you would like to extend your parking time by up to 4 additional hours,\n you can do so through the app. ");
     }
     
@@ -546,7 +544,8 @@ public class TerminalController implements BaseController {
                 cleanResult = result.substring("PICKUP_RESULT|".length());
             }
             if (cleanResult.equals("SUCCESS")) {
-            	navigateTo(signInChoice);
+            	showOnly(mainMenu);
+            	navigationStack.clear();
                 showPopup("We're bringing your car now. Please wait at the delivery point.");
             } else {
                 showPopup("Incorrect parking code. Please try again.");
@@ -583,7 +582,6 @@ public class TerminalController implements BaseController {
             }
         });
     }
-
 
 
 }

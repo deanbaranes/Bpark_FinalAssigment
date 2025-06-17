@@ -65,8 +65,8 @@ public class ClientController implements BaseController {
             reserveSubmitButton, backButton;
 
     @FXML private Label welcomeLabel, resetMessage, usernameLabel, emailLabel, phoneLabel,
-            car1Label, creditCardLabel, LogOutLabel, 
-            greetingLabelHistory, greetingLabelReservations, greetingLabelPersonal, greetingLabelEdit;
+            car1Label, creditCardLabel, LogOutLabel, loginlabel, 
+            greetingLabelHistory, greetingLabelReservations;
     
 
     @FXML private TextField resetEmailField, idField, editPhoneField, editEmailField,
@@ -262,7 +262,6 @@ public class ClientController implements BaseController {
             editEmailField.setText(currentSubscriber.getEmail());
             editPhoneField.setText(currentSubscriber.getPhone());
         }
-        greetingLabelEdit.setText("Update your contact details, " + currentSubscriber.getFull_name() + ":");
         navigateTo(editInfoForm);
     }
     
@@ -347,8 +346,7 @@ public class ClientController implements BaseController {
         isLoggedIn = true;
 
         Platform.runLater(() -> {
-        	greetingLabelPersonal.setText("Hi " + subscriber.getFull_name() + ", here are your personal details:");
-            usernameLabel.setText("Full Name: " + subscriber.getFull_name());
+        	usernameLabel.setText("Full Name: " + subscriber.getFull_name());
             emailLabel.setText("E-mail: " + subscriber.getEmail());
             phoneLabel.setText("Phone Number: " + subscriber.getPhone());
             car1Label.setText("Car Number: " + subscriber.getVehicle_number1());

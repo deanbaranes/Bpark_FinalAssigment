@@ -39,6 +39,8 @@ public class ManagementController implements BaseController{
     private ChatClient client;
     private static ManagementController instance;
     private String currentRole;
+    private String currentUsername;
+
 
 
     // === VBoxes (screens) ===
@@ -190,16 +192,11 @@ public class ManagementController implements BaseController{
     
     @FXML
     private void handleViewMemberStatusReport() {
-    	parkingDurationBarChart.getData().clear();
-        parkingDurationBarChart.setVisible(false);   
-        parkingDurationBarChart.setManaged(false);  
+    	memberStatusBarChart.getData().clear();
+    	memberStatusBarChart.setVisible(false);   
+    	memberStatusBarChart.setManaged(false);  
         navigateTo(memberStatusReportView);
-        // Enlarge the window specifically for the parking duration report screen,
-        // to ensure the full chart and controls are comfortably visible.
-        Stage stage = (Stage) parkingDurationView.getScene().getWindow();
-        stage.setWidth(900);  // Expanded width for better chart visibility
-        stage.setHeight(700); // Expanded height to accommodate chart and controls
-    }    
+    }
 
     @FXML
     private void handleViewParkingDuration() {
@@ -208,12 +205,6 @@ public class ManagementController implements BaseController{
         parkingDurationBarChart.setManaged(false);  
         navigateTo(parkingDurationView);
         
-        // Enlarge the window specifically for the parking duration report screen,
-        // to ensure the full chart and controls are comfortably visible.
-        Stage stage = (Stage) parkingDurationView.getScene().getWindow();
-        stage.setWidth(900);  // Expanded width for better chart visibility
-        stage.setHeight(700); // Expanded height to accommodate chart and controls
-
     }
     
     @FXML
@@ -309,14 +300,10 @@ public class ManagementController implements BaseController{
             if (parkingDurationView.isVisible()) {
             	parkingDurationYearField.clear();
             	parkingDurationMonthField.clear();
-            	
-            	// Restore the default window size after displaying the parking duration report.
-            	// This ensures consistency with other manager views in the application.
-            	Stage stage = (Stage) parkingDurationView.getScene().getWindow();
-            	stage.setWidth(700);  // Standard width used across manager screens
-            	stage.setHeight(500); // Standard height used across manager screens
-
-
+            }
+            if (memberStatusReportView.isVisible()) {
+            	statusReportYearField.clear();
+            	statusReportMonthField.clear();
             }
 
             showOnly(previous);
@@ -424,9 +411,10 @@ public class ManagementController implements BaseController{
         String password = passwordfeild.getText().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            showAlert("Please enter both username and password.");
+            showPopup("Please enter both username and password.");
             return;
         }
+        currentUsername = username;
         LoginManagement loginData = new LoginManagement(username, password);
 
         try {
@@ -453,7 +441,7 @@ public class ManagementController implements BaseController{
 
         VBox wrapper = new VBox(content);
         wrapper.setAlignment(Pos.CENTER);
-        wrapper.setPrefSize(320, 150);
+        wrapper.setPrefSize(500, 180);
 
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
@@ -611,6 +599,7 @@ public class ManagementController implements BaseController{
                 currentRole = (parts.length > 1) ? parts[1].toLowerCase() : "attendant";
 
                 configureRoleBasedAccess(); // adjust UI based on role
+                labelwelcome.setText("Welcome, " + currentRole + " " + capitalize(currentUsername) + "!"); 
                 navigationStack.clear();
                 showOnly(managerMenuView);
             } else {
@@ -619,16 +608,18 @@ public class ManagementController implements BaseController{
             }
         });
     }
-    /* 
-    Displays an informational alert popup with the provided message. 
-    */
-
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Notice");
-        alert.setContentText(message);
-        alert.showAndWait();
+    
+    /**
+     * Capitalizes the first letter of a given string for cosmetic display purposes.
+     *
+     * @param str The input string to format.
+     * @return A string with the first character in uppercase and the rest in lowercase.
+     */
+    private String capitalize(String str) {
+        if (str == null || str.isEmpty()) return str;
+        return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
+
     /**
      * Displays a detailed list of active parking records in a structured format.
      * Each record is shown as a multi-line list for readability.

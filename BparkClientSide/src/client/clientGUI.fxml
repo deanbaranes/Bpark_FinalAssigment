@@ -4,27 +4,30 @@
 <?import javafx.scene.text.*?>
   
 <AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.ClientController"
-            prefWidth="700" prefHeight="500">
+            prefWidth="900" prefHeight="700">
 
     <!-- Main Menu -->
     <VBox fx:id="mainMenu" alignment="CENTER" spacing="20"
-          AnchorPane.topAnchor="60" AnchorPane.bottomAnchor="100"
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
           AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label text="Choose an action:">
             <font><Font size="20"/></font>
         </Label>
         <HBox alignment="CENTER" spacing="30">
-            <Button fx:id="signInButton" text="Sign in" onAction="#handleSignInClick" prefWidth="140"/>
-            <Button fx:id="showSpotsButton" text="Show Available Parking Spots" onAction="#handleShowSpotsClick" prefWidth="220"/>
+            <Button fx:id="signInButton" text="Sign in" onAction="#handleSignInClick" prefWidth="200"/>
+            <Button fx:id="showSpotsButton" text="Show Available Parking Spots" onAction="#handleShowSpotsClick" prefWidth="200"/>
         </HBox>
     </VBox>
 
     <!-- Sign In -->
-    <VBox fx:id="signInForm" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="80" AnchorPane.leftAnchor="200" AnchorPane.rightAnchor="200">
-        <Label text="Insert ID Number:"/>
+    <VBox fx:id="signInForm" alignment="CENTER" spacing="10" 
+           AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" maxWidth="200">
+        <Label fx:id="loginlabel" text="Please enter your login details">
+        <font><Font size="24" /></font>
+        </Label>
+        <Label text="ID Number:"/>
         <TextField fx:id="idField" maxWidth="180"/>
-        <Label text="Insert Subscriber Code:"/>
+        <Label text="Subscriber Code:"/>
         <PasswordField fx:id="codeField" maxWidth="180"/>
         <Hyperlink fx:id="forgotPasswordLink" text="Forgot my password" onAction="#handleShowForgotPasswordView" />
         <Button fx:id="submitButton" text="Submit" onAction="#handleSubmitLogin" prefWidth="100"/> 
@@ -33,7 +36,7 @@
      <!-- FORGOT-PASSWORD VIEW -->
 	<VBox fx:id="forgotPasswordView"
 	      alignment="CENTER" spacing="10"
-	      AnchorPane.topAnchor="60.0"
+	      AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
 	      AnchorPane.leftAnchor="100.0"
 	      AnchorPane.rightAnchor="100.0"
 	      maxWidth="250"
@@ -52,34 +55,33 @@
 
  	<!-- Spots View -->
     <VBox fx:id="spotsView" alignment="CENTER" spacing="20" visible="false" managed="false"
-          AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-        <Label text="Available parking spots will be shown here." wrapText="true" maxWidth="600"/>
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          <Label text="Available Parking Spots" alignment="CENTER" style="-fx-font-size: 24px;" />
+        <Label text="Here are the currently available parking spots:" alignment="CENTER" wrapText="true" maxWidth="600"/>
          <TextArea fx:id="spotsTextArea" prefWidth="400" prefHeight="200"
               editable="false" wrapText="true"/>
     </VBox>
 
     <!-- Post-login Menu -->
     <VBox fx:id="postLoginMenu" alignment="CENTER" spacing="20" visible="false" managed="false"
-          AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-        <Label fx:id="welcomeLabel" text="" alignment="CENTER" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
-        <GridPane hgap="20" vgap="20" alignment="CENTER">
-        	
-            <Button fx:id="personalInfoButton" text="Personal Information" onAction="#handlePersonalInfo"
-                    GridPane.columnIndex="0" GridPane.rowIndex="0" prefWidth="200"/>
-            <Button fx:id="activityButton" text="Activity" onAction="#handleActivity"
-                    GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="200"/>
-            <Button fx:id="scheduleButton" text="Schedule a new reservation" onAction="#handleSchedule"
-                    GridPane.columnIndex="0" GridPane.rowIndex="1" prefWidth="200"/>
-            <Button fx:id="extendButton" text="Extend Parking Time" onAction="#handleExtend"
-                    GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="200"/>
-        </GridPane>
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label fx:id="welcomeLabel" text="" alignment="CENTER" >
+         <font><Font size="24" /></font>
+        </Label>
+        <VBox alignment="CENTER" spacing="30">
+    <Button fx:id="personalInfoButton" text="Personal Information" onAction="#handlePersonalInfo" prefWidth="200"/>
+    <Button fx:id="activityButton" text="Activity" onAction="#handleActivity" prefWidth="200"/>
+    <Button fx:id="scheduleButton" text="Schedule a new reservation" onAction="#handleSchedule" prefWidth="200"/>
+    <Button fx:id="extendButton" text="Extend Parking Time" onAction="#handleExtend" prefWidth="200"/>
+        </VBox>
+
         <Label fx:id="LogOutLabel" text="To log out and return to Main Menu press the 'back' button"/>
     </VBox>
 
     <!-- Personal Info -->
     <VBox fx:id="personalInfoView" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-        <Label fx:id="greetingLabelPersonal" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+         <Label text="Personal Information:" alignment="CENTER" style="-fx-font-size: 24px;" />
         <Label fx:id="usernameLabel" text="Username:"/>
         <Label fx:id="emailLabel" text="Email:"/>
         <Label fx:id="phoneLabel" text="Phone:"/>
@@ -90,8 +92,8 @@
 
     <!-- Edit Info -->
     <VBox fx:id="editInfoForm" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-        <Label fx:id="greetingLabelEdit" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+        <Label text="Edit your contact details:" style="-fx-font-size: 24px;" />
         <Label text="Phone Number:"/>
         <TextField fx:id="editPhoneField" maxWidth="180"/>
         <Label text="Email:"/>
@@ -101,14 +103,17 @@
 
     <!-- Activity -->
     <VBox fx:id="activityMenu" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="80" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          <Label text="Personal Activity:" alignment="CENTER" style="-fx-font-size: 24px;" />
+          <VBox alignment="CENTER" spacing="30">
         <Button fx:id="historyButton" text="Parking History" onAction="#handleHistory"/>
         <Button fx:id="reservationsButton" text="Existing Reservations" onAction="#handleReservations"/>
+        </VBox>
     </VBox>
 
     <!-- History View -->
     <VBox fx:id="historyView" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label fx:id="greetingLabelHistory" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
         <ListView fx:id="historyListView" prefHeight="200" prefWidth="600"/>
         
@@ -116,7 +121,7 @@
 
     <!-- Reservations View -->
     <VBox fx:id="reservationsView" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label fx:id="greetingLabelReservations" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
 		<HBox spacing="10" alignment="CENTER">
    	    	<Button fx:id="editReservationButton" text="Edit reservation" onAction="#handleEditReservation"/>
@@ -127,8 +132,11 @@
 
     <!-- Schedule Reservation -->
     <VBox fx:id="reservationForm" alignment="CENTER" spacing="15" visible="false" managed="false"
-          AnchorPane.topAnchor="60" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-        <Label wrapText="true" text="Parking reservations can be made in advance for a date that is at least 24 hours after the time of booking and up to 7 days ahead." maxWidth="500"/>
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          <Label text="Parking Reservation:" alignment="CENTER" style="-fx-font-size: 24px;" />
+        <Label  wrapText="true" 
+  		  text="Parking reservations can be made in advance for a date that is at least 24 hours after the time of booking and up to 7 days ahead." 
+   			 maxWidth="500" textAlignment="CENTER"/>
         <Label text="Date (yyyy-mm-dd):"/>
         <TextField fx:id="dateField" maxWidth="200"/>
         <Label text="Time (HH:mm):"/>
@@ -138,15 +146,25 @@
 
     <!-- Extend Parking -->
     <VBox fx:id="extendInfo" alignment="CENTER" spacing="10" visible="false" managed="false"
-          AnchorPane.topAnchor="100" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label text="Your parking time can be extended once by 4 hours."/>
         <Button text="Extend Now" onAction="#handleExtend"/>
     </VBox>
 
-     <!-- Global Back Button. -->
-    <VBox alignment="CENTER" spacing="10" AnchorPane.bottomAnchor="60" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
-        <Button fx:id="backButton" text="Back" onAction="#handleBack" prefWidth="100"/>
-    	<Button fx:id="logoutButton" text="Exit" onAction="#handleExitApp" prefWidth="100"/>
-    </VBox>
+<!-- Global Back & Exit Buttons (in a row) -->
+<HBox alignment="CENTER" spacing="20"
+      AnchorPane.bottomAnchor="40.0"
+      AnchorPane.leftAnchor="0"
+      AnchorPane.rightAnchor="0">
+    
+    <Button fx:id="backButton" text="Back"
+            onAction="#handleBack"
+            prefWidth="100"/>
+    
+    <Button fx:id="logoutButton" text="Exit"
+            onAction="#handleExitApp"
+            prefWidth="100"/>
+</HBox>
+
 
 </AnchorPane>

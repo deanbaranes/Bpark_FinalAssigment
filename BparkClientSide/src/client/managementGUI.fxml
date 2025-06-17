@@ -16,29 +16,22 @@
 
 
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ManagementController" prefWidth="700" prefHeight="500">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ManagementController" prefWidth="900" prefHeight="700">
     
 
 <VBox fx:id="loginView" alignment="CENTER" spacing="10"
-      visible="true" managed="true"
-      AnchorPane.topAnchor="60.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0"
-      maxWidth="200">
-    
-    <Label fx:id="loginlabel" text="Login:">
+      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" maxWidth="200">
+    <Label fx:id="loginlabel" text="Please enter your login details">
         <font><Font size="24" /></font>
     </Label>
 
-    <Label fx:id="usernamelabel" text="User name" />
-    <TextField fx:id="usernametextfield"
-               prefWidth="140" maxWidth="140"
-               style="-fx-font-size: 12px;" />
+    <Label fx:id="usernamelabel" text="User name:" />
+    <TextField fx:id="usernametextfield" maxWidth="180" />
 
-    <Label fx:id="passwordlabel" text="Password" />
-    <PasswordField fx:id="passwordfeild"
-                   prefWidth="140" maxWidth="140"
-                   style="-fx-font-size: 12px;" />
+    <Label fx:id="passwordlabel" text="Password:" />
+    <PasswordField fx:id="passwordfeild" maxWidth="180" />
 
-    <Hyperlink fx:id="btnforgotpassword" text="Forgot password?" onAction="#handleShowForgot" />
+    <Hyperlink fx:id="btnforgotpassword" text="Forgot my password" onAction="#handleShowForgot" />
 
     <Button fx:id="btnloginsubmit" text="Submit"
             onAction="#handleLoginManagementSubmit" prefWidth="100" />
@@ -48,7 +41,7 @@
 <!-- FORGOT-PASSWORD VIEW -->
 <VBox fx:id="forgotView"
       alignment="CENTER" spacing="10"
-      AnchorPane.topAnchor="60.0"
+      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0"
       AnchorPane.leftAnchor="100.0"
       AnchorPane.rightAnchor="100.0"
       maxWidth="250"
@@ -69,27 +62,27 @@
     <!-- MANAGER MAIN MENU VIEW -->
     <VBox fx:id="managerMenuView" alignment="CENTER" spacing="15"
           visible="false" managed="false"
-          AnchorPane.topAnchor="60.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0">
-        <Label fx:id="labelwelcome" text="Welcome!">
-            <font><Font size="35" /></font>
+          AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0">
+        <Label fx:id="labelwelcome" alignment="CENTER" >
+            <font><Font size="24" /></font>
         </Label>
+        <VBox alignment="CENTER" spacing="30" >
 		<Button fx:id="btnmemberdetails" text="View member details" onAction="#handleViewMemberDetails" prefWidth="200" />
-		<Button fx:id="btnparkingdetails" text="View parking details" onAction="#handleViewParkingDetails" prefWidth="200" />
+		<Button fx:id="btnparkingdetails" text="View active parking details" onAction="#handleViewParkingDetails" prefWidth="200" />
 		<Button fx:id="btnregisternewmember" text="Register new member" onAction="#handleRegisterNewMember" prefWidth="200" />
 		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
 		<Button fx:id="btnViewSiteActivity" text="View Site Activity" onAction="#handleViewSiteActivity" prefWidth="200" />
+ 	   </VBox> 
     </VBox>
 
 
     <!-- MEMBER DETAILS VIEW -->
     <VBox fx:id="memberDetailsView" alignment="CENTER" spacing="10"
           visible="false" managed="false"
-          AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
-        <Label fx:id="labelmemberdetails" text="Member Details">
-            <font><Font size="30" /></font>
-        </Label>
-        <HBox spacing="10">
+          AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
+        <Label fx:id="labelmemberdetails" text="Member Details" style="-fx-font-size: 24px;" />
+        <HBox spacing="10" alignment="CENTER">
             <Label fx:id="labelsearchby_id" text="Search by ID:" />
             <TextField fx:id="searchbyidtext" />
 		<Button fx:id="btnsearch_memberdetails" text="Search" onAction="#handleSearchMemberDetails" />
@@ -100,12 +93,12 @@
     </VBox>
 
 
-    <!-- PARKING DETAILS VIEW .-->
+    <!-- ACTIVE PARKING DETAILS VIEW .-->
     <VBox fx:id="parkingDetailsView" alignment="CENTER" spacing="10"
           visible="false" managed="false"
-          AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
-        <Label fx:id="label_parking_details" text="Parking Details" />
-        <HBox spacing="10">
+          AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
+        <Label fx:id="label_parking_details" text="Active Parking Details" style="-fx-font-size: 24px;" />
+        <HBox spacing="10" alignment="CENTER">
             <Label fx:id="label_parkingdetails_search" text="Search by member number/parking number:" />
             <TextField fx:id="searchbytext2" />
 		<Button fx:id="btnsearch_parkingdetails" text="Search" onAction="#handleSearchParkingDetails" />
@@ -118,7 +111,7 @@
 	 <!-- REGISTER MEMBER VIEW -->
 	<VBox fx:id="registerMemberView" alignment="CENTER" spacing="10"
 	      visible="false" managed="false"
-	      AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0"
+	      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0"
 	      style="-fx-padding: 30 0 0 0;">
 	    
 	    <Label fx:id="label_register_member" text="Register new member">
@@ -140,9 +133,9 @@
 	    </VBox>
 	</VBox>
 
-	
-<VBox fx:id="siteActivityView" visible="false" managed="false" AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="40.0"
-      AnchorPane.rightAnchor="40.0" AnchorPane.bottomAnchor="20.0" spacing="20" alignment="TOP_CENTER">
+	<!-- SITE ACTIVITY VIEW -->
+<VBox fx:id="siteActivityView" visible="false" managed="false" AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0"
+ AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0"  spacing="20" alignment="CENTER">
 
     <Label text="Site Activity" style="-fx-font-size: 24px;" />
 
@@ -161,10 +154,10 @@
       visible="false" managed="false"
       AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
 
-    <Label fx:id="label_memberStatusTitle" text="Member Status Report">
-        <font><Font size="20" /></font>
-    </Label>
-
+    <Label fx:id="label_memberStatusTitle" text="Member Status Report" style="-fx-font-size: 24px;" />
+    <Label text="This report displays how many subscribers parked each day of the selected month."
+           wrapText="true" textAlignment="CENTER" maxWidth="500" style="-fx-font-size: 13px;" />
+   
     <Label text="Enter year:" />
     <TextField fx:id="statusReportYearField" maxWidth="200" />
 
@@ -193,10 +186,10 @@
       visible="false" managed="false"
       AnchorPane.topAnchor="30.0" AnchorPane.leftAnchor="80.0" AnchorPane.rightAnchor="80.0">
 
-    <Label fx:id="label_parkingDurationTitle" text="Parking Duration Report">
-        <font><Font size="20" /></font>
-    </Label>
-
+    <Label fx:id="label_parkingDurationTitle" text="Parking Duration Report" style="-fx-font-size: 24px;" />
+    <Label text="This report displays total parking durations for each day, including late time and extensions."
+           wrapText="true" textAlignment="CENTER" maxWidth="500" style="-fx-font-size: 13px;" />
+    
     <Label text="Enter year:" />
     <TextField fx:id="parkingDurationYearField" maxWidth="200" />
 
@@ -219,18 +212,21 @@
 	<Region prefHeight="40"/> 
 </VBox>
 
-
-<VBox spacing="10" alignment="CENTER"
+<!-- Global Back & Exit Buttons (in a row) -->
+<HBox spacing="20" alignment="CENTER"
       AnchorPane.bottomAnchor="20.0"
-      AnchorPane.leftAnchor="100.0"
-      AnchorPane.rightAnchor="100.0">
-  <Button fx:id="btnback"
-          text="Back"
-          onAction="#handleBack"
-          prefWidth="100" prefHeight="20"/>
-  <Button text="Exit"
-          onAction="#handleExit"
-          prefWidth="100" prefHeight="20"/>
-</VBox>
+      AnchorPane.leftAnchor="0.0"
+      AnchorPane.rightAnchor="0.0">
+
+    <Button fx:id="btnback"
+            text="Back"
+            onAction="#handleBack"
+            prefWidth="100" prefHeight="20" />
+
+    <Button text="Exit"
+            onAction="#handleExit"
+            prefWidth="100" prefHeight="20" />
+
+</HBox>
 
 </AnchorPane>
