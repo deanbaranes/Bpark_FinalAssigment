@@ -25,6 +25,9 @@ public class ServerMain extends Application {
             primaryStage.setTitle("Server");
             primaryStage.setScene(new Scene(root));
             primaryStage.show();
+            
+            System.out.println("[ServerMain] ✅ Starting scheduled tasks...");
+            SchedulerTasks.startAll();
 
         } catch (Exception e) {
             e.printStackTrace();

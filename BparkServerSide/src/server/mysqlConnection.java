@@ -16,6 +16,7 @@ import common.ParkingHistory;
 import common.Reservation;
 import common.Subscriber;
 import common.ActiveParking;
+import common.EmailSender;
 
 /**
  * This class provides database-related utility methods for managing BPARK system data,
@@ -1469,4 +1470,120 @@ public class mysqlConnection {
 
 	    return result;
 	}
+	
+	/**
+	 * Checks for vehicles that have overstayed their parking duration (over 8 hours),
+	 * moves them to the "towed_vehicles" list, frees the parking spot, and sends an email notification.
+	 *
+	 * This method is executed periodically using a scheduler (e.g., once per minute).
+	 * It uses a connection pool via {@link DBExecutor}.
+	 */
+	public static void checkAndTowVehicles() {
+	    DBExecutor.executeVoid(conn -> {
+	        String query = """
+	            SELECT ap.parking_code, ap.subscriber_id, ap.entry_date, ap.entry_time, ap.parking_spot,
+	        	    	s.vehicle_number1, s.email
+	            FROM active_parkings ap
+	            JOIN subscribers s ON ap.subscriber_id = s.subscriber_id
+	            WHERE TIMESTAMPDIFF(MINUTE, TIMESTAMP(ap.entry_date, ap.entry_time), NOW()) > 480
+	        """;
+
+	        try (PreparedStatement stmt = conn.prepareStatement(query);
+	             ResultSet rs = stmt.executeQuery()) {
+
+	            while (rs.next()) {
+	                String parkingCode = rs.getString("parking_code");
+	                String subscriberId = rs.getString("subscriber_id");
+	                Date entryDate = rs.getDate("entry_date");
+	                Time entryTime = rs.getTime("entry_time");
+	                int spot = rs.getInt("parking_spot");
+	                String vehicleNumber = rs.getString("vehicle_number1");
+	                String email = rs.getString("email");
+
+	               
+	                try (PreparedStatement insertStmt = conn.prepareStatement("""
+	                    INSERT INTO towed_vehicles 
+	                    (parking_code, subscriber_id, vehicle_number, parking_spot, entry_date, entry_time) 
+	                    VALUES (?, ?, ?, ?, ?, ?)
+	                """)) {
+	                    insertStmt.setString(1, parkingCode);
+	                    insertStmt.setString(2, subscriberId);
+	                    insertStmt.setString(3, vehicleNumber);
+	                    insertStmt.setInt(4, spot);
+	                    insertStmt.setDate(5, entryDate);
+	                    insertStmt.setTime(6, entryTime);
+	                    insertStmt.executeUpdate();
+	                }
+
+	              
+	                try (PreparedStatement deleteStmt = conn.prepareStatement(
+	                        "DELETE FROM active_parkings WHERE parking_code = ?")) {
+	                    deleteStmt.setString(1, parkingCode);
+	                    deleteStmt.executeUpdate();
+	                }
+
+	                
+	                updateParkingSpotStatus(spot, "available");
+	                
+	               
+	                if (email != null) {
+	                    try {
+	                        new EmailSender().sendTowingNoticeEmail(email, vehicleNumber, spot);
+	                       
+	                        try (PreparedStatement updateStmt = conn.prepareStatement("""
+	                                UPDATE towed_vehicles
+	                                SET email_sent = TRUE
+	                                WHERE parking_code = ?
+	                            """)) {
+	                                updateStmt.setString(1, parkingCode);
+	                                updateStmt.executeUpdate();
+	                            }
+	                    } catch (Exception e) {
+	                        System.err.println("[Towing] Failed to send email to: " + email);
+	                        e.printStackTrace();
+	                    }
+	                }
+	            }
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    });
+	}
+
+	
+	/**
+	 * Updates parking spots to 'reserved' if there's a reservation starting within the next 8 hours.
+	 * This method should be run periodically (e.g., every minute).
+	 */
+	public static void markUpcomingReservationsAsReserved() {
+	    DBExecutor.executeVoid(conn -> {
+	        String query = """
+	            SELECT DISTINCT parking_spot
+	            FROM reservations
+	            WHERE TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(entry_date, entry_time)) BETWEEN 0 AND 480
+	        """;
+
+	        try (PreparedStatement stmt = conn.prepareStatement(query);
+	             ResultSet rs = stmt.executeQuery()) {
+
+	            while (rs.next()) {
+	                int spot = rs.getInt("parking_spot");
+
+	                try (PreparedStatement updateStmt = conn.prepareStatement("""
+	                    UPDATE parking_spots
+	                    SET status = 'reserved'
+	                    WHERE spot_number = ? AND status = 'available'
+	                """)) {
+	                    updateStmt.setInt(1, spot);
+	                    updateStmt.executeUpdate();
+	                }
+	            }
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    });
+	}
+
 }

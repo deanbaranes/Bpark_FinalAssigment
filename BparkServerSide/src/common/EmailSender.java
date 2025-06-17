@@ -104,6 +104,38 @@ public class EmailSender {
         }
     }
 
+    public void sendTowingNoticeEmail(String toEmail, String vehicleNumber, int spotNumber) 
+            throws MessagingException, UnsupportedEncodingException {
+        try {
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(SendMailConfig.USERNAME, SendMailConfig.SENDER_NAME));
+            msg.setRecipients(
+                Message.RecipientType.TO,
+                InternetAddress.parse(toEmail, false)
+            );
+            msg.setSubject("Vehicle Towed Notification from BPARK");
+
+            msg.setText(
+                "Hello,\n\n" +
+                "Your vehicle with license plate " + vehicleNumber +
+                " was towed from parking spot #" + spotNumber +
+                " after exceeding the maximum allowed parking duration (8 hours).\n\n" +
+                "To retrieve your vehicle, please contact our service center.\n" +
+                "Additional fees may apply.\n\n" +
+                "Best regards,\n" +
+                SendMailConfig.SENDER_NAME
+            );
+
+            System.out.println("[EmailSender] → Transport.send() (TowingNotice)");
+            Transport.send(msg);
+            System.out.println("[EmailSender] Towing email sent successfully to " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("[EmailSender] Failed to send towing notice email to " + toEmail);
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     
     
 }
