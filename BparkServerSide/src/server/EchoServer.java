@@ -2,9 +2,6 @@ package server;
 
 import java.io.*;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -13,23 +10,19 @@ import common.LoginManagement;
 import common.LoginRequest;
 import common.MemberStatusReportRequest;
 import common.MemberStatusReportResponse;
-import common.ParkingDurationRecord;
 import common.ParkingDurationRequest;
 import common.ParkingDurationResponse;
-import common.ParkingHistory;
 import common.RegisterMemberRequest;
 import common.Reservation;
 import common.Subscriber;
 import common.UpdateReservationRequest;
 import common.ActiveParking;
-import common.DailySubscriberCount;
 import common.EmailSender;
 import common.GetSiteActivityRequest;
 import common.GetSiteActivityResponse;
 import common.UpdateSubscriberDetailsRequest;
 import common.PasswordResetResponse;
 import common.PasswordResetRequest;
-import common.SendMailConfig; 
 import ocsf.server.*;
 
   
@@ -110,7 +103,6 @@ public class EchoServer extends AbstractServer {
                 handleMemberStatusReportRequest(request, client);
             }
 
-
             else {
                 client.sendToClient("Unsupported message format.");
             	 }
@@ -119,8 +111,6 @@ public class EchoServer extends AbstractServer {
             e.printStackTrace();
         }
     }
-
-
 
     /**
      * Processes text-based commands sent from the client (usually via sendToServer(String)).
@@ -521,15 +511,12 @@ public class EchoServer extends AbstractServer {
     }
     
  
-    private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) 
-    {
-   
+    private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) {
         System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
         String email = req.getEmail();
 
-        try (Connection conn = mysqlConnection.connectToDB()) {
-            EmployeePassword ep = new EmployeePassword(conn);
-            String password = ep.getPasswordForEmail(email);
+        try {
+            String password = EmployeePassword.getPasswordForEmail(email); 
 
             if (password == null) {
                 client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
@@ -538,70 +525,9 @@ public class EchoServer extends AbstractServer {
                 new EmailSender().sendPasswordEmail(email, password);
                 System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
                 client.sendToClient(new PasswordResetResponse(true,
-                    "Your password has been sent to " + email));
+                        "Your password has been sent to " + email));
             }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            try {
-				client.sendToClient(new PasswordResetResponse(false, "Server error."));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-    }   
-    
-    private void handleSubscriptionCodeReset(PasswordResetRequest req, ConnectionToClient client) 
-    {
-        System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
-        String email = req.getEmail();
-        try (Connection conn = mysqlConnection.connectToDB()) {
-            EmployeePassword ep = new EmployeePassword(conn);
-            String password = ep.subscriptionCodeForEmail(email);
-
-            if (password == null) {
-                client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
-            } else {
-                System.out.println("[EchoServer] → About to call sendPasswordEmail()");
-                new EmailSender().sendPasswordEmail(email, password);
-                System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
-                client.sendToClient(new PasswordResetResponse(true,
-                    "Your subscription code has been sent to " + email));
-            }
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            try {
-				client.sendToClient(new PasswordResetResponse(false, "Server error."));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-    }
-    
-    
-    
-    private void handleParkingCodeReset(PasswordResetRequest req, ConnectionToClient client) 
-    {
-        System.out.println("[EchoServer] → Got ParkingCodeResetRequest for: " + req.getEmail());
-        String email = req.getEmail();
-        try (Connection conn = mysqlConnection.connectToDB()) {
-            EmployeePassword ep = new EmployeePassword(conn);
-            String parkingCode = ep.parkingCodeForEmail(email);
-
-            if (parkingCode == null) {
-                client.sendToClient(new PasswordResetResponse(false, "No reservation found for that email."));
-            } else {
-                System.out.println("[EchoServer] → About to call sendParkingCodeEmail()");
-                new EmailSender().sendParkingCodeEmail(email, parkingCode);
-                System.out.println("[EchoServer] → sendParkingCodeEmail() completed successfully");
-                client.sendToClient(new PasswordResetResponse(true,
-                    "Your parking code has been sent to " + email));
-            }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             try {
                 client.sendToClient(new PasswordResetResponse(false, "Server error."));
@@ -610,6 +536,60 @@ public class EchoServer extends AbstractServer {
             }
         }
     }
+    
+    private void handleSubscriptionCodeReset(PasswordResetRequest req, ConnectionToClient client) {
+        System.out.println("[EchoServer] → Got SubscriptionCodeResetRequest for: " + req.getEmail());
+        String email = req.getEmail();
+
+        try {
+            String subscriptionCode = EmployeePassword.subscriptionCodeForEmail(email);
+
+            if (subscriptionCode == null) {
+                client.sendToClient(new PasswordResetResponse(false, "No account found for that email."));
+            } else {
+                System.out.println("[EchoServer] → About to call sendPasswordEmail()");
+                new EmailSender().sendPasswordEmail(email, subscriptionCode);
+                System.out.println("[EchoServer] → sendPasswordEmail() completed successfully");
+                client.sendToClient(new PasswordResetResponse(true,
+                        "Your subscription code has been sent to " + email));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+                client.sendToClient(new PasswordResetResponse(false, "Server error."));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    
+    private void handleParkingCodeReset(PasswordResetRequest req, ConnectionToClient client) {
+        System.out.println("[EchoServer] → Got ParkingCodeResetRequest for: " + req.getEmail());
+        String email = req.getEmail();
+
+        try {
+            String parkingCode = EmployeePassword.parkingCodeForEmail(email);
+
+            if (parkingCode == null) {
+                client.sendToClient(new PasswordResetResponse(false, "No reservation found for that email."));
+            } else {
+                System.out.println("[EchoServer] → About to call sendParkingCodeEmail()");
+                new EmailSender().sendParkingCodeEmail(email, parkingCode);
+                System.out.println("[EchoServer] → sendParkingCodeEmail() completed successfully");
+                client.sendToClient(new PasswordResetResponse(true,
+                        "Your parking code has been sent to " + email));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            try {
+                client.sendToClient(new PasswordResetResponse(false, "Server error."));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     
     

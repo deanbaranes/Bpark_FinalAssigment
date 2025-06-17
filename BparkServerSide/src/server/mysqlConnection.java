@@ -2,7 +2,6 @@ package server;
 
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,26 +39,6 @@ import common.ActiveParking;
  */
 public class mysqlConnection {
 
-	// public static Connection conn;
-
-	/**
-	 * Establishes a connection to the MySQL database.
-	 * 
-	 * @return The database connection object.
-	 */
-	/*
-	 * public static Connection connectToDB() { try {
-	 * Class.forName("com.mysql.cj.jdbc.Driver");
-	 * System.out.println("Driver definition succeed"); } catch (Exception ex) {
-	 * System.out.println("Driver definition failed"); }
-	 * 
-	 * try { conn = DriverManager.getConnection(
-	 * "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false",
-	 * "root", "Aa123456"); System.out.println("SQL connection succeed"); } catch
-	 * (SQLException ex) { System.out.println("SQLException: " + ex.getMessage());
-	 * System.out.println("SQLState: " + ex.getSQLState());
-	 * System.out.println("VendorError: " + ex.getErrorCode()); } return conn; }
-	 */
 
 	public static Connection connectToDB() {
 		return ConnectionPool.getInstance().getConnection();
@@ -280,23 +259,26 @@ public class mysqlConnection {
 	 * @return "HAS ACTIVE PARKING" if found, otherwise "NO ACTIVE PARKING"
 	 */
 	public static String isSubscriberInActiveParking(String subscriberId) {
-	    String sql = "SELECT 1 FROM active_parkings WHERE subscriber_id = ? LIMIT 1";
+	    return DBExecutor.execute(conn -> {
+	        String sql = "SELECT 1 FROM active_parkings WHERE subscriber_id = ? LIMIT 1";
 
-	    try (Connection conn = connectToDB();
-	         PreparedStatement stmt = conn.prepareStatement(sql)) {
+	        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+	            // Bind the subscriber ID to the query
+	            stmt.setString(1, subscriberId);
 
-	        stmt.setString(1, subscriberId);
-	        
-	        try (ResultSet rs = stmt.executeQuery()) {
-	            if (rs.next()) {
-	                return "HAS ACTIVE PARKING";
+	            // Execute the query and check if any result exists
+	            try (ResultSet rs = stmt.executeQuery()) {
+	                if (rs.next()) {
+	                    return "HAS ACTIVE PARKING";
+	                }
 	            }
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
 	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-	    
-	    return "NO ACTIVE PARKING";
+
+	        return "NO ACTIVE PARKING";
+	    });
 	}
 
 
@@ -411,66 +393,76 @@ public class mysqlConnection {
      * @param parkingCode The parking code to process.
      * @return "SUCCESS" if successfully picked up, "FAILURE" otherwise.
      */
-    public static String processPickupRequest(String parkingCode) {
-        String query = "SELECT * FROM active_parkings WHERE parking_code = ?";
 
-        try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+	public static String processPickupRequest(String parkingCode) {
+	    String query = "SELECT * FROM active_parkings WHERE parking_code = ? FOR UPDATE";
 
-            stmt.setString(1, parkingCode);
-            ResultSet rs = stmt.executeQuery();
+	    try (Connection conn = connectToDB()) {
+	        conn.setAutoCommit(false); // טרנזקציה
 
-            if (!rs.next()) {
-                return "FAILURE";
-            }
+	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+	            stmt.setString(1, parkingCode);
+	            ResultSet rs = stmt.executeQuery();
 
-            String subscriberId = rs.getString("subscriber_id");
-            int parkingSpot = rs.getInt("parking_spot");
-            LocalDate entryDate = rs.getDate("entry_date").toLocalDate();
-            LocalTime entryTime = rs.getTime("entry_time").toLocalTime();
-            LocalDate exitDate = LocalDate.now();
-            LocalTime exitTime = LocalTime.now();
+	            if (!rs.next()) {
+	                conn.rollback();
+	                return "FAILURE";
+	            }
 
-          
-            // --- שליפת vehicle_number מהטבלה subscribers ---
-            String vehicleQuery = "SELECT vehicle_number1 FROM subscribers WHERE subscriber_id = ?";
-            String vehicleNumber = null;
-            try (PreparedStatement vehicleStmt = conn.prepareStatement(vehicleQuery)) {
-                vehicleStmt.setString(1, subscriberId);
-                ResultSet vehicleRs = vehicleStmt.executeQuery();
-                if (vehicleRs.next()) {
-                    vehicleNumber = vehicleRs.getString("vehicle_number1");
-                }
-            }
+	            String subscriberId = rs.getString("subscriber_id");
+	            int parkingSpot = rs.getInt("parking_spot");
+	            LocalDate entryDate = rs.getDate("entry_date").toLocalDate();
+	            LocalTime entryTime = rs.getTime("entry_time").toLocalTime();
+	            LocalDate exitDate = LocalDate.now();
+	            LocalTime exitTime = LocalTime.now();
 
-            // --- הכנסה ל־parking_history ---
-            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_code) VALUES (?, ?, ?, ?, ?, ?,?)";
-            try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
-                historyStmt.setString(1, subscriberId);
-                historyStmt.setString(2, vehicleNumber);
-                historyStmt.setDate(3, Date.valueOf(entryDate));
-                historyStmt.setTime(4, Time.valueOf(entryTime));
-                historyStmt.setDate(5, Date.valueOf(exitDate));
-                historyStmt.setTime(6, Time.valueOf(exitTime));
-                historyStmt.setString(7, (parkingCode));
-                historyStmt.executeUpdate();
-            }
-            
-            String deleteQuery = "DELETE FROM active_parkings WHERE parking_code = ?";
-            try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
-                deleteStmt.setString(1, parkingCode);
-                deleteStmt.executeUpdate();
-            }
+	            // vehicle_number
+	            String vehicleNumber = null;
+	            try (PreparedStatement vehicleStmt = conn.prepareStatement("SELECT vehicle_number1 FROM subscribers WHERE subscriber_id = ?")) {
+	                vehicleStmt.setString(1, subscriberId);
+	                ResultSet vehicleRs = vehicleStmt.executeQuery();
+	                if (vehicleRs.next()) {
+	                    vehicleNumber = vehicleRs.getString("vehicle_number1");
+	                }
+	            }
 
-            updateParkingSpotStatus(parkingSpot, "available");
-            
-            return "SUCCESS";
+	            // הכנסה ל־history
+	            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_code) VALUES (?, ?, ?, ?, ?, ?, ?)";
+	            try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
+	                historyStmt.setString(1, subscriberId);
+	                historyStmt.setString(2, vehicleNumber);
+	                historyStmt.setDate(3, Date.valueOf(entryDate));
+	                historyStmt.setTime(4, Time.valueOf(entryTime));
+	                historyStmt.setDate(5, Date.valueOf(exitDate));
+	                historyStmt.setTime(6, Time.valueOf(exitTime));
+	                historyStmt.setString(7, parkingCode);
+	                historyStmt.executeUpdate();
+	            }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "FAILURE";
-        }
-    }
+	            // מחיקה
+	            try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM active_parkings WHERE parking_code = ?")) {
+	                deleteStmt.setString(1, parkingCode);
+	                deleteStmt.executeUpdate();
+	            }
+
+	            updateParkingSpotStatus(parkingSpot, "available");
+
+	            conn.commit();   
+	            return "SUCCESS";
+
+	        } catch (SQLException inner) {
+	            conn.rollback();
+	            throw inner;
+	        } finally {
+	            conn.setAutoCommit(true);
+	        }
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return "FAILURE";
+	    }
+	}
+
 
     
     /**
@@ -488,56 +480,73 @@ public class mysqlConnection {
      *         "INVALID_CODE" if no reservation found,
      *         "ERROR" if any SQL exception occurred.
      */
-    public static String moveReservationToActive(String parkingCode) {
-        String query = "SELECT * FROM reservations WHERE parking_code = ?";
+	public static String moveReservationToActive(String parkingCode) {
+	    return DBExecutor.execute(conn -> {
+	        String selectQuery = "SELECT * FROM reservations WHERE parking_code = ? FOR UPDATE";
 
-        try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+	        try {
+	            conn.setAutoCommit(false); 
 
-            stmt.setString(1, parkingCode);
-            ResultSet rs = stmt.executeQuery();
+	            try (PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+	                stmt.setString(1, parkingCode);
+	                ResultSet rs = stmt.executeQuery();
 
-            if (!rs.next()) {
-                return "INVALID_CODE";
-            }
+	                if (!rs.next()) {
+	                    conn.rollback();
+	                    return "INVALID_CODE"; // Reservation not found
+	                }
 
-            String subscriberId = rs.getString("subscriber_id");
-            int parkingSpot = rs.getInt("parking_spot");
+	                String subscriberId = rs.getString("subscriber_id");
+	                int parkingSpot = rs.getInt("parking_spot");
+	                LocalDateTime now = LocalDateTime.now();
+	                LocalDateTime expectedExitDateTime = now.plusHours(4);
+	                LocalDate entryDate = now.toLocalDate();
+	                LocalTime entryTime = now.toLocalTime();
+	                LocalDate expectedExitDate = expectedExitDateTime.toLocalDate();
+	                LocalTime expectedExitTime = expectedExitDateTime.toLocalTime();
 
-            // Calculate real-time entry and exit timestamps
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime expectedExitDateTime = now.plusHours(4);
+	                String insertQuery = """
+	                    INSERT INTO active_parkings 
+	                    (parking_code, subscriber_id, entry_date, entry_time, expected_exit_date, expected_exit_time, parking_spot, extended) 
+	                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)""";
 
-            LocalDate entryDate = now.toLocalDate();
-            LocalTime entryTime = now.toLocalTime();
-            LocalDate expectedExitDate = expectedExitDateTime.toLocalDate();
-            LocalTime expectedExitTime = expectedExitDateTime.toLocalTime();
+	                try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+	                    insertStmt.setString(1, parkingCode);
+	                    insertStmt.setString(2, subscriberId);
+	                    insertStmt.setDate(3, Date.valueOf(entryDate));
+	                    insertStmt.setTime(4, Time.valueOf(entryTime));
+	                    insertStmt.setDate(5, Date.valueOf(expectedExitDate));
+	                    insertStmt.setTime(6, Time.valueOf(expectedExitTime));
+	                    insertStmt.setInt(7, parkingSpot);
+	                    insertStmt.setBoolean(8, false);
+	                    insertStmt.executeUpdate();
+	                }
 
-            String insertQuery = "INSERT INTO active_parkings (parking_code, subscriber_id, entry_date, entry_time, expected_exit_date, expected_exit_time, parking_spot, extended) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	                try (PreparedStatement updateStmt = conn.prepareStatement("UPDATE parking_spots SET status = 'occupied' WHERE spot_number = ?")) {
+	                    updateStmt.setInt(1, parkingSpot);
+	                    updateStmt.executeUpdate();
+	                }
+	                try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM reservations WHERE parking_code = ?")) {
+	                    deleteStmt.setString(1, parkingCode);
+	                    deleteStmt.executeUpdate();
+	                }
 
-            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
-                insertStmt.setString(1, parkingCode);
-                insertStmt.setString(2, subscriberId);
-                insertStmt.setDate(3, Date.valueOf(entryDate));
-                insertStmt.setTime(4, Time.valueOf(entryTime));
-                insertStmt.setDate(5, Date.valueOf(expectedExitDate));
-                insertStmt.setTime(6, Time.valueOf(expectedExitTime));
-                insertStmt.setInt(7, parkingSpot);
-                insertStmt.setBoolean(8, false);
+	                conn.commit();  
+	                return "SUCCESS";
 
-                insertStmt.executeUpdate();
-            }
+	            } catch (SQLException innerEx) {
+	                conn.rollback();
+	                throw innerEx;
+	            } finally {
+	                conn.setAutoCommit(true);
+	            }
 
-            updateParkingSpotStatus(parkingSpot, "occupied");
-            cancelReservation(parkingCode);
-
-            return "SUCCESS";
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "ERROR";
-        }
-    }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	            return "ERROR";
+	        }
+	    });
+	}
 
     
     /**
@@ -546,19 +555,44 @@ public class mysqlConnection {
      * @param parkingSpot The spot number to update.
      * @param newStatus The new status to assign (e.g., "available", "reserved", "occupied").
      */
-    public static void updateParkingSpotStatus(int parkingSpot, String newStatus) {
-        String query = "UPDATE parking_spots SET status = ? WHERE spot_number = ?";
-        try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+	public static void updateParkingSpotStatus(int parkingSpot, String newStatus) {
+	    DBExecutor.execute(conn -> {
+	        String lockQuery = "SELECT status FROM parking_spots WHERE spot_number = ? FOR UPDATE";
+	        String updateQuery = "UPDATE parking_spots SET status = ? WHERE spot_number = ?";
 
-            stmt.setString(1, newStatus);
-            stmt.setInt(2, parkingSpot);
-            stmt.executeUpdate();
+	        try {
+	            conn.setAutoCommit(false); // Start transaction
+	            // Lock the row
+	            try (PreparedStatement lockStmt = conn.prepareStatement(lockQuery)) {
+	                lockStmt.setInt(1, parkingSpot);
+	                lockStmt.executeQuery(); // Just to acquire the lock
+	            }
+	            // Perform the update
+	            try (PreparedStatement updateStmt = conn.prepareStatement(updateQuery)) {
+	                updateStmt.setString(1, newStatus);
+	                updateStmt.setInt(2, parkingSpot);
+	                updateStmt.executeUpdate();
+	            }
+	            conn.commit(); // End transaction
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	            try {
+	                conn.rollback();
+	            } catch (SQLException ex) {
+	                ex.printStackTrace();
+	            }
+	        } finally {
+	            try {
+	                conn.setAutoCommit(true);
+	            } catch (SQLException e) {
+	                e.printStackTrace();
+	            }
+	        }
+	        return null; 
+	    });
+	}
+
 
    
     /**
@@ -566,22 +600,22 @@ public class mysqlConnection {
      *
      * @param parkingCode The parking code of the reservation to delete.
      */
-    public static void cancelReservation(String parkingCode) {
-        String deleteQuery = "DELETE FROM reservations WHERE parking_code = ?";
-        try (Connection conn = connectToDB();
-             PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+	public static void cancelReservation(String parkingCode) {
+	    DBExecutor.execute(conn -> {
+	        String deleteQuery = "DELETE FROM reservations WHERE parking_code = ?";
 
-            stmt.setString(1, parkingCode);
-            stmt.executeUpdate();
+	        try (PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+	            stmt.setString(1, parkingCode);   // Set the parking code to identify which reservation to delete
+	            stmt.executeUpdate();             // Execute the deletion
+	        } catch (SQLException e) {
+	            e.printStackTrace();              // Log error if the deletion fails
+	        }
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	        return null; // No return value needed since this is a void method
+	    });
+	}
 	
 	
-	
-
 	/*
 	 * Checks if a subscriber with the provided full name and subscription code
 	 * exists in the database.
@@ -830,7 +864,7 @@ public class mysqlConnection {
 	            // Build the result list from the result set
 	            while (rs.next()) {
 	                result.add(new ActiveParking(
-	                    rs.getInt("parking_code"),
+	                    rs.getString("parking_code"),
 	                    rs.getInt("subscriber_id"),
 	                    rs.getString("entry_date"),
 	                    rs.getString("entry_time"),
@@ -869,7 +903,7 @@ public class mysqlConnection {
 	            // Convert each row into an ActiveParking object and add to list
 	            while (rs.next()) {
 	                result.add(new ActiveParking(
-	                    rs.getInt("parking_code"),
+	                    rs.getString("parking_code"),
 	                    rs.getInt("subscriber_id"),
 	                    rs.getString("entry_date"),
 	                    rs.getString("entry_time"),
@@ -896,29 +930,59 @@ public class mysqlConnection {
 	 */
 	public static boolean extendParkingTime(ActiveParking ap) {
 	    return DBExecutor.execute(conn -> {
-	        String query = "UPDATE active_parkings SET expected_exit_time = ?, extended = 1 WHERE parking_code = ?";
-	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-	            // Parse the current exit time and calculate the new one (4 hours later)
-	            LocalTime currentExit = LocalTime.parse(ap.getExpectedExitTime());
-	            LocalTime newExit = currentExit.plusHours(4);
-	            // Bind the new values to the SQL statement
-	            stmt.setString(1, newExit.toString());
-	            stmt.setInt(2, ap.getParkingCode());
-	            // Execute the update and check if any rows were affected
-	            int rows = stmt.executeUpdate();
-	            if (rows > 0) {
-	                // Update the in-memory object as well
-	                ap.setExtended(true);
-	                ap.setExpectedExitTime(newExit.toString());
-	                return true;
+	        String selectForUpdate = "SELECT expected_exit_time FROM active_parkings WHERE parking_code = ? FOR UPDATE";
+	        String updateQuery = "UPDATE active_parkings SET expected_exit_time = ?, extended = 1 WHERE parking_code = ?";
+
+	        try {
+	            conn.setAutoCommit(false);  
+
+	            try (
+	                PreparedStatement lockStmt = conn.prepareStatement(selectForUpdate);
+	                PreparedStatement updateStmt = conn.prepareStatement(updateQuery)
+	            ) {
+	                lockStmt.setString(1, ap.getParkingCode());
+	                ResultSet rs = lockStmt.executeQuery();
+
+	                if (!rs.next()) {
+	                    conn.rollback();
+	                    return false;
+	                }
+
+	                LocalTime currentExit = rs.getTime("expected_exit_time").toLocalTime();
+	                LocalTime newExit = currentExit.plusHours(4);
+
+	                updateStmt.setString(1, newExit.toString());
+	                updateStmt.setString(2, ap.getParkingCode());
+
+	                int rows = updateStmt.executeUpdate();
+	                if (rows > 0) {
+	                    ap.setExtended(true);
+	                    ap.setExpectedExitTime(newExit.toString());
+	                    conn.commit();
+	                    return true;
+	                } else {
+	                    conn.rollback();
+	                    return false;
+	                }
 	            }
 	        } catch (SQLException e) {
-	            // Log error and fall through to return false
 	            e.printStackTrace();
+	            try {
+	                conn.rollback();
+	            } catch (SQLException ex) {
+	                ex.printStackTrace();
+	            }
+	            return false;
+	        } finally {
+	            try {
+	                conn.setAutoCommit(true);
+	            } catch (SQLException e) {
+	                e.printStackTrace();
+	            }
 	        }
-	        return false;
 	    });
 	}
+
 
 
 	/**
@@ -1174,7 +1238,7 @@ public class mysqlConnection {
 	 */
 	public static boolean cancelReservationById(int reservationId) {
 	    return DBExecutor.execute(conn -> {
-	        String getSpotQuery = "SELECT parking_spot FROM reservations WHERE reservation_id = ?";
+	        String getSpotQuery = "SELECT parking_spot FROM reservations WHERE reservation_id = ? FOR UPDATE";
 	        String deleteQuery = "DELETE FROM reservations WHERE reservation_id = ?";
 	        String updateSpotQuery = "UPDATE parking_spots SET status = 'available' WHERE spot_number = ?";
 	        try {
@@ -1293,7 +1357,7 @@ public class mysqlConnection {
 	            // Iterate through the result set and create ActiveParking objects
 	            while (rs.next()) {
 	                ActiveParking ap = new ActiveParking(
-	                    rs.getInt("parking_code"),
+	                    rs.getString("parking_code"),
 	                    rs.getInt("subscriber_id"),
 	                    rs.getString("entry_date"),
 	                    rs.getString("entry_time"),

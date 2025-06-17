@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class ActiveParking implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int parkingCode;
+    private String parkingCode;
     private int subscriberId;
     private String entryDate;
     private String entryTime;
@@ -17,7 +17,7 @@ public class ActiveParking implements Serializable {
     private String parkingSpot;
     private boolean extended;
 
-    public ActiveParking(int parkingCode, int subscriberId, String entryDate, String entryTime,
+    public ActiveParking(String parkingCode, int subscriberId, String entryDate, String entryTime,
                          String expectedExitDate, String expectedExitTime, String parkingSpot, boolean extended) {
         this.parkingCode = parkingCode;
         this.subscriberId = subscriberId;
@@ -29,7 +29,7 @@ public class ActiveParking implements Serializable {
         this.extended = extended;
     }
 
-    public int getParkingCode() { return parkingCode; }
+    public String getParkingCode() { return parkingCode; }
     public int getSubscriberId() { return subscriberId; }
     public String getEntryDate() { return entryDate; }
     public String getEntryTime() { return entryTime; }

@@ -493,7 +493,7 @@ public class TerminalController implements BaseController {
             }
 
             if (cleanResult.equals("SUCCESS")) {
-            	navigateTo(selectServicePane);
+            	navigateTo(signInChoice);
                 showPopup("Dropoff was successful.\nUse your reservation code to pick up your car \nIf you would like to extend your parking time by up to 4 additional hours,\nyou can do so through the app.");
             } else {
                 showPopup("There are no active reservations under this code.\nPlease try again or press 'Forgot my password'\nto restore your password.");

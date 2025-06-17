@@ -25,7 +25,7 @@ public class ConnectionPool {
     // Database credentials and connection URL
     private final String URL = "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false";
     private final String USER = "root";
-    private final String PASSWORD = "Nmshonpass100!";
+    private final String PASSWORD = "Aa123456";
 
     /**
      * Private constructor to prevent direct instantiation.
