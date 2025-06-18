@@ -122,7 +122,6 @@ public class ManagementController implements BaseController{
      * Sets initial visibility for views and hides charts by default.
      * Called automatically by the JavaFX framework.
      */
-
     @FXML
     private void initialize() {
         instance = this;
@@ -215,6 +214,11 @@ public class ManagementController implements BaseController{
             System.exit(0);
         }
     } 
+    
+    /**
+     * Handles navigation to the Member Status Report view.
+     * Clears and hides the current bar chart to prepare for refreshed data.
+     */
     @FXML
     private void handleViewSiteActivity() {
         navigateTo(siteActivityView);
@@ -226,6 +230,10 @@ public class ManagementController implements BaseController{
         }
     }
     
+    /**
+     * Handles the action of navigating to the Member Status Report view.
+     * Clears and hides the bar chart to prepare for new data.
+     */
     @FXML
     private void handleViewMemberStatusReport() {
     	memberStatusBarChart.getData().clear();
@@ -234,6 +242,11 @@ public class ManagementController implements BaseController{
         navigateTo(memberStatusReportView);
     }
 
+    
+    /**
+     * Handles the action of navigating to the Parking Duration Report view.
+     * Clears and hides the bar chart to prepare for updated report data.
+     */
     @FXML
     private void handleViewParkingDuration() {
     	parkingDurationBarChart.getData().clear();
@@ -275,7 +288,6 @@ public class ManagementController implements BaseController{
     /**
      * Navigates to the Register New Member screen from the Manager Menu.
      */
-
     @FXML
     private void handleRegisterNewMember() {
         navigateTo(registerMemberView);
@@ -285,6 +297,9 @@ public class ManagementController implements BaseController{
      * Navigates to the Forgot Password screen from the Login screen.
      */
 
+    /**
+     * Navigates to the Forgot Password screen.
+     */
     @FXML
     private void handleShowForgot() {
         showOnly(forgotView);
@@ -329,7 +344,16 @@ public class ManagementController implements BaseController{
 
         
 
-    
+    /**
+     * Handles the "Back" button action.
+     * 
+     * This method determines the current visible view and navigates accordingly:
+     * - If on the Forgot Password screen: clears fields and returns to the login screen.
+     * - If a navigation history exists: returns to the previous screen and clears any input fields if applicable.
+     * - If in the manager menu: returns to the login screen and clears login fields.
+     * - If in the login screen: loads the main welcome screen from FXML.
+     * - Otherwise (fallback): also loads the main welcome screen from FXML.
+     */
     @FXML
     private void handleBack() {
         // 0. If we're on the Forgot-Password screen, just clear it and go back
@@ -455,12 +479,13 @@ public class ManagementController implements BaseController{
         });
     }
 
+    
+    
     /**
      * Handles the login submission process for management users.
      * Validates input fields and sends a LoginManagement object to the server
      * containing the username and password for authentication.
      */
-
     @FXML
     private void handleLoginManagementSubmit() {
         String username = usernametextfield.getText().trim();
@@ -480,10 +505,11 @@ public class ManagementController implements BaseController{
         }
     }
 
+    
+    
     /*
     Displays a styled popup alert with a custom message, centered text, and fixed size for user notifications.
     */
-
     public void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");
@@ -502,6 +528,8 @@ public class ManagementController implements BaseController{
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
     }
+    
+    
     /**
      * Handles the submission of the "Register New Member" form.
      * 
@@ -593,7 +621,7 @@ public class ManagementController implements BaseController{
             btnparkingdetails.setVisible(true);
             btnparkingdetails.setManaged(true);
             
-            btnViewSiteActivity.setVisible(true);   // ← רק למנהל
+            btnViewSiteActivity.setVisible(true);   // Manager-only feature
             btnViewSiteActivity.setManaged(true);
 
         } else {
