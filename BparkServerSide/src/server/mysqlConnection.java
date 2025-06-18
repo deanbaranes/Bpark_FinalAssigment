@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -1585,5 +1586,92 @@ public class mysqlConnection {
 	        }
 	    });
 	}
+
+	
+	/**
+	 * Calculates the number of existing reservations that overlap with a given time range.
+	 * The time range starts at the specified date and startTime, and extends for the given duration.
+	 * This method accounts for reservations that cross over midnight into the next day.
+	 *
+	 * @param date The date of the requested reservation start.
+	 * @param startTime The time of the requested reservation start.
+	 * @param durationHours The duration (in hours) of the reservation + potential extension (usually 8).
+	 * @return The number of overlapping reservations found within the specified time window.
+	 */
+	public static int getOverlappingReservationCount(LocalDate date, LocalTime startTime, int durationHours) {
+	    return DBExecutor.execute(conn -> {
+	    	String query = """
+	    		    SELECT COUNT(*) AS overlap_count
+	    		    FROM reservations
+	    		    WHERE TIMESTAMP(entry_date, entry_time) < ?
+	    		      AND TIMESTAMP(DATE_ADD(exit_date, INTERVAL 4 HOUR), exit_time) > ?
+	    		""";
+
+
+	        LocalDateTime start = LocalDateTime.of(date, startTime);
+	        LocalDateTime end = start.plusHours(durationHours); // usually 8 (4 regular + 4 optional extension)
+
+	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
+	            stmt.setTimestamp(1, Timestamp.valueOf(end));
+	            stmt.setTimestamp(2, Timestamp.valueOf(start));
+
+	            try (ResultSet rs = stmt.executeQuery()) {
+	                if (rs.next()) {
+	                    return rs.getInt("overlap_count");
+	                }
+	            }
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+
+	        return 0;
+	    });
+	}
+
+	/**
+	 * Removes expired reservations from the system and frees up the associated parking spots.
+	 * A reservation is considered expired if its scheduled entry time is more than
+	 * 15 minutes in the past and the vehicle has not yet arrived.
+	 * For each expired reservation:
+	 * - The reservation is deleted from the reservations table.
+	 * - The associated parking spot is marked as 'available' in the `parking_spots` table.
+	 * This method is intended to be run periodically by a scheduler,
+	 * ensuring that abandoned reservations do not block future bookings.
+	 */
+	public static void removeExpiredReservations() {
+	    DBExecutor.executeVoid(conn -> {
+	        String selectQuery = """
+	            SELECT reservation_id, parking_spot
+	            FROM reservations
+	            WHERE TIMESTAMP(entry_date, entry_time) < NOW() - INTERVAL 15 MINUTE
+	        """;
+
+	        try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
+	             ResultSet rs = selectStmt.executeQuery()) {
+
+	            while (rs.next()) {
+	                int reservationId = rs.getInt("reservation_id");
+	                int spot = rs.getInt("parking_spot");
+
+	                try (PreparedStatement deleteStmt = conn.prepareStatement(
+	                        "DELETE FROM reservations WHERE reservation_id = ?")) {
+	                    deleteStmt.setInt(1, reservationId);
+	                    deleteStmt.executeUpdate();
+	                }
+
+	                try (PreparedStatement updateStmt = conn.prepareStatement(
+	                        "UPDATE parking_spots SET status = 'available' WHERE spot_number = ?")) {
+	                    updateStmt.setInt(1, spot);
+	                    updateStmt.executeUpdate();
+	                }
+	            }
+
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    });
+	}
+
 
 }

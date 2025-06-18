@@ -8,6 +8,7 @@ public class SchedulerTasks {
     public static void startAll() {
         startTowingCheck(); 
         startReservationStatusUpdater();
+        startExpiredReservationCleaner();
     }   
        
 
@@ -29,5 +30,12 @@ public class SchedulerTasks {
         }, 0, 60 * 1000); // every minute
     }
 
-   
+    private static void startExpiredReservationCleaner() {
+        Timer timer = new Timer(true);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                mysqlConnection.removeExpiredReservations(); 
+            }
+        }, 0, 60 * 1000);
+    }
 }

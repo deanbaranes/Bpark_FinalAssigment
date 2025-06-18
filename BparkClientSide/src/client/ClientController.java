@@ -393,7 +393,6 @@ public class ClientController implements BaseController {
         });
     }
 
-
     private String formatHistory(ParkingHistory h) {
         return String.format(
             "Vehicle Number: %s | Entry: %s at %s | Exit: %s at %s\n",
@@ -654,17 +653,6 @@ public class ClientController implements BaseController {
      * Extends the current parking session if not extended already.
      * Otherwise shows message that extension is not allowed.
      */
-    /*
-     * @FXML
-    private void handleExtend() {
-        if (hasExtended) {
-            showPopup("You have already extended this parking session.\nFurther extensions are not allowed.");
-        } else {
-            hasExtended = true;
-            showPopup("Parking time extended successfully.");
-        }
-    }*/
-    
     @FXML
     private void handleExtend() {
         if (currentSubscriber != null) {

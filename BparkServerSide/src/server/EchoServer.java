@@ -364,71 +364,72 @@ public class EchoServer extends AbstractServer {
     
     
     /**
-     * Handles a new reservation request sent from the client.
+     * Handles a new reservation request sent by a subscriber from the client side.
      * 
      * The method performs the following steps:
-     * 1. Retrieves the total and available parking spots from the database.
-     * 2. If less than 40% of the total spots are available, rejects the reservation.
-     * 3. Checks if a reservation already exists for the same subscriber at the requested date and time.
-     * 4. If both checks pass, finds the next available parking spot.
-     * 5. Generates a unique parking code for the new reservation.
-     * 6. Inserts the reservation into the database and updates the parking spot status.
-     * 7. Sends the confirmed reservation back to the client.
+     * 1. Calculates the extended time window (reservation duration + possible extension).
+     * 2. Checks how many overlapping reservations exist in that time range.
+     * 3. If the occupancy rate exceeds 60%, the reservation is denied.
+     * 4. If a reservation already exists for the subscriber at the requested time, it is also denied.
+     * 5. If valid, finds the next available spot and inserts the reservation into the database.
+     * 6. Returns a confirmed Reservation object to the client.
      * 
-     * If any exception occurs during processing, sends a server error response to the client.
-     *
-     * @param req    The Reservation object received from the client.
-     * @param client The client connection to send the response back to.
+     * @param req    The reservation request containing subscriber ID, entry date, and time.
+     * @param client The client that initiated the reservation request.
      */
     private void handleNewReservationRequest(Reservation req, ConnectionToClient client) {
         try {
             int totalSpots = mysqlConnection.getTotalParkingSpots();
-            int available = mysqlConnection.getAvailableSpotsCount();
 
-            // Check if less than 40% of spots are available
-            if (available < totalSpots * 0.4) {
+            // Step 1: Calculate extended window (reservation + possible 4-hour extension)
+            LocalTime entryTime = req.getEntryTime();
+            LocalDate date = req.getEntryDate();
+
+            // Step 2: Check how many overlapping reservations exist in the extended time frame
+            int overlappingCount = mysqlConnection.getOverlappingReservationCount(date, entryTime, 8);
+            double occupancyRate = (double) overlappingCount / totalSpots;
+
+            // Step 3: Deny the reservation if more than 60% of the lot is occupied
+            if (occupancyRate > 0.6) {
                 client.sendToClient("RESERVATION_FAILED");
                 return;
             }
+
+            // Step 4: Check if the subscriber already has a reservation at the same time
             if (mysqlConnection.reservationExists(req.getSubscriberId(), req.getEntryDate(), req.getEntryTime())) {
                 client.sendToClient("RESERVATION_ALREADY_EXIST");
                 return;
             }
 
+            // Step 5: Find a free parking spot and register the new reservation
             int spot = mysqlConnection.findAvailableSpot();
-
-
             String code = mysqlConnection.generateUniqueParkingCode(req.getSubscriberId(), spot);
-            //LocalDate exitDate = req.getEntryDate();
-            //LocalTime exitTime = req.getEntryTime().plusHours(RESERVATION_DURATION_HOURS); // usually 4 hours
-            LocalTime entryTime = req.getEntryTime();
+
             LocalTime exitTime = entryTime.plusHours(RESERVATION_DURATION_HOURS);
-            LocalDate exitDate = req.getEntryDate();
+            LocalDate exitDate = date;
             if (exitTime.isBefore(entryTime)) {
                 exitDate = exitDate.plusDays(1);
             }
 
-            // Insert reservation into DB and update spot
             mysqlConnection.insertReservationAndUpdateSpot(
                 req.getSubscriberId(), code,
-                req.getEntryDate(), req.getEntryTime(),
+                date, entryTime,
                 exitDate, exitTime, spot
             );
 
-            // Send the new confirmed reservation back to client
+            // Step 6: Send the confirmed reservation back to the client
             Reservation confirmed = new Reservation(
                 0,
                 req.getSubscriberId(),
                 code,
-                req.getEntryDate(),
-                req.getEntryTime(),
+                date,
+                entryTime,
                 exitDate,
                 exitTime,
                 spot
             );
 
             client.sendToClient(confirmed);
-           
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -439,6 +440,7 @@ public class EchoServer extends AbstractServer {
             }
         }
     }
+
     
     
     /**
