@@ -11,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import java.util.List;
 import java.io.IOException;
@@ -105,12 +106,23 @@ public class ManagementController implements BaseController{
     @FXML private BarChart<String, Number> parkingDurationBarChart;
 
 
-    
+    /**
+     * Sets the ChatClient instance used for communication with the server.
+     * This method is typically called after controller initialization.
+     *
+     * @param client The ChatClient instance to associate with this controller.
+     */
     @Override
     public void setClient(ChatClient client) {
         this.client = client;
     }
     
+    /**
+     * Initializes the controller after its root element has been completely processed.
+     * Sets initial visibility for views and hides charts by default.
+     * Called automatically by the JavaFX framework.
+     */
+
     @FXML
     private void initialize() {
         instance = this;
@@ -122,14 +134,23 @@ public class ManagementController implements BaseController{
 
     }
     
-    /* Returns the singleton instance of the ManagementController */
+    /**
+     * Returns the singleton instance of the ManagementController.
+     * This allows access to the controller from other parts of the application.
+     *
+     * @return the current ManagementController instance.
+     */
     public static ManagementController getInstance() {
         return instance;
     }
-    /*
-    Hides all VBoxes and shows only the specified target pane by setting its visibility and managed state.
-    Used for navigating between different management screens.
-    */
+
+
+    /**
+     * Hides all available VBox views and makes only the specified target view visible and managed.
+     * This method is used to control screen navigation in the management interface.
+     *
+     * @param target The VBox to be shown on screen.
+     */
     private void showOnly(Pane target) {
         for (VBox pane : new VBox[]{
             loginView,
@@ -152,9 +173,13 @@ public class ManagementController implements BaseController{
         target.setManaged(true);
     }
 
-    /*
-    Navigates to the specified VBox screen by hiding the current one and pushing it onto the navigation stack for back navigation.
-    */
+    
+    /**
+     * Navigates to the specified screen by hiding the current visible view
+     * and pushing it onto the navigation stack for future back-navigation.
+     *
+     * @param next The VBox screen to navigate to.
+     */
 
     private void navigateTo(VBox next) {
         for (VBox pane : new VBox[]{loginView, managerMenuView, memberDetailsView, parkingDetailsView, registerMemberView,siteActivityView ,memberStatusReportView,parkingDetailsView }) {
@@ -166,11 +191,22 @@ public class ManagementController implements BaseController{
         showOnly(next);
     }
 
+    
+    /**
+     * Navigates directly to the login screen.
+     * Clears the navigation stack to reset the navigation history.
+     */
     public void showLoginScreen() {
         navigationStack.clear();
         showOnly(loginView);
     }
     
+    /**
+     * Handles the exit button click.
+     * If the ChatClient is connected, it performs a graceful quit.
+     * Otherwise, it exits the application directly.
+     */
+
     @FXML
     private void handleExit() {
         if (client != null) {
@@ -207,27 +243,47 @@ public class ManagementController implements BaseController{
         
     }
     
+    /**
+     * Handles the back button click from the charts view.
+     * Returns to the Site Activity view.
+     */
     @FXML
     private void handleBackFromCharts() {
         navigateTo(siteActivityView);
     }
+
+    /**
+     * Navigates to the Member Details screen from the Manager Menu.
+     */
 
     @FXML
     private void handleViewMemberDetails() {
         navigateTo(memberDetailsView);
     }
 
+    
+    /**
+     * Navigates to the Parking Details screen from the Manager Menu.
+     */
+
     @FXML
     private void handleViewParkingDetails() {
         navigateTo(parkingDetailsView);
     }
 
- 
+    
+    /**
+     * Navigates to the Register New Member screen from the Manager Menu.
+     */
+
     @FXML
     private void handleRegisterNewMember() {
         navigateTo(registerMemberView);
     }
 
+    /**
+     * Navigates to the Forgot Password screen from the Login screen.
+     */
 
     @FXML
     private void handleShowForgot() {
@@ -678,8 +734,13 @@ public class ManagementController implements BaseController{
     }
 
     
-
-
+    /**
+     * Displays site activity data including future reservations and active parkings
+     * in a structured text format within the management interface.
+     *
+     * @param future List of future Reservation records.
+     * @param active List of currently active ActiveParking records.
+     */
     public void displaySiteActivity(List<Reservation> future, List<ActiveParking> active) {
         StringBuilder sb = new StringBuilder();
 
@@ -759,7 +820,7 @@ public class ManagementController implements BaseController{
      * @param records List of ParkingDurationRecord containing daily parking metrics
      */
     @SuppressWarnings("unchecked")
-	public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
+    public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
         Platform.runLater(() -> {
             parkingDurationBarChart.setVisible(true);
             parkingDurationBarChart.setManaged(true);
@@ -774,10 +835,11 @@ public class ManagementController implements BaseController{
             XYChart.Series<String, Number> extendedSeries = new XYChart.Series<>();
             extendedSeries.setName("Extended Duration (hours)");
 
+            double maxHours = 0;
+
             for (ParkingDurationRecord record : records) {
                 String label = String.valueOf(record.getDayOfMonth());
 
-                // Convert durations from minutes to hours (rounded to 1 decimal)
                 double actualHours = Math.round(record.getDuration() / 60.0 * 10.0) / 10.0;
                 double lateHours = Math.round(record.getLateDuration() / 60.0 * 10.0) / 10.0;
                 double extendedHours = Math.round(record.getExtendedDuration() / 60.0 * 10.0) / 10.0;
@@ -785,11 +847,26 @@ public class ManagementController implements BaseController{
                 actualSeries.getData().add(new XYChart.Data<>(label, actualHours));
                 lateSeries.getData().add(new XYChart.Data<>(label, lateHours));
                 extendedSeries.getData().add(new XYChart.Data<>(label, extendedHours));
+
+                double total = actualHours + lateHours + extendedHours;
+                if (total > maxHours) {
+                    maxHours = total;
+                }
             }
 
             parkingDurationBarChart.getData().addAll(actualSeries, lateSeries, extendedSeries);
+
+            int upperBound = (int) Math.ceil(maxHours + 1);
+
+            NumberAxis yAxis = (NumberAxis) parkingDurationBarChart.getYAxis();
+            yAxis.setTickUnit(1);
+            yAxis.setMinorTickVisible(false);
+            yAxis.setAutoRanging(false);
+            yAxis.setLowerBound(0);
+            yAxis.setUpperBound(upperBound);
         });
     }
+
 
     /**
      * Triggered when the Search button is clicked on the Member Status Report screen.
@@ -848,14 +925,29 @@ public class ManagementController implements BaseController{
             XYChart.Series<String, Number> memberSeries = new XYChart.Series<>();
             memberSeries.setName("Subscribers per Day");
 
+            int maxCount = 0;
+
             for (DailySubscriberCount record : records) {
                 String dayLabel = String.valueOf(record.getDay());
-                memberSeries.getData().add(new XYChart.Data<>(dayLabel, record.getSubscriberCount()));
+                int count = record.getSubscriberCount();
+                memberSeries.getData().add(new XYChart.Data<>(dayLabel, count));
+                if (count > maxCount) {
+                    maxCount = count;
+                }
             }
 
             memberStatusBarChart.getData().add(memberSeries);
+
+            
+            NumberAxis yAxis = (NumberAxis) memberStatusBarChart.getYAxis();
+            yAxis.setTickUnit(1);
+            yAxis.setMinorTickVisible(false);
+            yAxis.setAutoRanging(false);
+            yAxis.setLowerBound(0);
+            yAxis.setUpperBound(maxCount + 1); 
         });
     }
+
 
 }
     

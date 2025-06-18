@@ -55,8 +55,7 @@
     <Button text="Send password to mail" onAction="#handleSendReset"
             prefWidth="140"/>
 
-    <Label fx:id="resetMessage" wrapText="true" maxWidth="250" style="-fx-text-fill: green;"/>
-
+<Label fx:id="resetMessage" wrapText="true" maxWidth="250" alignment="CENTER" textAlignment="CENTER" style="-fx-text-fill: green;" />
 </VBox>
 
     <!-- MANAGER MAIN MENU VIEW -->
