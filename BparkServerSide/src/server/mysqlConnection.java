@@ -1055,15 +1055,47 @@ public class mysqlConnection {
 	                    return "CAR_ALREADY_PARKED";
 	                }
 	            }
-	            // Step 2: Check for an available parking spot
+	            
+	         // Step 2: Check for an available parking spot
 	            int parkingSpot = -1;
-	            String availableSpotQuery = "SELECT spot_number FROM parking_spots WHERE status = 'available' ORDER BY spot_number ASC LIMIT 1";
-	            try (PreparedStatement spotStmt = conn.prepareStatement(availableSpotQuery)) {
-	                ResultSet spotResult = spotStmt.executeQuery();
-	                if (!spotResult.next()) {
+	            LocalDateTime now = LocalDateTime.now();
+	            LocalDateTime nowPlus8Hours = now.plusHours(8);
+
+	            String availableSpotsQuery = "SELECT spot_number FROM parking_spots WHERE status = 'available' ORDER BY spot_number ASC";
+	            try (PreparedStatement spotStmt = conn.prepareStatement(availableSpotsQuery);
+	                 ResultSet spotResult = spotStmt.executeQuery()) {
+
+	                while (spotResult.next()) {
+	                    int candidateSpot = spotResult.getInt("spot_number");
+
+	                    String reservationQuery = "SELECT entry_date, entry_time FROM reservations WHERE parking_spot = ?";
+	                    try (PreparedStatement resStmt = conn.prepareStatement(reservationQuery)) {
+	                        resStmt.setInt(1, candidateSpot);
+	                        ResultSet resRs = resStmt.executeQuery();
+
+	                        boolean skipThisSpot = false;
+
+	                        while (resRs.next()) {
+	                            LocalDate resDate = resRs.getDate("entry_date").toLocalDate();
+	                            LocalTime resTime = resRs.getTime("entry_time").toLocalTime();
+	                            LocalDateTime reservationTime = LocalDateTime.of(resDate, resTime);
+
+	                            if (!reservationTime.isAfter(nowPlus8Hours)) {
+	                                skipThisSpot = true;
+	                                break;
+	                            }
+	                        }
+
+	                        if (!skipThisSpot) {
+	                            parkingSpot = candidateSpot;
+	                            break;
+	                        }
+	                    }
+	                }
+
+	                if (parkingSpot == -1) {
 	                    return "NO_SPOTS_AVAILABLE";
 	                }
-	                parkingSpot = spotResult.getInt("spot_number");
 	            }
 	            // Step 3: Generate unique parking code (after collecting existing codes)
 	            List<String> existingCodes = new ArrayList<>();
@@ -1076,8 +1108,8 @@ public class mysqlConnection {
 	            }
 	            String newParkingCode = generateUniqueParkingCode(subscriber.getSubscriber_id(), parkingSpot);
 	            // Step 4: Calculate entry and expected exit times
-	            LocalDateTime now = LocalDateTime.now();
-	            LocalDateTime expectedExit = now.plusHours(4);
+	            LocalDateTime now1 = LocalDateTime.now();
+	            LocalDateTime expectedExit = now1.plusHours(4);
 	            // Step 5: Insert new active parking record
 	            String insertQuery = "INSERT INTO active_parkings "
 	                    + "(parking_code, subscriber_id, entry_date, entry_time, expected_exit_date, expected_exit_time, parking_spot, extended) "
@@ -1085,8 +1117,8 @@ public class mysqlConnection {
 	            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
 	                insertStmt.setString(1, newParkingCode);
 	                insertStmt.setString(2, subscriber.getSubscriber_id());
-	                insertStmt.setDate(3, Date.valueOf(now.toLocalDate()));
-	                insertStmt.setTime(4, Time.valueOf(now.toLocalTime()));
+	                insertStmt.setDate(3, Date.valueOf(now1.toLocalDate()));
+	                insertStmt.setTime(4, Time.valueOf(now1.toLocalTime()));
 	                insertStmt.setDate(5, Date.valueOf(expectedExit.toLocalDate()));
 	                insertStmt.setTime(6, Time.valueOf(expectedExit.toLocalTime()));
 	                insertStmt.setInt(7, parkingSpot);
