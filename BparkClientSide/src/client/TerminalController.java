@@ -29,7 +29,8 @@ public class TerminalController implements BaseController {
     private final Stack<VBox> navigationStack = new Stack<>();
     private static TerminalController instance;
     private Subscriber currentSubscriber = new Subscriber("000000000","DefultUserPassword");
-    
+    private String lastResetType = null; 
+
  
 
     // === VBoxes ===
@@ -227,6 +228,8 @@ public class TerminalController implements BaseController {
     
     @FXML
     private void handleShowForgot() {
+    	idField.clear();
+        codeField.clear();
     	navigateTo(forgotView);
     }
     
@@ -360,6 +363,7 @@ public class TerminalController implements BaseController {
      */
     @FXML
     private void handleSendReset() {
+    	lastResetType = "sub";
         String email = resetEmailField.getText().trim();
         if (email.isEmpty()) {
             resetMessage.setText("Please enter your email.");
@@ -367,8 +371,7 @@ public class TerminalController implements BaseController {
             return;
         }
         try {
-            // שליחת ה־Request לשרת
-            client.sendToServer(new PasswordResetRequest(email,"sub"));
+          client.sendToServer(new PasswordResetRequest(email,"sub"));
         } catch (IOException e) {
             e.printStackTrace();
             resetMessage.setText("Failed to send request.");
@@ -383,6 +386,8 @@ public class TerminalController implements BaseController {
  
     @FXML
     private void handleSendParkingCode() {
+    	lastResetType = "pcode";
+       
         String emailInput = parkingCodeEmailField.getText().trim();
         if (emailInput.isEmpty()) {
             parkingCodeMessage.setText("Please enter your email.");
@@ -571,7 +576,13 @@ public class TerminalController implements BaseController {
   
     public void handlePasswordResetResponse(PasswordResetResponse resp) {
         Platform.runLater(() -> {
-            Label targetLabel = parkingCodeMessage;
+            Label targetLabel;
+
+            if ("pcode".equals(lastResetType)) {
+                targetLabel = parkingCodeMessage;
+            } else {
+                targetLabel = resetMessage;
+            }
 
             if (resp.isSuccess()) {
                 targetLabel.setText(resp.getMessage());
