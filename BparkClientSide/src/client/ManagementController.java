@@ -302,6 +302,8 @@ public class ManagementController implements BaseController{
      */
     @FXML
     private void handleShowForgot() {
+    	usernametextfield.clear();   
+        passwordfeild.clear();
         showOnly(forgotView);
     }
     
@@ -815,6 +817,15 @@ public class ManagementController implements BaseController{
         try {
             int year = Integer.parseInt(yearStr);
             int month = Integer.parseInt(monthStr);
+            
+            if (year < 2025) {
+                showPopup("Year must be 2025 or later.");
+                return;
+            }
+            if (month < 1 || month > 12) {
+                showPopup("Month must be between 1 and 12.");
+                return;
+            }
 
             LocalDate today = LocalDate.now();
             YearMonth inputMonth = YearMonth.of(year, month);
@@ -914,6 +925,15 @@ public class ManagementController implements BaseController{
         try {
             int year = Integer.parseInt(yearStr);
             int month = Integer.parseInt(monthStr);
+            
+            if (year < 2025) {
+                showPopup("Year must be 2025 or later.");
+                return;
+            }
+            if (month < 1 || month > 12) {
+                showPopup("Month must be between 1 and 12.");
+                return;
+            }
             
             LocalDate today = LocalDate.now();
             YearMonth inputMonth = YearMonth.of(year, month);

@@ -162,7 +162,9 @@ public class ClientController implements BaseController {
     }
     @FXML 
     private void handleShowForgotPasswordView() {
-    	showOnly(forgotPasswordView);
+    	idField.clear();
+        codeField.clear();
+        navigateTo(forgotPasswordView);
     	
     }
     
