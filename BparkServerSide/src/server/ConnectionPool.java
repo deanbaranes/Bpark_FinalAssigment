@@ -20,7 +20,7 @@ public class ConnectionPool {
     private final Queue<Connection> connectionPool = new LinkedList<>();
 
     // The maximum number of connections allowed in the pool
-    private final int MAX_POOL_SIZE = 3;
+    private final int MAX_POOL_SIZE = 6;
 
     // Database credentials and connection URL
     private final String URL = "jdbc:mysql://localhost:3306/bpark?serverTimezone=Asia/Jerusalem&useSSL=false";
@@ -29,7 +29,7 @@ public class ConnectionPool {
 
     /**
      * Private constructor to prevent direct instantiation.
-     * Loads the JDBC driver and initializes the pool with 2 connections.
+     * Loads the JDBC driver and initializes the pool with 5 connections.
      */
     private ConnectionPool() {
         try {
@@ -40,8 +40,8 @@ public class ConnectionPool {
             e.printStackTrace(); // Print error if the driver class isn't found
         }
 
-        // Pre-populate the pool with 2 initial connections
-        for (int i = 0; i < 2; i++) {
+        // Pre-populate the pool with 5 initial connections
+        for (int i = 0; i < 5; i++) {
             connectionPool.add(createConnection());
         }
 

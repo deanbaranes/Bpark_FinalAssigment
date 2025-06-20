@@ -1,4 +1,3 @@
-// ReportGenerator.java
 package server;
 
 import java.time.LocalDate;
@@ -8,8 +7,25 @@ import common.DailySubscriberCount;
 import common.ParkingDurationRecord;
 import java.sql.*;
 
+/**
+ * ReportGenerator is responsible for creating analytical reports based on parking history data.
+ * It generates reports such as:
+ * Daily parking duration statistics (including late and extended durations),
+ * Daily count of active subscribers.
+ * These reports are used for management and performance monitoring.
+ */
 public class ReportGenerator {
 	
+	 /**
+     * Generates a parking duration report for a given month and year.
+     * The report includes total parking time, late duration, and extended duration
+     * for each day in the specified month. If no data exists for a day, the values are zeroed.
+     *
+     * @param conn  A valid Connection to the database.
+     * @param year  The year for the report .
+     * @param month The month for the report.
+     * @return A list of ParkingDurationRecord objects, one for each day of the month.
+     */
 	public List<ParkingDurationRecord> generateParkingDurationReport(Connection conn, int year, int month) {
 	    List<ParkingDurationRecord> report = new ArrayList<>();
 
@@ -53,6 +69,16 @@ public class ReportGenerator {
 	}
 
 
+	/**
+     * Generates a member status report for a given month and year.
+     * The report includes, for each day, the number of distinct subscribers
+     * who entered the parking lot on that day.
+     *
+     * @param conn  A valid Connection to the database.
+     * @param year  The year for the report.
+     * @param month The month for the report.
+     * @return A list of DailySubscriberCount objects, one for each day of the month.
+     */
 	public List<DailySubscriberCount> generateMemberStatusReport(Connection conn, int year, int month) {
 	    List<DailySubscriberCount> report = new ArrayList<>();
 

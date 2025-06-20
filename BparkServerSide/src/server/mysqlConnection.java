@@ -122,7 +122,7 @@ public class mysqlConnection {
 
 			} catch (SQLException e) {
 				// Log any SQL exceptions and return false
-				System.out.println("❌ SQL ERROR: " + e.getMessage());
+				System.out.println("SQL ERROR: " + e.getMessage());
 				e.printStackTrace();
 				return false;
 			}
@@ -401,7 +401,7 @@ public class mysqlConnection {
 	    String query = "SELECT * FROM active_parkings WHERE parking_code = ? FOR UPDATE";
 
 	    try (Connection conn = connectToDB()) {
-	        conn.setAutoCommit(false); // טרנזקציה
+	        conn.setAutoCommit(false); 
 
 	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
 	            stmt.setString(1, parkingCode);
@@ -429,7 +429,7 @@ public class mysqlConnection {
 	                }
 	            }
 
-	            // הכנסה ל־history
+	            
 	            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_spot) VALUES (?, ?, ?, ?, ?, ?, ?)";
 	            try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
 	                historyStmt.setString(1, subscriberId);
@@ -442,7 +442,7 @@ public class mysqlConnection {
 	                historyStmt.executeUpdate();
 	            }
 
-	            // מחיקה
+	            
 	            try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM active_parkings WHERE parking_code = ?")) {
 	                deleteStmt.setString(1, parkingCode);
 	                deleteStmt.executeUpdate();
@@ -820,12 +820,7 @@ public class mysqlConnection {
 	        try {
 	            // Disable auto-commit to manage the transaction manually
 	            conn.setAutoCommit(false);
-	            // Step 1: Update the parking spot to 'reserved'
-	            try (PreparedStatement update = conn.prepareStatement(
-	                    "UPDATE parking_spots SET status = 'reserved' WHERE spot_number = ?")) {
-	                update.setInt(1, spotNumber);
-	                update.executeUpdate();
-	            }
+	            
 	            // Step 2: Insert the reservation into the reservations table
 	            try (PreparedStatement insert = conn.prepareStatement(
 	                    "INSERT INTO reservations (subscriber_id, parking_code, entry_date, entry_time, exit_date, exit_time, parking_spot) " +
@@ -1561,7 +1556,7 @@ public class mysqlConnection {
 	                String vehicleNumber = rs.getString("vehicle_number1");
 	                String email = rs.getString("email");
 
-	                // הוספה לטבלת גרירה
+	             
 	                try (PreparedStatement insertStmt = conn.prepareStatement("""
 	                    INSERT INTO towed_vehicles 
 	                    (parking_code, subscriber_id, vehicle_number, parking_spot, entry_date, entry_time) 
@@ -1574,19 +1569,13 @@ public class mysqlConnection {
 	                    insertStmt.setDate(5, entryDate);
 	                    insertStmt.setTime(6, entryTime);
 	                    insertStmt.executeUpdate();
-	                }
-
-	                // הסרה מהחניות הפעילות
+	                } 
 	                try (PreparedStatement deleteStmt = conn.prepareStatement(
 	                        "DELETE FROM active_parkings WHERE parking_code = ?")) {
 	                    deleteStmt.setString(1, parkingCode);
 	                    deleteStmt.executeUpdate();
 	                }
-
-	                // שחרור מקום חניה
 	                updateParkingSpotStatus(spot, "available");
-
-	                // שליחת מייל
 	                if (email != null) {
 	                    try {
 	                        new EmailSender().sendTowingNoticeEmail(email, vehicleNumber, spot);
@@ -1604,51 +1593,12 @@ public class mysqlConnection {
 	                    }
 	                }
 	            }
-
 	        } catch (SQLException e) {
 	            e.printStackTrace();
 	        }
 	    });
 	}
 
-
-
-	
-	/**
-	 * Updates parking spots to 'reserved' if there's a reservation starting within the next 8 hours.
-	 * This method should be run periodically (e.g., every minute).
-	 */
-	public static void markUpcomingReservationsAsReserved() {
-	    DBExecutor.executeVoid(conn -> {
-	        String query = """
-	            SELECT DISTINCT parking_spot
-	            FROM reservations
-	            WHERE TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(entry_date, entry_time)) BETWEEN 0 AND 480
-	        """;
-
-	        try (PreparedStatement stmt = conn.prepareStatement(query);
-	             ResultSet rs = stmt.executeQuery()) {
-
-	            while (rs.next()) {
-	                int spot = rs.getInt("parking_spot");
-
-	                try (PreparedStatement updateStmt = conn.prepareStatement("""
-	                    UPDATE parking_spots
-	                    SET status = 'reserved'
-	                    WHERE spot_number = ? AND status = 'available'
-	                """)) {
-	                    updateStmt.setInt(1, spot);
-	                    updateStmt.executeUpdate();
-	                }
-	            }
-
-	        } catch (SQLException e) {
-	            e.printStackTrace();
-	        }
-	    });
-	}
-
-	
 	/**
 	 * Calculates the number of existing reservations that overlap with a given time range.
 	 * The time range starts at the specified date and startTime, and extends for the given duration.
@@ -1670,7 +1620,7 @@ public class mysqlConnection {
 
 
 	        LocalDateTime start = LocalDateTime.of(date, startTime);
-	        LocalDateTime end = start.plusHours(durationHours); // usually 8 (4 regular + 4 optional extension)
+	        LocalDateTime end = start.plusHours(durationHours); 
 
 	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
 	            stmt.setTimestamp(1, Timestamp.valueOf(end));
@@ -1719,12 +1669,6 @@ public class mysqlConnection {
 	                        "DELETE FROM reservations WHERE reservation_id = ?")) {
 	                    deleteStmt.setInt(1, reservationId);
 	                    deleteStmt.executeUpdate();
-	                }
-
-	                try (PreparedStatement updateStmt = conn.prepareStatement(
-	                        "UPDATE parking_spots SET status = 'available' WHERE spot_number = ?")) {
-	                    updateStmt.setInt(1, spot);
-	                    updateStmt.executeUpdate();
 	                }
 	            }
 

@@ -13,12 +13,19 @@ import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 /**
- * שולח מייל דרך Gmail SMTP..
+ * Sends various email notifications via Gmail SMTP using Jakarta Mail API.
+ * This class is responsible for configuring the mail session and sending
+ * predefined types of messages such as password reset, parking code retrieval,
+ * and towing notifications.
  */
-public class EmailSender {
+class EmailSender {
 
     private final Session session;
 
+    /**
+     * Constructs an {@code EmailSender} and initializes the mail session
+     * using Gmail SMTP with TLS authentication.
+     */
     public EmailSender() {
         System.out.println("[EmailSender] <init> called (common)");  // שורת Debug
 
@@ -45,12 +52,12 @@ public class EmailSender {
     }
 
     /**
-     * שולח מייל שמכיל את הסיסמה.
+     * Sends a password reset email to a subscriber.
      *
-     * @param toEmail  הכתובת לקבלת המייל
-     * @param password הסיסמה שתישלח בגוף ההודעה
-     * @throws MessagingException אם משהו נכשל בשליחה
-     * @throws UnsupportedEncodingException 
+     * @param toEmail  The recipient's email address.
+     * @param password The password to include in the email body.
+     * @throws MessagingException             If the message cannot be sent.
+     * @throws UnsupportedEncodingException   If encoding the sender name fails.
      */
     public void sendPasswordEmail(String toEmail, String password) throws MessagingException, UnsupportedEncodingException {
         try {
@@ -78,6 +85,14 @@ public class EmailSender {
         }
     }
     
+    /**
+     * Sends a parking code retrieval email to a subscriber.
+     *
+     * @param toEmail     The recipient's email address.
+     * @param parkingCode The parking code to include in the email body.
+     * @throws MessagingException             If the message cannot be sent.
+     * @throws UnsupportedEncodingException   If encoding the sender name fails.
+     */
     public void sendParkingCodeEmail(String toEmail, String parkingCode) throws MessagingException, UnsupportedEncodingException {
         try {
             Message msg = new MimeMessage(session);
@@ -104,6 +119,15 @@ public class EmailSender {
         }
     }
     
+    /**
+     * Sends a towing notification email to a subscriber whose vehicle was towed.
+     *
+     * @param toEmail       The recipient's email address.
+     * @param vehicleNumber The license plate number of the towed vehicle.
+     * @param spotNumber    The parking spot number the vehicle was towed from.
+     * @throws MessagingException             If the message cannot be sent.
+     * @throws UnsupportedEncodingException   If encoding the sender name fails.
+     */
     public void sendTowingNoticeEmail(String toEmail, String vehicleNumber, int spotNumber) 
             throws MessagingException, UnsupportedEncodingException {
         try {

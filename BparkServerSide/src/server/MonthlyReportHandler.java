@@ -1,4 +1,3 @@
-// MonthlyReportHandler.java
 package server;
 
 import common.MemberStatusReportRequest;

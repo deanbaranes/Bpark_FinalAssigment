@@ -39,7 +39,7 @@ public class ClientController implements BaseController {
     private Subscriber currentSubscriber;
     private boolean isLoggedIn = false;
     private Reservation reservationBeingEdited = null;
-
+    private static ClientController instance;
 
     /**
      * Stack to manage the user's navigation history across panes (screens).
@@ -48,10 +48,9 @@ public class ClientController implements BaseController {
      * This allows navigating backward through previous screens.
      */
     private final Stack<Pane> navigationStack = new Stack<>();
-    private static ClientController instance;
+    
 
     /**
-     * A Pane in JavaFX is a layout container for organizing UI elements (buttons, labels, etc.).
      * We use multiple panes to represent different "screens" within the same window.
      * Only one pane is visible at a time to simulate switching between screens.
      */
@@ -83,7 +82,14 @@ public class ClientController implements BaseController {
     @FXML private ListView<ParkingHistory> historyListView;
 
 
+    public ClientController() {
+        instance = this;
+    }
 
+    public static ClientController getInstance() {
+        return instance;
+    }
+    
     /**
      * Sets the ChatClient instance for server communication.
      * @param client the ChatClient object
@@ -107,13 +113,7 @@ public class ClientController implements BaseController {
     }
 
     
-    public ClientController() {
-        instance = this;
-    }
 
-    public static ClientController getInstance() {
-        return instance;
-    }
 
     /**
      * Makes only the given pane visible and hides all others.
@@ -153,13 +153,25 @@ public class ClientController implements BaseController {
         showOnly(next);
     }
 
-    /** Button handlers for navigation */
+    /**
+     * Handles the "Sign In" button click from the welcome screen.
+     *
+     * Clears the ID and code input fields, then navigates to the sign-in form.
+     * This is the entry point for subscriber login.
+     */
     @FXML 
     private void handleSignInClick() {
     	idField.clear();
         codeField.clear();
     	navigateTo(signInForm);
     }
+    
+    /**
+     * Handles the "Forgot Password" hyperlink click from the login screen.
+     *
+     * Clears the ID and code input fields and navigates to the
+     * password reset form where the user can request a reset email.
+     */
     @FXML 
     private void handleShowForgotPasswordView() {
     	idField.clear();
@@ -216,6 +228,13 @@ public class ClientController implements BaseController {
         });
     }
     
+    /**
+     * Handles the "Show Available Spots" button click.
+     *
+     * Navigates to the available parking spots screen and sends a request
+     * to the server to retrieve the list of currently available spots.
+     * The request is sent via the connected ChatClient.
+     */
     @FXML
     private void handleShowSpotsClick() {
         navigateTo(spotsView);
@@ -227,7 +246,15 @@ public class ClientController implements BaseController {
 
     }
     
-    @FXML private void handlePersonalInfo() { 
+    /**
+     * Handles the "Personal Info" button click.
+     *
+     * Navigates from the post-login menu to the personal information view.
+     * Also pushes the current screen (post-login menu) onto the navigation stack
+     * to allow returning back when the user clicks "Back".
+     */
+    @FXML 
+    private void handlePersonalInfo() { 
     	navigationStack.push(postLoginMenu);  
         showOnly(personalInfoView);
        
@@ -246,17 +273,12 @@ public class ClientController implements BaseController {
     }
     
     /**
-     * handleEditInfo — Navigates to the edit info form and pre-fills data.
-     *
-     * Description:
-     * Loads current subscriber phone and email into editable fields for update,
-     * then transitions to the edit pane.
-     *
-     * Parameters:
-     *   - None
-     *
-     * Returns:
-     *   - void
+     * Handles the "Edit Info" button click.
+     * This method:
+     * Loads the current subscriber's email and phone number into the corresponding text fields
+     *       to allow editing.
+     * Only performs this action if a subscriber is currently logged in.
+     * Transitions the UI to the edit information form using navigateTo(editInfoForm).
      */
     @FXML
     private void handleEditInfo() {
@@ -334,13 +356,15 @@ public class ClientController implements BaseController {
     
     
     /**
-     * setSubscriber — Updates the current logged-in subscriber's details in the controller.
-     * Description:
-     * Sets the active subscriber and updates various UI labels such as email, phone,
-     * car numbers, and credit card info. Also initializes personalized greeting labels
-     * across different panes.
-     * Parameters:
-     *   - subscriber: the Subscriber object returned from the server after successful login
+     * Sets the currently logged-in subscriber and updates the UI with their information.
+     * This method is called after a successful login and performs the following:
+     * Stores the subscriber in the controller for future access.
+     * Marks the session as logged in.
+     * Updates the UI labels (name, email, phone, car number, credit card) with the subscriber's details.
+     * Displays a personalized welcome message.
+     * Clears the navigation stack and sets the post-login menu as the active screen.
+
+     * @param subscriber the Subscriber object containing the user's data
      */
     public void setSubscriber(Subscriber subscriber) {
     	 System.out.println("Subscriber received: " + subscriber.getFull_name()); // 🔍 Debug
@@ -362,12 +386,15 @@ public class ClientController implements BaseController {
     }
   
     /**
-     * displayHistory — Shows parking history for the logged-in subscriber.
-     * Description:
-     * Clears the history view, sets a greeting header, and displays a list of historical
-     * parking entries received from the server..
-     * Parameters:
-     *   - historyList: List of ParkingHistory objects
+     * Displays the parking history for the current subscriber in the UI.
+     * This method performs the following:
+     * Sets a personalized greeting based on the subscriber's name.
+     * Clears previous items from the history list view.
+     * If the list is empty, shows a placeholder message.
+     * If the list contains items, populates the list with ParkingHistory entries
+     *       and sets each cell's text using the {@code toString()} method of the object.
+     * Ensures all UI updates are run on the JavaFX Application Thread via Platform.runLater().
+     * @param historyList a list of ParkingHistory objects retrieved from the server
      */
     public void displayHistory(List<ParkingHistory> historyList) {
         Platform.runLater(() -> {
@@ -387,23 +414,12 @@ public class ClientController implements BaseController {
                         if (empty || h == null) {
                             setText(null);
                         } else {
-                            setText(formatHistory(h));
+                        	setText(h.toString());
                         }
                     }
                 });
             }
         });
-    }
-
-    private String formatHistory(ParkingHistory h) {
-        return String.format(
-            "Vehicle Number: %s | Entry: %s at %s | Exit: %s at %s\n",
-            h.getVehicleNumber(),
-            h.getEntryDate(),
-            h.getEntryTime(),
-            h.getExitDate(),
-            h.getExitTime()
-        );
     }
 
     /**
@@ -413,13 +429,18 @@ public class ClientController implements BaseController {
     public boolean isShowingHistoryView() {
         return historyView.isVisible();
     }
+    
     /**
-     * displayReservations — Displays current reservations for the subscriber.
-     * Description:
-     * Clears the reservations pane, shows a personalized heading, and populates the
-     * list with existing reservation records.
-     * Parameters:
-     *   - reservationList: List of Reservation objects
+     * Displays the list of current reservations for the logged-in subscriber.
+     * This method is responsible for:
+     * Setting a personalized greeting label with the subscriber's name.
+     * Ensuring the greeting label is added to the reservations view only once.
+     * Clearing any previous reservation entries from the reservationListView.
+     * If the list is empty, displaying a placeholder message.
+     * If the list is not empty, populating the list view with Reservation objects
+     *       and using their toString() method for display.
+     * Ensuring all UI updates occur on the JavaFX Application Thread via Platform.runLater().
+     * @param reservationList a list of Reservation objects retrieved from the server
      */
     public void displayReservations(List<Reservation> reservationList) {
         Platform.runLater(() -> {
@@ -443,7 +464,7 @@ public class ClientController implements BaseController {
                         if (empty || r == null) {
                             setText(null);
                         } else {
-                            setText(formatReservation(r));
+                        	setText(r.toString());
                         }
                     }
                 });
@@ -451,17 +472,6 @@ public class ClientController implements BaseController {
         });
     }
 
-    
-    private String formatReservation(Reservation r) {
-        return String.format(
-            "Parking Code: %s | From: %s at %s, until: %s at %s\n",
-            r.getParkingCode(),
-            r.getEntryDate(),
-            r.getEntryTime(),
-            r.getExitDate(),
-            r.getExitTime()
-        );
-    }
     
     /**
      * Checks if the reservations view is currently displayed.
@@ -489,6 +499,16 @@ public class ClientController implements BaseController {
         navigateTo(reservationForm);
     }
     
+    /**
+     * Handles the cancellation of a selected reservation.
+     * This method is triggered when the user clicks the "Cancel Reservation" button.
+     * It performs the following steps:
+     * Retrieves the currently selected reservation from the reservation list view.
+     * If no reservation is selected, displays a popup prompting the user to select one.
+     * Shows a confirmation dialog asking the user to confirm the cancellation.
+     * If the user confirms, sends a cancellation request to the server using the reservation ID.
+     * If an IOException occurs during communication, an error popup is displayed.
+     */
     @FXML
     public void handleCancelReservation() {
         Reservation selected = reservationListView.getSelectionModel().getSelectedItem();
@@ -498,7 +518,7 @@ public class ClientController implements BaseController {
             return;
         }
 
-        String message = "Are you sure you want to cancel this reservation?\n\n" + formatReservation(selected);
+        String message = "Are you sure you want to cancel this reservation?\n\n" + selected.toString();
 
         if (showConfirmationPopup(message)) {
             try {
@@ -510,6 +530,13 @@ public class ClientController implements BaseController {
         }
     }
 
+    /**
+     * Sends a request to the server to refresh the subscriber's reservation list.
+     *
+     * This method retrieves the current subscriber's ID and sends a message to the server
+     * requesting updated reservation data. If the request fails,
+     * a popup is shown to inform the user of the failure.
+     */
     public void refreshReservationList() {
         try {
             client.sendToServer("GET_RESERVATIONS|" + currentSubscriber.getSubscriber_id());
@@ -519,6 +546,15 @@ public class ClientController implements BaseController {
         }
     }
 
+    /**
+     * Updates the UI to display a list of available parking spots.
+     * This method is called after receiving a list of available spots from the server.
+     * It ensures the UI is updated on the JavaFX Application Thread using Platform.runLater.
+     * If the list is empty, it shows a default message indicating no availability.
+     * Otherwise, it displays the list of spots in a formatted multiline text area.
+     *
+     * @param availableSpots a list of strings representing available parking spot identifiers
+     */
     public void handleAvailableSpots(List<String> availableSpots) {
         Platform.runLater(() -> {
             StringBuilder builder = new StringBuilder();
@@ -697,7 +733,6 @@ public class ClientController implements BaseController {
                     e.printStackTrace();
                 }
             } else {
-                // 👇 זה מה שחסר לך!
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWelcome.fxml"));
                     Parent root = loader.load();

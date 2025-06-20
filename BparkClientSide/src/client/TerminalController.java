@@ -70,6 +70,14 @@ public class TerminalController implements BaseController {
         showOnly(mainMenu);
     }
 
+    /**
+     * Displays only the specified VBox pane while hiding and unmanaging all others.
+     * This method is used to switch between different screens or views in the terminal interface.
+     * It ensures that only one pane is visible and interactive at a time by:
+     * Setting all known panes to setVisible(false) and setManaged(false).
+     * Setting the target pane to setVisible(true) and  setManaged(true).
+     * @param target The  VBox pane to show.
+     */
     private void showOnly(VBox target) {
         for (VBox pane : new VBox[]{mainMenu,signInChoice,signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane,forgotParkingCodeView}) {
             if (pane != null) {
@@ -81,6 +89,15 @@ public class TerminalController implements BaseController {
         target.setManaged(true);
     }
 
+    /**
+     * Navigates to a specified  VBox pane while saving the current visible pane
+     * to the  navigationStack for back navigation.
+     * This method enables forward navigation in the terminal interface. It first identifies
+     * which pane is currently visible, pushes it onto the stack, and then shows the target pane.
+     * This allows the user to return to the previous screen via the  handleBack() method.
+     *
+     * @param next The  VBox pane to navigate to.
+     */
     private void navigateTo(VBox next) {
         for (VBox pane : new VBox[]{mainMenu,signInChoice, signInForm, spotsView, selectServicePane, pickupPane,dropoffMethod,forgotView,insertreservationcode,scannerPane,forgotParkingCodeView}) {
             if (pane != null && pane.isVisible()) {
@@ -99,6 +116,12 @@ public class TerminalController implements BaseController {
         return instance;
     }
 
+    /**
+     * Handles the "Sign In" button click event.
+     * This method clears the input fields for ID and subscriber code to ensure
+     * the form is reset, and then navigates the user to the manual sign-in form.
+     * It is typically used when the user chooses to log in manually (not via scanner).
+     */
     @FXML
     private void handleSignInClick() {
     	idField.clear();
@@ -225,7 +248,12 @@ public class TerminalController implements BaseController {
     
     
 
-    
+    /**
+     * Handles the "Forgot Password" link or button click event.
+     * This method clears the ID and code input fields to reset the form,
+     * and navigates the user to the password reset view where they can
+     * initiate the recovery process via email.
+     */
     @FXML
     private void handleShowForgot() {
     	idField.clear();
@@ -384,6 +412,13 @@ public class TerminalController implements BaseController {
     	navigateTo(forgotParkingCodeView);
     }
  
+    /**
+     * Handles the "Send Parking Code" button click in the "Forgot Parking Code" view.
+     * This method validates the entered email address and, if valid,
+     * sends a  common.PasswordResetRequest with type  "pcode" to the server.
+     * If the email field is empty, an error message is shown to the user.
+     * Any  IOException during the sending process is caught and displayed as an error message.
+     */
     @FXML
     private void handleSendParkingCode() {
     	lastResetType = "pcode";
@@ -577,6 +612,13 @@ public class TerminalController implements BaseController {
     	handleBack();
     }
 
+    /**
+     * Handles the "Exit" button click event in the terminal interface.
+     * If the  ChatClient instance exists, it  closes the client connection
+     * by calling  client.quit(). Otherwise, it forcibly terminates the application
+     * using  System.exit(0).
+     * This method ensures proper shutdown behavior for both connected and disconnected states.
+     */
     @FXML
     private void handleExit() {
         if (client != null) {
@@ -586,7 +628,16 @@ public class TerminalController implements BaseController {
         }
     }  
    
-  
+    /**
+     * Handles the response from the server after a password or parking code reset request.
+     * This method updates the appropriate message label in the UI (either for password reset or
+     * parking code reset) based on the  lastResetType field. It runs the UI update
+     * on the JavaFX Application Thread using  Platform#runLater(Runnable) to ensure thread safety.
+     * If the response indicates success, the label is updated with the success message in green.
+     * Otherwise, the label is updated with the error message in red.
+     *
+     * @param resp The  PasswordResetResponse object received from the server.
+     */
     public void handlePasswordResetResponse(PasswordResetResponse resp) {
         Platform.runLater(() -> {
             Label targetLabel;
