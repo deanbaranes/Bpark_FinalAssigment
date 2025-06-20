@@ -68,7 +68,6 @@ public class EchoServer extends AbstractServer {
             	else {
             		   handlePasswordReset(req, client);
             	}
-             
             }
             if (msg instanceof String command) {
                 handleStringCommand(command, client);
@@ -139,17 +138,6 @@ public class EchoServer extends AbstractServer {
             client.sendToClient(mysqlConnection.getAvailableSpots());
             
         }
-        /**else if (command.startsWith("CHECK_RESERVATION_CODE|")) {
-            String reservationCode = command.split("\\|")[1].trim();
-            boolean exists = mysqlConnection.doesReservationCodeExist(reservationCode);
-
-            if (exists) {
-                client.sendToClient("RESERVATION_CODE_EXISTS");
-            } else {
-                client.sendToClient("RESERVATION_CODE_NOT_FOUND");
-            }
-        }**/
-        
         else if (command.startsWith("CHECK_PICKUP_CODE|")) {
             String pickupCode = command.split("\\|")[1].trim();
             String pickupResult = mysqlConnection.processPickupRequest(pickupCode);
@@ -511,7 +499,17 @@ public class EchoServer extends AbstractServer {
         }
     }
     
- 
+    /**
+     * Handles a password reset request for employees.
+     * This method attempts to retrieve the password associated with the provided email.
+     * If found, it sends the password to the user's email address using the EmailSender.
+     * If no matching account is found, or if an error occurs, a PasswordResetResponse
+     * with a corresponding failure message is sent back to the client.
+     *
+     * @param req    The PasswordResetRequest containing the user's email.
+     * @param client The ConnectionToClient representing the connected client
+     *               to whom the response should be sent.
+     */
     private void handlePasswordReset(PasswordResetRequest req, ConnectionToClient client) {
         System.out.println("[EchoServer] → Got PasswordResetRequest for: " + req.getEmail());
         String email = req.getEmail();
@@ -538,6 +536,15 @@ public class EchoServer extends AbstractServer {
         }
     }
     
+    /**
+     * Handles a subscription code reset request by retrieving the subscription code associated
+     * with the given email and sending it to the user via email.
+     * If no account is found for the provided email, a failure response is sent to the client.
+     * In case of an error during the process,an appropriate error message is returned to the client.
+     *
+     * @param req The PasswordResetRequest containing the user's email.
+     * @param client The ConnectionToClient instance representing the connected client.
+     */
     private void handleSubscriptionCodeReset(PasswordResetRequest req, ConnectionToClient client) {
         System.out.println("[EchoServer] → Got SubscriptionCodeResetRequest for: " + req.getEmail());
         String email = req.getEmail();
@@ -564,7 +571,16 @@ public class EchoServer extends AbstractServer {
         }
     }
 
-    
+    /**
+     * Handles a parking code reset request by retrieving the parking code associated
+     * with the given email and sending it to the user via email.
+     * If the email is not associated with any reservation, the client is notified accordingly.
+     * In case of a server error during the process , an error response
+     * is sent back to the client.
+     *
+     * @param req The PasswordResetRequest containing the user's email.
+     * @param client The ConnectionToClient instance representing the connected client.
+     */
     private void handleParkingCodeReset(PasswordResetRequest req, ConnectionToClient client) {
         System.out.println("[EchoServer] → Got ParkingCodeResetRequest for: " + req.getEmail());
         String email = req.getEmail();
@@ -593,7 +609,16 @@ public class EchoServer extends AbstractServer {
 
 
     
-    
+    /**
+     * Handles a site activity request from the client.
+     * This method retrieves the list of future reservations and currently active parkings
+     * from the database via  mysqlConnection, and sends them back to the client
+     * wrapped in a GetSiteActivityResponse object.
+     *
+     * If an error occurs during the process, a failure message ("SITE_ACTIVITY_FAILED") is sent instead.
+     *
+     * @param client The client that requested the site activity data.
+     */
     private void handleSiteActivityRequest(ConnectionToClient client) {
         try {
             List<Reservation> futureReservations = mysqlConnection.getFutureReservations();
@@ -628,7 +653,14 @@ public class EchoServer extends AbstractServer {
         }
     }
 
-
+    /**
+     * Handles a request from the client to generate a member status report.
+     * This method delegates the report creation t  MonthlyReportHandler,
+     * and sends the generated MemberStatusReportResponse back to the requesting client.
+     *
+     * @param req    The request object containing parameters for the report generation.
+     * @param client The client that sent the request and will receive the response.
+     */
     private void handleMemberStatusReportRequest(MemberStatusReportRequest req, ConnectionToClient client) {
         MonthlyReportHandler handler = new MonthlyReportHandler();
         MemberStatusReportResponse response = handler.handleMemberStatusRequest(req);

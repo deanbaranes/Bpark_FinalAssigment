@@ -27,7 +27,7 @@ class EmailSender {
      * using Gmail SMTP with TLS authentication.
      */
     public EmailSender() {
-        System.out.println("[EmailSender] <init> called (common)");  // שורת Debug
+        System.out.println("[EmailSender] <init> called (common)");   
 
         String host = "smtp.gmail.com";
         String port = "587";
@@ -75,7 +75,7 @@ class EmailSender {
                 SendMailConfig.SENDER_NAME
             );
 
-            System.out.println("[EmailSender] → Transport.send()");  // Debug לפני השליחה
+            System.out.println("[EmailSender] → Transport.send()");     
             Transport.send(msg);
             System.out.println("[EmailSender] Email sent successfully to " + toEmail);
         } catch (MessagingException e) {
@@ -143,7 +143,7 @@ class EmailSender {
             		"Hello,\n\n" +
                     		"Your vehicle with license plate " + vehicleNumber +
                     		" was towed from parking spot #" + spotNumber +
-                    		" after exceeding the maximum allowed parking duration (8 hours).\n\n" +
+                    		" after exceeding the maximum allowed parking duration.\n\n" +
                     		"To retrieve your vehicle, please contact our service center.\n" +
                     		"Additional fees may apply.\n\n" +
                     		"Note: If the vehicle is not collected within 24 hours, it will be transferred to the police impound lot.\n\n" +
