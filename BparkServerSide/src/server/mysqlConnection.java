@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -466,22 +467,24 @@ public class mysqlConnection {
 	}
 
 
-    
-    /**
-     * Processes a reservation check-in and moves it to active parking with real-time timestamps.
-     *
-     * This method performs the following steps:
-     * 1. Validates whether a reservation exists for the provided parking code.
-     * 2. If found, retrieves reservation details (subscriber_id, parking_spot).
-     * 3. Inserts a new active parking record into the active_parkings table using the current date and time.
-     * 4. Updates the parking spot status from 'reserved' to 'occupied'.
-     * 5. Deletes the reservation from the reservations table.
-     *
-     * @param parkingCode The reservation parking code to process.
-     * @return "SUCCESS" if successfully moved to active parking,
-     *         "INVALID_CODE" if no reservation found,
-     *         "ERROR" if any SQL exception occurred.
-     */
+	/**
+	 * Processes a reservation check-in request by validating the reservation timing and
+	 * either moving it to active parking or returning a status indicating the next step.
+	 * 
+	 * This method performs the following steps:
+	 * 1. Checks if a reservation exists for the given parking code.
+	 * 2. If found, checks whether the current time is more than 15 minutes before the scheduled entry time.
+	 *    - If yes, the reservation is considered too early and the method returns "ARRIVE_EARLY".
+	 * 3. If the timing is valid, a new record is inserted into the active_parkings table with current timestamps.
+	 * 4. Updates the parking spot status to 'occupied' and removes the reservation.
+	 * 
+	 * @param parkingCode The reservation code entered by the user.
+	 * @return "SUCCESS" if the reservation is activated,
+	 *         "ARRIVE_EARLY" if the user arrived too early (more than 15 minutes before reservation),
+	 *         "INVALID_CODE" if no reservation was found,
+	 *         or "ERROR" if an exception occurred during the process.
+	 */
+
 	public static String moveReservationToActive(String parkingCode) {
 	    return DBExecutor.execute(conn -> {
 	        String selectQuery = "SELECT * FROM reservations WHERE parking_code = ? FOR UPDATE";
@@ -497,13 +500,25 @@ public class mysqlConnection {
 	                    conn.rollback();
 	                    return "INVALID_CODE"; // Reservation not found
 	                }
+	                Date orderEntryDate = rs.getDate("entry_date");
+	                Time orderEntryTime = rs.getTime("entry_time");
+	                LocalDateTime reservationTime = LocalDateTime.of(
+	                        orderEntryDate.toLocalDate(), orderEntryTime.toLocalTime());
+	                LocalDateTime now = LocalDateTime.now();
+
+	                Duration duration = Duration.between(now, reservationTime);
+	                if (duration.toMinutes() > 15) {
+	                    conn.rollback();
+	                    return "ARRIVE_EARLY";
+	                }
+
 
 	                String subscriberId = rs.getString("subscriber_id");
 	                int parkingSpot = rs.getInt("parking_spot");
-	                LocalDateTime now = LocalDateTime.now();
-	                LocalDateTime expectedExitDateTime = now.plusHours(4);
-	                LocalDate entryDate = now.toLocalDate();
-	                LocalTime entryTime = now.toLocalTime();
+	                LocalDateTime now1 = LocalDateTime.now();
+	                LocalDateTime expectedExitDateTime = now1.plusHours(4);
+	                LocalDate entryDate = now1.toLocalDate();
+	                LocalTime entryTime = now1.toLocalTime();
 	                LocalDate expectedExitDate = expectedExitDateTime.toLocalDate();
 	                LocalTime expectedExitTime = expectedExitDateTime.toLocalTime();
 
@@ -1059,8 +1074,7 @@ public class mysqlConnection {
 	         // Step 2: Check for an available parking spot
 	            int parkingSpot = -1;
 	            LocalDateTime now = LocalDateTime.now();
-	            LocalDateTime nowPlus8Hours = now.plusHours(8);
-
+	            LocalDateTime nowPlusGrace = now.plusHours(8).plusMinutes(15);
 	            String availableSpotsQuery = "SELECT spot_number FROM parking_spots WHERE status = 'available' ORDER BY spot_number ASC";
 	            try (PreparedStatement spotStmt = conn.prepareStatement(availableSpotsQuery);
 	                 ResultSet spotResult = spotStmt.executeQuery()) {
@@ -1080,7 +1094,7 @@ public class mysqlConnection {
 	                            LocalTime resTime = resRs.getTime("entry_time").toLocalTime();
 	                            LocalDateTime reservationTime = LocalDateTime.of(resDate, resTime);
 
-	                            if (!reservationTime.isAfter(nowPlus8Hours)) {
+	                            if (!reservationTime.isAfter(nowPlusGrace)) {	
 	                                skipThisSpot = true;
 	                                break;
 	                            }

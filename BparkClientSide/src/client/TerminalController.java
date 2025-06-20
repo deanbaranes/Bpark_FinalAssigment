@@ -484,9 +484,10 @@ public class TerminalController implements BaseController {
      * 
      * This method unifies the UI response into:
      * - Success message for "SUCCESS" result.
+     * - Early arrival message for "ARRIVE_EARLY".
      * - General failure message for all other failure scenarios.
      *
-     * @param result The result string returned from server ("SUCCESS", "INVALID_CODE", "LATE_CANCELLED", "ERROR", etc.)
+     * @param result The result string returned from server ("SUCCESS", "ARRIVE_EARLY", "INVALID_CODE", etc.)
      */
     public void handleReservationActivationResult(String result) {
         Platform.runLater(() -> {
@@ -496,14 +497,26 @@ public class TerminalController implements BaseController {
             }
 
             if (cleanResult.equals("SUCCESS")) {
-            	navigateTo(signInChoice);
-                showPopup("Dropoff was successful.\nUse your reservation code to pick up your car \nIf you would like to extend your parking time by up to 4 additional hours,\nyou can do so through the app.");
+                navigateTo(signInChoice);
+                showPopup("Dropoff was successful.\nUse your reservation code to pick up your car.\n" +
+                          "If you would like to extend your parking time by up to 4 additional hours,\n" +
+                          "you can do so through the app.");
+            } else if (cleanResult.equals("ARRIVE_EARLY")) {
+            	showPopup(
+            		    "You may park your car up to 15 minutes before your reserved time based on your existing reservation.\n\n" +
+            		    "If you choose to park earlier based on availability, please note that it is your responsibility to cancel your existing reservation via the app.\n" +
+            		    "Failing to do so may result in a fine."
+            		);
+
+                navigateTo(mainMenu);
             } else {
-                showPopup("There are no active reservations under this code.\nPlease try again or press 'Forgot my password'\nto restore your password.");
+                showPopup("There are no active reservations under this code.\n" +
+                          "Please try again or press 'Forgot my password'\n" +
+                          "to restore your password.");
             }
         });
     }
-    
+
     
     
     
