@@ -116,14 +116,16 @@ public class EmailSender {
             msg.setSubject("Vehicle Towed Notification from BPARK");
 
             msg.setText(
-                "Hello,\n\n" +
-                "Your vehicle with license plate " + vehicleNumber +
-                " was towed from parking spot #" + spotNumber +
-                " after exceeding the maximum allowed parking duration (8 hours).\n\n" +
-                "To retrieve your vehicle, please contact our service center.\n" +
-                "Additional fees may apply.\n\n" +
-                "Best regards,\n" +
-                SendMailConfig.SENDER_NAME
+            		"Hello,\n\n" +
+            		"Your vehicle with license plate " + vehicleNumber +
+            		" was towed from parking spot #" + spotNumber +
+            		" after exceeding the maximum allowed parking duration (8 hours).\n\n" +
+            		"To retrieve your vehicle, please contact our service center.\n" +
+            		"Additional fees may apply.\n\n" +
+            		"Note: If the vehicle is not collected within 24 hours, it will be transferred to the police impound lot.\n\n" +
+            		"Best regards,\n" +
+            		SendMailConfig.SENDER_NAME
+
             );
 
             System.out.println("[EmailSender] → Transport.send() (TowingNotice)");

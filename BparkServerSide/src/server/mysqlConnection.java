@@ -1505,20 +1505,34 @@ public class mysqlConnection {
 	}
 	
 	/**
-	 * Checks for vehicles that have overstayed their parking duration (over 8 hours),
-	 * moves them to the "towed_vehicles" list, frees the parking spot, and sends an email notification.
-	 *
-	 * This method is executed periodically using a scheduler (e.g., once per minute).
-	 * It uses a connection pool via {@link DBExecutor}.
+	 * Checks for overstayed vehicles in the parking lot and processes towing actions accordingly.
+	 * This method scans the active_parkings table and selects all vehicles that have
+	 * exceeded their allowed parking time based on whether they extended their parking:
+	 * Vehicles with {extended = TRUE} are towed after 8 hours (480 minutes).
+	 * Vehicles with {extended = FALSE} are towed after 4 hours (240 minutes).
+	 * For each such vehicle:
+	 * It is inserted into the towed_vehicles table.
+	 * It is removed from {@code active_parkings}.
+	 * The associated parking spot is marked as available.
+	 * If an email is available, a towing notice is sent and marked as sent in the database.
+	 * This method is intended to run periodically as part of a scheduled task.
+	 * @param none This is a static method and does not receive any parameters.
+	 * @return void This method does not return a value.
+	 * @throws SQLException if a database access error occurs during any query or update.
+	 * @throws RuntimeException if unexpected errors occur in the database logic or email sending.
 	 */
 	public static void checkAndTowVehicles() {
 	    DBExecutor.executeVoid(conn -> {
 	        String query = """
-	            SELECT ap.parking_code, ap.subscriber_id, ap.entry_date, ap.entry_time, ap.parking_spot,
-	        	    	s.vehicle_number1, s.email
+	            SELECT ap.parking_code, ap.subscriber_id, ap.entry_date, ap.entry_time, 
+	                   ap.parking_spot, ap.extended, s.vehicle_number1, s.email
 	            FROM active_parkings ap
 	            JOIN subscribers s ON ap.subscriber_id = s.subscriber_id
-	            WHERE TIMESTAMPDIFF(MINUTE, TIMESTAMP(ap.entry_date, ap.entry_time), NOW()) > 480
+	            WHERE (
+	                (ap.extended = TRUE AND TIMESTAMPDIFF(MINUTE, TIMESTAMP(ap.entry_date, ap.entry_time), NOW()) > 480)
+	                OR
+	                (ap.extended = FALSE AND TIMESTAMPDIFF(MINUTE, TIMESTAMP(ap.entry_date, ap.entry_time), NOW()) > 240)
+	            )
 	        """;
 
 	        try (PreparedStatement stmt = conn.prepareStatement(query);
@@ -1533,7 +1547,7 @@ public class mysqlConnection {
 	                String vehicleNumber = rs.getString("vehicle_number1");
 	                String email = rs.getString("email");
 
-	               
+	                // הוספה לטבלת גרירה
 	                try (PreparedStatement insertStmt = conn.prepareStatement("""
 	                    INSERT INTO towed_vehicles 
 	                    (parking_code, subscriber_id, vehicle_number, parking_spot, entry_date, entry_time) 
@@ -1548,29 +1562,28 @@ public class mysqlConnection {
 	                    insertStmt.executeUpdate();
 	                }
 
-	              
+	                // הסרה מהחניות הפעילות
 	                try (PreparedStatement deleteStmt = conn.prepareStatement(
 	                        "DELETE FROM active_parkings WHERE parking_code = ?")) {
 	                    deleteStmt.setString(1, parkingCode);
 	                    deleteStmt.executeUpdate();
 	                }
 
-	                
+	                // שחרור מקום חניה
 	                updateParkingSpotStatus(spot, "available");
-	                
-	               
+
+	                // שליחת מייל
 	                if (email != null) {
 	                    try {
 	                        new EmailSender().sendTowingNoticeEmail(email, vehicleNumber, spot);
-	                       
 	                        try (PreparedStatement updateStmt = conn.prepareStatement("""
-	                                UPDATE towed_vehicles
-	                                SET email_sent = TRUE
-	                                WHERE parking_code = ?
-	                            """)) {
-	                                updateStmt.setString(1, parkingCode);
-	                                updateStmt.executeUpdate();
-	                            }
+	                            UPDATE towed_vehicles
+	                            SET email_sent = TRUE
+	                            WHERE parking_code = ?
+	                        """)) {
+	                            updateStmt.setString(1, parkingCode);
+	                            updateStmt.executeUpdate();
+	                        }
 	                    } catch (Exception e) {
 	                        System.err.println("[Towing] Failed to send email to: " + email);
 	                        e.printStackTrace();
@@ -1583,6 +1596,8 @@ public class mysqlConnection {
 	        }
 	    });
 	}
+
+
 
 	
 	/**
