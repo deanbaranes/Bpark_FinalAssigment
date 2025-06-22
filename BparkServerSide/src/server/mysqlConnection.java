@@ -851,7 +851,7 @@ public class mysqlConnection {
 	}
 
 	/**
-	 * Reserves a spot by updating its status and inserts a new reservation.
+	 * Reserves a spot-inserts a new reservation.
 	 * 
 	 * @param subscriberId the subscriber making the reservation
 	 * @param code         the generated reservation code
@@ -981,21 +981,22 @@ public class mysqlConnection {
 	        return result;
 	    });
 	}
+	
 	/**
-	 * Extends the expected exit time of an active parking session by 4 hours.
+	 * Extends the expected exit date and time of an active parking session by 4 hours.
+	 * If the extension crosses midnight, the date is also updated accordingly.
 	 * Updates the 'extended' flag to 1 in the database.
-	 * 
-	 * @param ap The ActiveParking object representing the active session to be
-	 *           extended.
+	 *
+	 * @param ap The ActiveParking object representing the active session to be extended.
 	 * @return true if the update succeeded, false otherwise.
 	 */
 	public static boolean extendParkingTime(ActiveParking ap) {
 	    return DBExecutor.execute(conn -> {
-	        String selectForUpdate = "SELECT expected_exit_time FROM active_parkings WHERE parking_code = ? FOR UPDATE";
-	        String updateQuery = "UPDATE active_parkings SET expected_exit_time = ?, extended = 1 WHERE parking_code = ?";
+	        String selectForUpdate = "SELECT expected_exit_date, expected_exit_time FROM active_parkings WHERE parking_code = ? FOR UPDATE";
+	        String updateQuery = "UPDATE active_parkings SET expected_exit_date = ?, expected_exit_time = ?, extended = 1 WHERE parking_code = ?";
 
 	        try {
-	            conn.setAutoCommit(false);  
+	            conn.setAutoCommit(false);
 
 	            try (
 	                PreparedStatement lockStmt = conn.prepareStatement(selectForUpdate);
@@ -1009,16 +1010,28 @@ public class mysqlConnection {
 	                    return false;
 	                }
 
-	                LocalTime currentExit = rs.getTime("expected_exit_time").toLocalTime();
-	                LocalTime newExit = currentExit.plusHours(4);
+	                // Combine the date and time from the DB
+	                LocalDate exitDate = rs.getDate("expected_exit_date").toLocalDate();
+	                LocalTime exitTime = rs.getTime("expected_exit_time").toLocalTime();
+	                LocalDateTime exitDateTime = LocalDateTime.of(exitDate, exitTime);
 
-	                updateStmt.setString(1, newExit.toString());
-	                updateStmt.setString(2, ap.getParkingCode());
+	                // Add 4 hours
+	                LocalDateTime newExitDateTime = exitDateTime.plusHours(4);
+
+	                // Split back to date and time
+	                LocalDate newExitDate = newExitDateTime.toLocalDate();
+	                LocalTime newExitTime = newExitDateTime.toLocalTime();
+
+	                // Update database
+	                updateStmt.setDate(1, Date.valueOf(newExitDate));
+	                updateStmt.setTime(2, Time.valueOf(newExitTime));
+	                updateStmt.setString(3, ap.getParkingCode());
 
 	                int rows = updateStmt.executeUpdate();
 	                if (rows > 0) {
 	                    ap.setExtended(true);
-	                    ap.setExpectedExitTime(newExit.toString());
+	                    ap.setExpectedExitDate(newExitDate.toString());
+	                    ap.setExpectedExitTime(newExitTime.toString());
 	                    conn.commit();
 	                    return true;
 	                } else {
@@ -1043,7 +1056,6 @@ public class mysqlConnection {
 	        }
 	    });
 	}
-
 
 
 	/**

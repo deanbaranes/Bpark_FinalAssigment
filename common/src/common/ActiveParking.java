@@ -131,4 +131,13 @@ public class ActiveParking implements Serializable {
         this.expectedExitTime = expectedExitTime;
     }
 
+    /**
+     * Updates the expected exit date for the parking session.
+     *
+     * @param expectedExitDate The new expected exit date in yyyy-MM-dd format.
+     */
+    public void setExpectedExitDate(String expectedExitDate) {
+        this.expectedExitDate = expectedExitDate;
+    }
+
 }

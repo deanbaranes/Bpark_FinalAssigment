@@ -34,7 +34,6 @@ public class EchoServer extends AbstractServer {
 
     /** Default port to listen on. */
     final public static int DEFAULT_PORT = 5555;
-    private List<String> availableSpots;
     final int RESERVATION_DURATION_HOURS = 4;
     /**
      * Constructs an EchoServer on the specified port.
