@@ -8,9 +8,11 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -382,77 +384,123 @@ public class mysqlConnection {
 	    });
 	}
 	
-	
 	/**
-     * Processes a pickup request based on parking code.
-     *
-     * This method performs the following steps:
-     * 1. Checks if an active parking exists for the provided parking code.
-     * 2. Retrieves the full parking details and subscriber information.
-     * 3. Inserts the parking session into the parking history table.
-     * 4. Deletes the active parking record.
-     * 5. Updates the parking spot to available.
-     *
-     * @param parkingCode The parking code to process.
-     * @return "SUCCESS" if successfully picked up, "FAILURE" otherwise.
-     */
-
+	 * Processes a pickup request based on parking code.
+	 *
+	 * This method performs the following steps:
+	 * 1. Checks if an active parking exists for the provided parking code.
+	 *    - If found, the parking session is finalized, recorded in `parking_history`, and removed from `active_parkings`.
+	 *    - Returns "SUCCESS".
+	 * 2. If not found in active_parkings, checks if the vehicle was towed (`towed_vehicles`).
+	 *    - If found, calculates the late duration in minutes, records it in `parking_history`, removes the entry from `towed_vehicles`, and returns "SENT_TOWED_VEHICLE_MSG".
+	 * 3. If not found in either, returns "FATAL_ERROR".
+	 *
+	 * @param parkingCode The parking code to process.
+	 * @return Result string indicating outcome ("SUCCESS", "SENT_TOWED_VEHICLE_MSG", or "FATAL_ERROR").
+	 */
 	public static String processPickupRequest(String parkingCode) {
 	    String query = "SELECT * FROM active_parkings WHERE parking_code = ? FOR UPDATE";
-
+	    int extendedDuration=0;
 	    try (Connection conn = connectToDB()) {
-	        conn.setAutoCommit(false); 
+	        conn.setAutoCommit(false);
 
 	        try (PreparedStatement stmt = conn.prepareStatement(query)) {
 	            stmt.setString(1, parkingCode);
 	            ResultSet rs = stmt.executeQuery();
 
-	            if (!rs.next()) {
-	                conn.rollback();
-	                return "FAILURE";
-	            }
+	            if (rs.next()) {
+	                String subscriberId = rs.getString("subscriber_id");
+	                int parkingSpot = rs.getInt("parking_spot");
+	                LocalDate entryDate = rs.getDate("entry_date").toLocalDate();
+	                LocalTime entryTime = rs.getTime("entry_time").toLocalTime();
+	                LocalDate exitDate = LocalDate.now();
+	                LocalTime exitTime = LocalTime.now();
+	                String vehicleNumber = null;
+	                boolean isExtended = rs.getString("extended").equalsIgnoreCase("1");
+	                if (isExtended)
+	                {
+	                	long minutesTotal = ChronoUnit.MINUTES.between(LocalDateTime.of(entryDate, entryTime),LocalDateTime.of(exitDate, exitTime));
+	                	extendedDuration = (int) Math.max(minutesTotal - 240, 0);
+	               }
+	                try (PreparedStatement vehicleStmt = conn.prepareStatement("SELECT vehicle_number1 FROM subscribers WHERE subscriber_id = ?")) {
+	                    vehicleStmt.setString(1, subscriberId);
+	                    ResultSet vehicleRs = vehicleStmt.executeQuery();
+	                    if (vehicleRs.next()) {
+	                        vehicleNumber = vehicleRs.getString("vehicle_number1");
+	                    }
+	                }
 
-	            String subscriberId = rs.getString("subscriber_id");
-	            int parkingSpot = rs.getInt("parking_spot");
-	            LocalDate entryDate = rs.getDate("entry_date").toLocalDate();
-	            LocalTime entryTime = rs.getTime("entry_time").toLocalTime();
-	            LocalDate exitDate = LocalDate.now();
-	            LocalTime exitTime = LocalTime.now();
+	                String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_spot,extended_duration) VALUES (?, ?, ?, ?, ?, ?, ?,?)";
+	                try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
+	                    historyStmt.setString(1, subscriberId);
+	                    historyStmt.setString(2, vehicleNumber);
+	                    historyStmt.setDate(3, Date.valueOf(entryDate));
+	                    historyStmt.setTime(4, Time.valueOf(entryTime));
+	                    historyStmt.setDate(5, Date.valueOf(exitDate));
+	                    historyStmt.setTime(6, Time.valueOf(exitTime));
+	                    historyStmt.setInt(7, parkingSpot);
+	                    historyStmt.setInt(8, extendedDuration);
+	                    historyStmt.executeUpdate();
+	                }
 
-	            // vehicle_number
-	            String vehicleNumber = null;
-	            try (PreparedStatement vehicleStmt = conn.prepareStatement("SELECT vehicle_number1 FROM subscribers WHERE subscriber_id = ?")) {
-	                vehicleStmt.setString(1, subscriberId);
-	                ResultSet vehicleRs = vehicleStmt.executeQuery();
-	                if (vehicleRs.next()) {
-	                    vehicleNumber = vehicleRs.getString("vehicle_number1");
+	                try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM active_parkings WHERE parking_code = ?")) {
+	                    deleteStmt.setString(1, parkingCode);
+	                    deleteStmt.executeUpdate();
+	                }
+
+	                updateParkingSpotStatus(parkingSpot, "available");
+	                conn.commit();
+	                return "SUCCESS";
+	            } else {
+	                String towedQuery = "SELECT * FROM towed_vehicles WHERE parking_code = ? FOR UPDATE";
+	                try (PreparedStatement towedStmt = conn.prepareStatement(towedQuery)) {
+	                    towedStmt.setString(1, parkingCode);
+	                    ResultSet towedRs = towedStmt.executeQuery();
+
+	                    if (towedRs.next()) {
+	                        String subscriberId = towedRs.getString("subscriber_id");
+	                        String vehicleNumber = towedRs.getString("vehicle_number");
+	                        int parkingSpot = towedRs.getInt("parking_spot");
+	                        Date entryDate = towedRs.getDate("entry_date");
+	                        Time entryTime = towedRs.getTime("entry_time");
+	                        Timestamp towedAt = towedRs.getTimestamp("towed_at");
+
+	                        LocalDate exitDate = LocalDate.now();
+	                        LocalTime exitTime = LocalTime.now();
+
+	                        long minutesLate = ChronoUnit.MINUTES.between(towedAt.toInstant(), Instant.now());
+	                        int lateDuration = (int) Math.max(minutesLate, 1);
+
+	                        String insertHistory = """
+	                            INSERT INTO parking_history 
+	                            (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, late_duration, parking_spot) 
+	                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	                        """;
+	                        try (PreparedStatement insertStmt = conn.prepareStatement(insertHistory)) {
+	                            insertStmt.setString(1, subscriberId);
+	                            insertStmt.setString(2, vehicleNumber);
+	                            insertStmt.setDate(3, entryDate);
+	                            insertStmt.setTime(4, entryTime);
+	                            insertStmt.setDate(5, Date.valueOf(exitDate));
+	                            insertStmt.setTime(6, Time.valueOf(exitTime));
+	                            insertStmt.setInt(7, lateDuration);
+	                            insertStmt.setInt(8, parkingSpot);
+	                            insertStmt.executeUpdate();
+	                        }
+
+	                        try (PreparedStatement deleteStmt = conn.prepareStatement(
+	                                "DELETE FROM towed_vehicles WHERE parking_code = ?")) {
+	                            deleteStmt.setString(1, parkingCode);
+	                            deleteStmt.executeUpdate();
+	                        }
+	                        conn.commit();
+	                        return "SENT_TOWED_VEHICLE_MSG";
+	                    } else {
+	                        conn.rollback();
+	                        return "FATAL_ERROR"; 
+	                    }
 	                }
 	            }
-
-	            
-	            String insertHistory = "INSERT INTO parking_history (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, parking_spot) VALUES (?, ?, ?, ?, ?, ?, ?)";
-	            try (PreparedStatement historyStmt = conn.prepareStatement(insertHistory)) {
-	                historyStmt.setString(1, subscriberId);
-	                historyStmt.setString(2, vehicleNumber);
-	                historyStmt.setDate(3, Date.valueOf(entryDate));
-	                historyStmt.setTime(4, Time.valueOf(entryTime));
-	                historyStmt.setDate(5, Date.valueOf(exitDate));
-	                historyStmt.setTime(6, Time.valueOf(exitTime));
-	                historyStmt.setInt(7, parkingSpot);
-	                historyStmt.executeUpdate();
-	            }
-
-	            
-	            try (PreparedStatement deleteStmt = conn.prepareStatement("DELETE FROM active_parkings WHERE parking_code = ?")) {
-	                deleteStmt.setString(1, parkingCode);
-	                deleteStmt.executeUpdate();
-	            }
-
-	            updateParkingSpotStatus(parkingSpot, "available");
-
-	            conn.commit();   
-	            return "SUCCESS";
-
 	        } catch (SQLException inner) {
 	            conn.rollback();
 	            throw inner;
@@ -465,6 +513,7 @@ public class mysqlConnection {
 	        return "FAILURE";
 	    }
 	}
+
 
 
 	/**
@@ -1599,6 +1648,73 @@ public class mysqlConnection {
 	    });
 	}
 
+    /**
+     * Finalizes towed vehicles that were not picked up within 24 hours.
+     *
+     * <p>This method performs the following:
+     * 1. Selects all vehicles from `towed_vehicles` where `towed_at` is more than 24 hours ago.
+     * 2. For each such vehicle:
+     *    - Inserts a record into `parking_history` with a fixed `late_duration` of 1440 minutes (24 hours).
+     *    - Deletes the vehicle from `towed_vehicles`.
+     *    - Marks the associated parking spot as 'available'.
+     *
+     * <p>This method is intended to run periodically (e.g. every minute) as part of the background scheduled tasks.
+     * It ensures that vehicles left in the trailer area for too long are automatically finalized in the system.
+     *
+     * @param none Static method – no parameters required.
+     * @return void This method does not return a value.
+     * @throws SQLException if a database access error occurs.
+     * @throws RuntimeException if an unexpected error occurs during the process.
+     */
+    public static void finalizeTowedVehiclesLateTime() {
+        DBExecutor.executeVoid(conn -> {
+            String query = """
+                SELECT * FROM towed_vehicles 
+                WHERE towed_at < NOW() - INTERVAL 24 HOUR """;
+
+            try (PreparedStatement stmt = conn.prepareStatement(query);
+                 ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+                    String parkingCode = rs.getString("parking_code");
+                    String subscriberId = rs.getString("subscriber_id");
+                    String vehicleNumber = rs.getString("vehicle_number");
+                    int parkingSpot = rs.getInt("parking_spot");
+                    Date entryDate = rs.getDate("entry_date");
+                    Time entryTime = rs.getTime("entry_time");
+                    LocalDate exitDate = LocalDate.now();
+                    LocalTime exitTime = LocalTime.now();
+                    String insertHistory = """
+                        INSERT INTO parking_history 
+                        (subscriber_id, vehicle_number, entry_date, entry_time, exit_date, exit_time, late_duration, parking_spot) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """;
+
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertHistory)) {
+                        insertStmt.setString(1, subscriberId);
+                        insertStmt.setString(2, vehicleNumber);
+                        insertStmt.setDate(3, entryDate);
+                        insertStmt.setTime(4, entryTime);
+                        insertStmt.setDate(5, Date.valueOf(exitDate));
+                        insertStmt.setTime(6, Time.valueOf(exitTime));
+                        insertStmt.setInt(7, 1440); // 24 hours in minutes
+                        insertStmt.setInt(8, parkingSpot);
+                        insertStmt.executeUpdate();
+                    }
+                    try (PreparedStatement deleteStmt = conn.prepareStatement(
+                            "DELETE FROM towed_vehicles WHERE parking_code = ?")) {
+                        deleteStmt.setString(1, parkingCode);
+                        deleteStmt.executeUpdate();
+                    }
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+	
 	/**
 	 * Calculates the number of existing reservations that overlap with a given time range.
 	 * The time range starts at the specified date and startTime, and extends for the given duration.
