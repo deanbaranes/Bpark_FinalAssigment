@@ -1573,10 +1573,12 @@ public class mysqlConnection {
 	 * - It is inserted into the towed_vehicles table.
 	 * - It is removed from active_parkings.
 	 * - The associated parking spot is marked as available.
-	 * - If an email is available, a towing notice is sent and marked as sent in the database.
+	 * - If an email is available:
+	 *     - If this is the third late incident, a combined towing + late charge email is sent.
+	 *     - Otherwise, a towing notice email is sent.
 	 * - The subscriber's late_count is incremented by 1.
 	 *   If late_count was already 2 (i.e., this is the third late incident),
-	 *   a late charge email is sent and late_count is reset to 0.
+	 *   a late charge is applied and late_count is reset to 0.
 	 *
 	 * This method is intended to run periodically as part of a scheduled task.
 	 *
@@ -1585,7 +1587,7 @@ public class mysqlConnection {
 	 * @throws SQLException if a database access error occurs during any query or update.
 	 * @throws RuntimeException if unexpected errors occur in the database logic or email sending.
 	 */
-
+	
 	public static void checkAndTowVehicles() {
 	    DBExecutor.executeVoid(conn -> {
 	        String query = """
@@ -1624,15 +1626,18 @@ public class mysqlConnection {
 	                    insertStmt.setDate(5, entryDate);
 	                    insertStmt.setTime(6, entryTime);
 	                    insertStmt.executeUpdate();
-	                } 
+	                }
+
 	                try (PreparedStatement deleteStmt = conn.prepareStatement(
 	                        "DELETE FROM active_parkings WHERE parking_code = ?")) {
 	                    deleteStmt.setString(1, parkingCode);
 	                    deleteStmt.executeUpdate();
 	                }
+
 	                updateParkingSpotStatus(spot, "available");
 
-	                // Update late count and send email if needed
+	                boolean sentCombinedEmail = false;
+
 	                try (PreparedStatement lateStmt = conn.prepareStatement("""
 	                    SELECT late_count FROM subscribers WHERE subscriber_id = ?
 	                """)) {
@@ -1644,9 +1649,10 @@ public class mysqlConnection {
 
 	                        if (lateCount == 2) {
 	                            try {
-	                                new EmailSender().sendLateChargeEmail(email);
+	                                new EmailSender().sendTowingWithLateChargeEmail(email, vehicleNumber, spot);
+	                                sentCombinedEmail = true;
 	                            } catch (Exception e) {
-	                                System.err.println("[EmailSender] Failed to send third-late email.");
+	                                System.err.println("[EmailSender] Failed to send combined towing/late email.");
 	                                e.printStackTrace();
 	                            }
 
@@ -1667,7 +1673,7 @@ public class mysqlConnection {
 	                    }
 	                }
 
-	                if (email != null) {
+	                if (email != null && !sentCombinedEmail) {
 	                    try {
 	                        new EmailSender().sendTowingNoticeEmail(email, vehicleNumber, spot);
 	                        try (PreparedStatement updateStmt = conn.prepareStatement("""

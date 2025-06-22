@@ -137,18 +137,18 @@ public class EmailSender {
                 Message.RecipientType.TO,
                 InternetAddress.parse(toEmail, false)
             );
-            msg.setSubject("Vehicle Towed Notification from BPARK");
+            msg.setSubject("Vehicle Towed and Late Charge Notification from BPARK");
 
             msg.setText(
-            		"Hello,\n\n" +
-                    		"Your vehicle with license plate " + vehicleNumber +
-                    		" was towed from parking spot #" + spotNumber +
-                    		" after exceeding the maximum allowed parking duration.\n\n" +
-                    		"To retrieve your vehicle, please contact our service center.\n" +
-                    		"Additional fees may apply.\n\n" +
-                    		"Note: If the vehicle is not collected within 24 hours, it will be transferred to the police impound lot.\n\n" +
-                    		"Best regards,\n" +
-                    		SendMailConfig.SENDER_NAME
+                "Hello,\n\n" +
+                "Your vehicle with license plate " + vehicleNumber +
+                " was towed from parking spot #" + spotNumber +
+                " after exceeding the maximum allowed parking duration.\n\n" +
+                "Additionally, this is your third late incident. As per BPARK policy, " +
+                "an extra late charge has been applied to your account.\n\n" +
+                "To retrieve your vehicle, please contact our service center.\n\n" +
+                "Best regards,\n" +
+                SendMailConfig.SENDER_NAME
             );
 
             System.out.println("[EmailSender] → Transport.send() (TowingNotice)");
@@ -160,14 +160,19 @@ public class EmailSender {
             throw e;
         }
     }
+
     /**
-     * Sends a notification email when a subscriber reaches their third late parking.
+     * Sends a combined towing and late charge notification email to a subscriber.
+     * This email is triggered when a vehicle is towed and it's the subscriber's third late occurrence.
      *
-     * @param toEmail The recipient's email address.
-     * @throws MessagingException           If sending the message fails.
-     * @throws UnsupportedEncodingException If encoding the sender's name fails.
+     * @param toEmail       The recipient's email address.
+     * @param vehicleNumber The license plate number of the towed vehicle.
+     * @param spotNumber    The parking spot number the vehicle was towed from.
+     * @throws MessagingException           If the message cannot be sent.
+     * @throws UnsupportedEncodingException If encoding the sender name fails.
      */
-    public void sendLateChargeEmail(String toEmail) throws MessagingException, UnsupportedEncodingException {
+    public void sendTowingWithLateChargeEmail(String toEmail, String vehicleNumber, int spotNumber)
+            throws MessagingException, UnsupportedEncodingException {
         try {
             Message msg = new MimeMessage(session);
             msg.setFrom(new InternetAddress(SendMailConfig.USERNAME, SendMailConfig.SENDER_NAME));
@@ -175,27 +180,28 @@ public class EmailSender {
                 Message.RecipientType.TO,
                 InternetAddress.parse(toEmail, false)
             );
-            msg.setSubject("Late Parking Charge Notification");
+            msg.setSubject("Vehicle Towed & Late Charge Notification from BPARK");
 
             msg.setText(
                 "Hello,\n\n" +
-                "Our system has detected that your vehicle has exceeded the maximum allowed parking duration three times.\n" +
-                "As a result, an additional late fee has been applied to your account.\n\n" +
-                "Please make sure to exit on time in the future to avoid further charges.\n\n" +
+                "Your vehicle with license plate " + vehicleNumber +
+                " was towed from parking spot #" + spotNumber +
+                " after exceeding the maximum allowed parking duration.\n\n" +
+                "Additionally, since this is your third late occurrence, a late fee has been applied to your account.\n\n" +
+                "Please make sure to exit on time in the future to avoid towing and charges.\n\n" +
                 "Best regards,\n" +
                 SendMailConfig.SENDER_NAME
             );
 
-            System.out.println("[EmailSender] → Transport.send() (LateCharge)");
+            System.out.println("[EmailSender] → Transport.send() (TowingWithLateCharge)");
             Transport.send(msg);
-            System.out.println("[EmailSender] Late charge email sent successfully to " + toEmail);
+            System.out.println("[EmailSender] Combined towing + late charge email sent successfully to " + toEmail);
         } catch (MessagingException e) {
-            System.err.println("[EmailSender] Failed to send late charge email to " + toEmail);
+            System.err.println("[EmailSender] Failed to send towing + late charge email to " + toEmail);
             e.printStackTrace();
             throw e;
         }
     }
 
-    
     
 }
