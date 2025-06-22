@@ -48,7 +48,7 @@ public class EmailSender {
             }
         });
 
-        session.setDebug(true);  // מפעיל Debug של JavaMail
+        session.setDebug(true);  // JavaMail Debug  
     }
 
     /**
@@ -160,4 +160,42 @@ public class EmailSender {
             throw e;
         }
     }
+    /**
+     * Sends a notification email when a subscriber reaches their third late parking.
+     *
+     * @param toEmail The recipient's email address.
+     * @throws MessagingException           If sending the message fails.
+     * @throws UnsupportedEncodingException If encoding the sender's name fails.
+     */
+    public void sendLateChargeEmail(String toEmail) throws MessagingException, UnsupportedEncodingException {
+        try {
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(SendMailConfig.USERNAME, SendMailConfig.SENDER_NAME));
+            msg.setRecipients(
+                Message.RecipientType.TO,
+                InternetAddress.parse(toEmail, false)
+            );
+            msg.setSubject("Late Parking Charge Notification");
+
+            msg.setText(
+                "Hello,\n\n" +
+                "Our system has detected that your vehicle has exceeded the maximum allowed parking duration three times.\n" +
+                "As a result, an additional late fee has been applied to your account.\n\n" +
+                "Please make sure to exit on time in the future to avoid further charges.\n\n" +
+                "Best regards,\n" +
+                SendMailConfig.SENDER_NAME
+            );
+
+            System.out.println("[EmailSender] → Transport.send() (LateCharge)");
+            Transport.send(msg);
+            System.out.println("[EmailSender] Late charge email sent successfully to " + toEmail);
+        } catch (MessagingException e) {
+            System.err.println("[EmailSender] Failed to send late charge email to " + toEmail);
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    
+    
 }

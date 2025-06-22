@@ -1568,17 +1568,24 @@ public class mysqlConnection {
 	 * exceeded their allowed parking time based on whether they extended their parking:
 	 * Vehicles with {extended = TRUE} are towed after 8 hours (480 minutes).
 	 * Vehicles with {extended = FALSE} are towed after 4 hours (240 minutes).
+	 *
 	 * For each such vehicle:
-	 * It is inserted into the towed_vehicles table.
-	 * It is removed from {@code active_parkings}.
-	 * The associated parking spot is marked as available.
-	 * If an email is available, a towing notice is sent and marked as sent in the database.
+	 * - It is inserted into the towed_vehicles table.
+	 * - It is removed from active_parkings.
+	 * - The associated parking spot is marked as available.
+	 * - If an email is available, a towing notice is sent and marked as sent in the database.
+	 * - The subscriber's late_count is incremented by 1.
+	 *   If late_count was already 2 (i.e., this is the third late incident),
+	 *   a late charge email is sent and late_count is reset to 0.
+	 *
 	 * This method is intended to run periodically as part of a scheduled task.
+	 *
 	 * @param none This is a static method and does not receive any parameters.
 	 * @return void This method does not return a value.
 	 * @throws SQLException if a database access error occurs during any query or update.
 	 * @throws RuntimeException if unexpected errors occur in the database logic or email sending.
 	 */
+
 	public static void checkAndTowVehicles() {
 	    DBExecutor.executeVoid(conn -> {
 	        String query = """
@@ -1605,7 +1612,6 @@ public class mysqlConnection {
 	                String vehicleNumber = rs.getString("vehicle_number1");
 	                String email = rs.getString("email");
 
-	             
 	                try (PreparedStatement insertStmt = conn.prepareStatement("""
 	                    INSERT INTO towed_vehicles 
 	                    (parking_code, subscriber_id, vehicle_number, parking_spot, entry_date, entry_time) 
@@ -1625,6 +1631,42 @@ public class mysqlConnection {
 	                    deleteStmt.executeUpdate();
 	                }
 	                updateParkingSpotStatus(spot, "available");
+
+	                // Update late count and send email if needed
+	                try (PreparedStatement lateStmt = conn.prepareStatement("""
+	                    SELECT late_count FROM subscribers WHERE subscriber_id = ?
+	                """)) {
+	                    lateStmt.setString(1, subscriberId);
+	                    ResultSet lateRs = lateStmt.executeQuery();
+
+	                    if (lateRs.next()) {
+	                        int lateCount = lateRs.getInt("late_count");
+
+	                        if (lateCount == 2) {
+	                            try {
+	                                new EmailSender().sendLateChargeEmail(email);
+	                            } catch (Exception e) {
+	                                System.err.println("[EmailSender] Failed to send third-late email.");
+	                                e.printStackTrace();
+	                            }
+
+	                            try (PreparedStatement resetLate = conn.prepareStatement("""
+	                                UPDATE subscribers SET late_count = 0 WHERE subscriber_id = ?
+	                            """)) {
+	                                resetLate.setString(1, subscriberId);
+	                                resetLate.executeUpdate();
+	                            }
+	                        } else {
+	                            try (PreparedStatement incLate = conn.prepareStatement("""
+	                                UPDATE subscribers SET late_count = late_count + 1 WHERE subscriber_id = ?
+	                            """)) {
+	                                incLate.setString(1, subscriberId);
+	                                incLate.executeUpdate();
+	                            }
+	                        }
+	                    }
+	                }
+
 	                if (email != null) {
 	                    try {
 	                        new EmailSender().sendTowingNoticeEmail(email, vehicleNumber, spot);
@@ -1647,6 +1689,7 @@ public class mysqlConnection {
 	        }
 	    });
 	}
+
 
     /**
      * Finalizes towed vehicles that were not picked up within 24 hours.
