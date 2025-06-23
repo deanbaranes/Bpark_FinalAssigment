@@ -434,7 +434,7 @@
     -fx-text-fill: #1e1e2f;
 }
 
-/* Buttons (default) */
+/* Buttons (default)* */
 .button {
     -fx-background-radius: 30;
     -fx-background-color: linear-gradient(to bottom, #00c6ff, #0072ff); /* Default blue */
