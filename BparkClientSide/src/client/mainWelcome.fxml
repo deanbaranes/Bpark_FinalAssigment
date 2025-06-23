@@ -27,7 +27,7 @@
           AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
           AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
 
-        <Label text="Where are you logging in from?" styleClass="subtitle"/>
+        <Label text="Where are you logging in from?" styleClass="subtitle"  style="-fx-text-fill: white;"/>
 
         <HBox alignment="CENTER" spacing="30">
             <Button fx:id="terminalButton" text="Terminal" onAction="#handleTerminalAccess" prefWidth="160"/>

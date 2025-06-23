@@ -418,3 +418,110 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
 }
 
+
+/*APP Screen */
+/* General background for AnchorPane */
+.anchor-pane {
+    -fx-background-color: linear-gradient(to bottom right, #f9f9f9, #e8e8f0);
+}
+
+
+
+/* Big Titles */
+.label:has-font[font-size="24"] {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e1e2f;
+}
+
+/* Buttons (default) */
+.button {
+    -fx-background-radius: 30;
+    -fx-background-color: linear-gradient(to bottom, #00c6ff, #0072ff); /* Default blue */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+/* Buttons (hover) */
+.button:hover {
+    -fx-background-color: linear-gradient(to bottom, #0072ff, #0055cc);
+}
+
+/* Purple variant (used manually with styleClass="purple-button") */
+.purple-button {
+    -fx-background-color: linear-gradient(to bottom, #a64bf4, #6a30c9);
+}
+
+/* Purple hover */
+.purple-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #6a30c9, #4d1e9c);
+}
+
+
+/* Hyperlinks */
+.hyperlink {
+    -fx-text-fill: #0066cc;
+    -fx-underline: true;
+}
+.hyperlink:hover {
+    -fx-text-fill: #003366;
+}
+
+/* TextArea */
+.text-area {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-insets: 0;
+    -fx-background-radius: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 10;
+    -fx-border-width: 1.2;
+}
+
+/* החלק הפנימי שמכיל את הטקסט */
+.text-area .content {
+    -fx-background-color: rgba(255, 255, 255, 0.08); /* כאן הקסם */
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+}
+
+/* הסרת רקע מה-scroll pane */
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* הסרת רקע מאזור התוכן */
+.text-area .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* עיצוב של פס הגלילה */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+.scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 8;
+}
+
+
+
+/* ListViews */
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #cccccc;
+}
+
+/* Info Labels (green feedback) */
+#resetMessage {
+    -fx-text-fill: green;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+}
+
+

@@ -122,13 +122,18 @@ public class MainWelcomeController {
             BaseController controller = loader.getController();
             controller.setClient(client);
             client.setController(controller);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm()); // ✅ הוספת CSS
+
             Stage stage = (Stage) appButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
             stage.setTitle("BPARK - Client App");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     /**
      * Handles the "Terminal" button click.
