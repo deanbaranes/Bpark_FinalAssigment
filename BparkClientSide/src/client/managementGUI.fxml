@@ -136,9 +136,13 @@
 
     <Label text="Site Activity" style="-fx-font-size: 24px;" />
 
-    <ScrollPane fitToWidth="true" fitToHeight="true" prefHeight="400" prefWidth="600">
-        <TextArea fx:id="console_siteactivity" wrapText="true" editable="false" prefHeight="400.0" prefWidth="600.0" style="-fx-font-size: 14px;" />
-    </ScrollPane>
+<TextArea fx:id="console_siteactivity"
+          wrapText="true"
+          editable="false"
+          prefHeight="400"
+          prefWidth="600"
+          styleClass="log-textarea"/>
+
 
     <HBox alignment="CENTER" spacing="20">
     </HBox>

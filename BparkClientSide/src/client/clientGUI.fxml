@@ -117,7 +117,7 @@
     <VBox fx:id="historyView" alignment="CENTER" spacing="10" visible="false" managed="false"
           AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
         <Label fx:id="greetingLabelHistory" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
-        <ListView fx:id="historyListView" prefHeight="200" prefWidth="600"/>
+		<ListView fx:id="historyListView" prefHeight="200" prefWidth="600" styleClass="glass-list"/>
         
     </VBox>
 

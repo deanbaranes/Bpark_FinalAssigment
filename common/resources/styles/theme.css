@@ -1,11 +1,10 @@
 /* ========== Global Root ========== */
 .root {
     -fx-background-image: url("/styles/background.png");
-    -fx-background-size: cover;
+	-fx-background-size: 100% 100%;
+    -fx-background-repeat: no-repeat;
     -fx-background-position: center;
-    -fx-font-family: 'Segoe UI', sans-serif;
-    -fx-padding: 50;
-}
+    -fx-font-family: 'Segoe UI', sans-serif;}
 
 /* ========== Titles ========== */
 #title {
@@ -146,7 +145,7 @@
 
 /* Register new member */
 #btnregisternewmember {
-    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); 
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -158,7 +157,7 @@
 
 /* View Parking Duration Report */
 #btnparkingduration {
-    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); 
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); /* טורקיז-כחול */
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -167,10 +166,18 @@
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
 }
+.chart-legend {
+    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-background-radius: 12;
+    -fx-border-color: rgba(0, 0, 0, 0.1);
+    -fx-border-radius: 12;
+    -fx-padding: 8;
+}
+
 
 /* View member Status Report */
 #btnmemberstatusreport {
-    -fx-background-color: linear-gradient(to right, #11998e, #38ef7d); /* ירוק ניאון */
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); /* טורקיז-כחול */
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -182,7 +189,7 @@
 
 /* View Site Activity */
 #btnViewSiteActivity {
-    -fx-background-color: linear-gradient(to right, #11998e, #38ef7d);
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); /* טורקיז-כחול */
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -206,7 +213,7 @@
 }
 /* View member details */
 #btnsearch_memberdetails{
-    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-background-color: linear-gradient(to right, #11998e, #38ef7d); /* ירוק ניאון */
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -219,7 +226,7 @@
 }
 /* View active parking */
 #btnsearch_parkingdetails{
-    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-background-color: linear-gradient(to right, #11998e, #38ef7d); /* ירוק ניאון */
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -290,6 +297,31 @@
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0, 0, 1);
 }
+.list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 8;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 10;
+    -fx-border-width: 1.2;
+}
+
+.list-view .viewport {
+    -fx-background-color: transparent;
+}
+
+.list-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+}
+
+.list-cell:filled:selected, .list-cell:filled:selected:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+
 
 
 /*terminal client login screen  */
@@ -326,6 +358,41 @@
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
 }
+
+/* שקיפות רקע כללי של ListView */
+.glass-list {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 10;
+    -fx-border-width: 1.2;
+}
+
+/* הסרת רקע פנימי של viewport */
+.glass-list .viewport {
+    -fx-background-color: transparent;
+}
+
+/* עיצוב תאים */
+.glass-list .list-cell {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+}
+
+/* עיצוב תא נבחר */
+.glass-list .list-cell:filled:selected,
+.glass-list .list-cell:filled:selected:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* פס גלילה */
+.glass-list .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
 
 /*drop off / pick up screen */
 #dropoffButton{
@@ -510,12 +577,6 @@
 }
 
 
-
-/* ListViews */
-.list-view {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #cccccc;
-}
 
 /* Info Labels (green feedback) */
 #resetMessage {
