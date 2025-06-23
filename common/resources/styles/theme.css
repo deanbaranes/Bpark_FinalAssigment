@@ -1,0 +1,242 @@
+/* ========== Global Root ========== */
+.root {
+    -fx-background-image: url("/styles/background.png");
+    -fx-background-size: cover;
+    -fx-background-position: center;
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-padding: 50;
+}
+
+/* ========== Titles ========== */
+#title {
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2288dd;
+    -fx-effect: dropshadow(gaussian, #147ad6, 4, 0.2, 0, 1);
+}
+
+#subtitle {
+    -fx-font-size: 16px;
+    -fx-text-fill: #2288dd;
+    -fx-effect: dropshadow(gaussian, #147ad6, 3, 0.1, 0, 1);
+}
+
+/* ========== General Button Style ========== */
+.button {
+    -fx-background-radius: 30;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-padding: 10 25;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+/* ========== Welcome Screen Buttons ========== */
+#clientsButton {
+    -fx-background-color: linear-gradient(to right, #2ebeff, #3a62f1);
+}
+
+#managementButton {
+    -fx-background-color: linear-gradient(to right, #3a62f1, #5f38ff);
+}
+
+#exitButton { /* Exit in mainWelcome.fxml */
+    -fx-background-color: linear-gradient(to right, #ff6a00, #ee0979);
+    -fx-text-fill: white;
+    -fx-background-radius: 30;
+    -fx-padding: 10 25;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-padding: 8 20;
+}
+
+/* ========== Management Screen Buttons ========== */
+#btnloginsubmit {
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+
+
+#btnback {
+    -fx-background-color: linear-gradient(to right, #ff6a00, #ee0979);
+}
+#btnexit {
+    -fx-background-color: linear-gradient(to right, #ff6a00, #ee0979);
+}
+
+.exit { /* Exit in managementGUI.fxml */
+    -fx-background-color: linear-gradient(to right, #ff6a00, #ee0979);
+    -fx-text-fill: white;
+    -fx-background-radius: 30;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 8 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0.2, 0, 1);
+}
+
+/* ========== Text Fields ========== */
+.text-field,
+.password-field {
+    -fx-background-radius: 10;
+    -fx-border-color: #3a79d8;
+    -fx-border-radius: 10;
+    -fx-padding: 6 10;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-prompt-text-fill: #aaaaaa;
+}
+
+/* ========== Labels & Links ========== */
+.label {
+    -fx-text-fill: white;
+}
+
+#loginlabel {
+    -fx-font-size: 24px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.hyperlink {
+    -fx-text-fill: #00aaff;
+}
+
+/* ========== Back / Exit Bottom Bar Buttons ========== */
+.bottom-button {
+    -fx-background-radius: 30;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 8 20;
+}
+/* View member details */
+#btnmemberdetails {
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); /* טורקיז-כחול */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+/* View active parking details */
+#btnparkingdetails {
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5);  /* כתום-צהוב */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+/* Register new member */
+#btnregisternewmember {
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); 
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+/* View Parking Duration Report */
+#btnparkingduration {
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); 
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+/* View member Status Report */
+#btnmemberstatusreport {
+    -fx-background-color: linear-gradient(to right, #11998e, #38ef7d); /* ירוק ניאון */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+/* View Site Activity */
+#btnViewSiteActivity {
+    -fx-background-color: linear-gradient(to right, #fc4a1a, #f7b733); /* אדום-צהוב */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+/* Register new member */
+#btnsignup {
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 30; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+/* View member details */
+#btnsearch_memberdetails{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 30; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+/* View active parking */
+#btnsearch_parkingdetails{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+
+#console_memberdeatils {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: black; /* אפשר לשנות אחר כך */
+}
+
+
+

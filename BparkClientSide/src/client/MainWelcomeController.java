@@ -96,8 +96,11 @@ public class MainWelcomeController {
             client.setController(controller);
             controller.showLoginScreen();
 
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm()); // ✅ טעינת CSS
+
             Stage stage = (Stage) managementButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
             stage.setTitle("BPARK - Management");
         } catch (IOException e) {
             e.printStackTrace();

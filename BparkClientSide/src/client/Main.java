@@ -20,9 +20,11 @@ public class Main extends Application {
             // Load the main welcome screen (role selection)
             FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWelcome.fxml"));
             Parent root = loader.load();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
 
+            primaryStage.setScene(scene);
             primaryStage.setTitle("Welcome to BPARK");
-            primaryStage.setScene(new Scene(root));
             primaryStage.show();
 
         } catch (IOException e) {

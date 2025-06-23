@@ -16,9 +16,8 @@
 
 
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ManagementController" prefWidth="900" prefHeight="700">
-    
-
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="client.ManagementController"
+            prefWidth="900" prefHeight="700" styleClass="root">
 <VBox fx:id="loginView" alignment="CENTER" spacing="10"
       AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" maxWidth="200">
     <Label fx:id="loginlabel" text="Please enter your login details">
@@ -67,7 +66,7 @@
         </Label>
         <VBox alignment="CENTER" spacing="30" >
 		<Button fx:id="btnmemberdetails" text="View member details" onAction="#handleViewMemberDetails" prefWidth="200" />
-		<Button fx:id="btnparkingdetails" text="View active parking details" onAction="#handleViewParkingDetails" prefWidth="200" />
+		<Button fx:id="btnparkingdetails" text="View active parking" onAction="#handleViewParkingDetails" prefWidth="200" />
 		<Button fx:id="btnregisternewmember" text="Register new member" onAction="#handleRegisterNewMember" prefWidth="200" />
 		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
 		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
@@ -217,14 +216,17 @@
       AnchorPane.leftAnchor="0.0"
       AnchorPane.rightAnchor="0.0">
 
-    <Button fx:id="btnback"
-            text="Back"
-            onAction="#handleBack"
-            prefWidth="100" prefHeight="20" />
+<Button fx:id="btnback"
+        text="Back"
+        onAction="#handleBack"
+        prefWidth="100" prefHeight="20"
+        styleClass="bottom-button back" />
 
-    <Button text="Exit"
-            onAction="#handleExit"
-            prefWidth="100" prefHeight="20" />
+<Button fx:id="btnexit"
+        text="Exit"
+        onAction="#handleExit"
+        prefWidth="100" prefHeight="20"
+        styleClass="bottom-button exit" />
 
 </HBox>
 
