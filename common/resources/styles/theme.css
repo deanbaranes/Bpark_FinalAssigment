@@ -182,7 +182,7 @@
 
 /* View Site Activity */
 #btnViewSiteActivity {
-    -fx-background-color: linear-gradient(to right, #fc4a1a, #f7b733); /* אדום-צהוב */
+    -fx-background-color: linear-gradient(to right, #11998e, #38ef7d);
     -fx-text-fill: white;
     -fx-font-size: 12px;
     -fx-font-weight: bold;
@@ -230,13 +230,191 @@
     -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
 }
+/*client login screen */
+#terminalButton {
+    -fx-background-color: linear-gradient(to right, #00c6ff, #0072ff);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 2);
+}
 
-#console_memberdeatils {
-    -fx-background-color: transparent;
-    -fx-control-inner-background: transparent;
-    -fx-border-color: transparent;
-    -fx-text-fill: black; /* אפשר לשנות אחר כך */
+#appButton {
+    -fx-background-color: linear-gradient(to right, #00c6ff, #0072ff);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 10, 0, 0, 2);
+}
+
+#backButton {
+    -fx-background-color: linear-gradient(to right, #ff6a00, #ee0979);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 1);
+}
+
+#btnsignbyhand {
+    -fx-background-color: linear-gradient(to right, #00c6ff, #0072ff);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 2);
+}
+
+#signViaScanner {
+    -fx-background-color: linear-gradient(to right, #00c6ff, #0072ff);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 2);
+}
+
+#backButton {
+    -fx-background-color: linear-gradient(to right, #ff6a00, #ee0979);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0, 0, 1);
 }
 
 
+/*terminal client login screen  */
+#signInButton {
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); /* טורקיז-כחול */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+
+#showSpotsButton {
+    -fx-background-color: linear-gradient(to right, #36D1DC, #5B86E5); /* טורקיז-כחול */
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 30;
+    -fx-padding: 12 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0.3, 0, 2);
+}
+#submitButton{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+
+/*drop off / pick up screen */
+#dropoffButton{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+#pickupButton{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+
+/*drop off screen */
+#btnYesReservation{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+#btnNoReservation{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+#submitdropoffCodeButton{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+
+/*pick up screen */
+
+#submitPickupCodeButton{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
+#sendParkingCodeButton{
+    -fx-background-color: linear-gradient(to right, #0f9bff, #3f51b5);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 35; /* יותר מרווח */
+    -fx-background-radius: 30;
+    -fx-min-width: 120px; /* מונע חיתוך */
+    -fx-wrap-text: false;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0.2, 0, 2);
+}
 

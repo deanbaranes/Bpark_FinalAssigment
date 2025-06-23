@@ -78,6 +78,7 @@ public class MainWelcomeController {
         clientSubMenu.setManaged(false);
         mainMenu.setVisible(true);
         mainMenu.setManaged(true);
+        
     }
 
     /**
@@ -142,9 +143,14 @@ public class MainWelcomeController {
             BaseController controller = loader.getController();
             controller.setClient(client);
             client.setController(controller);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+
             Stage stage = (Stage) terminalButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene); // ✅ משתמשים רק ב־scene שהכנת קודם
             stage.setTitle("BPARK - Terminal");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -173,6 +179,7 @@ public class MainWelcomeController {
         clientSubMenu.setVisible(true);
         clientSubMenu.setManaged(true);
     }
+    
 
     
 }
