@@ -596,15 +596,17 @@ public class TerminalController implements BaseController {
             if (result.startsWith("PICKUP_RESULT|")) {
                 cleanResult = result.substring("PICKUP_RESULT|".length());
             }
-            showOnly(mainMenu);
-        	navigationStack.clear();
             if (cleanResult.equals("SUCCESS")) {
+            	showOnly(mainMenu);
+            	 navigationStack.clear();
                 showPopup("We're bringing your car now. Please wait at the delivery point.");
             }
             else if(cleanResult.equals("SENT_TOWED_VEHICLE_MSG"))
             {
+            	showOnly(mainMenu);
+             navigationStack.clear();
             	showPopup("You were late to your pickup.\nYour vehicle is now being returned from the towed vehicle lot.\nThe late fee has been charged to your credit card.");
-            }
+            } 
             else {
                 showPopup("Incorrect parking code. Please try again.");
             }
