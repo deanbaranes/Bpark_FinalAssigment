@@ -6,30 +6,31 @@
 
 <AnchorPane prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.TerminalController">
 
-    <!-- Main Menu. -->
-    <VBox fx:id="mainMenu" alignment="CENTER" spacing="20"
-          AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0"
-          AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100" visible="true" managed="true">
-        <Label text="Choose an action:"  style="-fx-text-fill: white;">
-            <font><Font size="20"/></font>
-        </Label>
-        <HBox alignment="CENTER" spacing="30">
-            <Button fx:id="signInButton" text="Sign in" onAction="#handleSignInChoiceClick" prefWidth="200"/>
-            <Button fx:id="showSpotsButton" text="Show Available Parking Spots" onAction="#handleShowSpotsClick" prefWidth="200" style="-fx-text-fill: white;"/>
-        </HBox>
-    </VBox>
+	<!-- Main Menu. -->
+	<VBox fx:id="mainMenu" alignment="CENTER" spacing="20"
+	      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0"
+	      AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100" visible="true" managed="true">
+	
+	    <Label text="Choose an action:" styleClass="title-label"/>
+	
+	    <HBox alignment="CENTER" spacing="30">
+	        <Button fx:id="signInButton" text="Sign in" onAction="#handleSignInChoiceClick" prefWidth="200"/>
+	        <Button fx:id="showSpotsButton" text="Available Parking Spots" onAction="#handleShowSpotsClick" prefWidth="200"/>
+	    </HBox>
+	</VBox>
 
-   <!-- Sign In Choice screen -->
+	<!-- Sign In Choice screen -->
 	<VBox fx:id="signInChoice" alignment="CENTER" spacing="30" 
-          AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-    	<Label text="How would you like to log in?"  style="-fx-text-fill: white;">
-    	<font><Font size="20"/></font>
-        </Label>
-    	<HBox alignment="CENTER" spacing="30">
-            <Button fx:id="btnsignbyhand" text="Login with Password" prefWidth="171" onAction="#handleSignInClick"/>
-    		<Button  fx:id="signViaScanner" text="Login with Scanner" prefWidth="171" onAction="#handleSignInViaScannerClick"/>
-    	</HBox>
-	</VBox> 
+	      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+	
+	    <Label text="How would you like to log in?" styleClass="title-label"/>
+	
+	    <HBox alignment="CENTER" spacing="30">
+	        <Button fx:id="btnsignbyhand" text="Login with Password" prefWidth="171" onAction="#handleSignInClick"/>
+	        <Button fx:id="signViaScanner" text="Login with Scanner" prefWidth="171" onAction="#handleSignInViaScannerClick"/>
+	    </HBox>
+	</VBox>
+
 	
 	 <!-- FORGOT-PASSWORD VIEW -->
 	<VBox fx:id="forgotView"
@@ -94,28 +95,30 @@
     <!-- Spots View -->
     <VBox fx:id="spotsView" alignment="CENTER" spacing="20" visible="false" managed="false"
           AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-<Label text="Available Parking Spots" alignment="CENTER"  style="-fx-font-size: 24px; -fx-text-fill: white;" />
+<Label text="Available Parking Spots" styleClass="title-label" alignment="CENTER"/>
 
-<Label text="Here are the currently available parking spots:"  alignment="CENTER"  wrapText="true"  maxWidth="600"
-       style="-fx-text-fill: white;" />
+<Label text="Here are the currently available parking spots:" alignment="CENTER" wrapText="true" maxWidth="600" styleClass="subtitle-label"/>
+
 
          <TextArea fx:id="spotsTextArea" prefWidth="400" prefHeight="200"
               editable="false" wrapText="true"/>
     </VBox>
 
-    <!-- Select Service View -->
-    <VBox fx:id="selectServicePane" alignment="CENTER" spacing="15" visible="false" managed="false"
-          AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-          <Label fx:id="welcomeLabelTerminal" text="Welcome!" alignment="CENTER">
-           <font><Font size="24" /></font>
-        </Label>
-        <Label fx:id="chooseServiceLabel" text="Please choose a service:"/>
-        <HBox alignment="CENTER" spacing="30">
-            <Button fx:id="dropoffButton" text="Dropoff" prefWidth="171" onAction="#handleDropoffMethodChoice"/>
-            <Button fx:id="pickupButton" text="Pickup" prefWidth="171" onAction="#handlePickupClick"/>
-        </HBox>
-        <Label fx:id="LogOutLabel" text="To log out and return to Main Menu press the 'back' button"/>
-    </VBox>
+<VBox fx:id="selectServicePane" alignment="CENTER" spacing="15" visible="false" managed="false"
+      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+
+    <Label fx:id="welcomeLabelTerminal" text="Welcome!" alignment="CENTER" styleClass="title-label" />
+
+    <Label fx:id="chooseServiceLabel" text="Please choose a service:" styleClass="subtitle-label"/>
+
+    <HBox alignment="CENTER" spacing="30">
+        <Button fx:id="dropoffButton" text="Dropoff" prefWidth="171" onAction="#handleDropoffMethodChoice"/>
+        <Button fx:id="pickupButton" text="Pickup" prefWidth="171" onAction="#handlePickupClick"/>
+    </HBox>
+
+    <Label fx:id="LogOutLabel" text="To log out and return to Main Menu press the 'back' button"/>
+</VBox>
+
 	
 	
 		
@@ -157,17 +160,17 @@
 	    <Button fx:id="submitPickupCodeButton" text="Submit" onAction="#handleSubmitPickupCode"/>
 	</VBox>
 
-    	<!-- scanner Screen -->
-	<VBox fx:id="scannerPane" alignment="CENTER" spacing="30"
-	      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
-	    <VBox alignment="CENTER" spacing="30">
-	        <Label text="Please scan your identification card"  style="-fx-text-fill: white;" >
-	        <font><Font size="24" /></font>
-        </Label>
-	        <Button fx:id="btnScan" text="Scan" prefWidth="120" onAction="#handleScanClick"/>
-	    </VBox>
-	    
-	</VBox>
+		<!-- scanner Screen -->
+		<VBox fx:id="scannerPane" alignment="CENTER" spacing="30"
+		      AnchorPane.topAnchor="50.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+		
+		    <VBox alignment="CENTER" spacing="30">
+		        <Label text="Please scan your identification card" styleClass="title-label"/>
+		        <Button fx:id="btnScan" text="Scan" prefWidth="120" onAction="#handleScanClick"/>
+		    </VBox>
+		    
+		</VBox>
+
     
     <!-- Global Back & Exit Buttons (in a row) -->
 <HBox alignment="CENTER" spacing="20"

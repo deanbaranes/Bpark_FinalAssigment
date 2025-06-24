@@ -520,11 +520,21 @@ public class ManagementController implements BaseController{
         alert.setTitle("Notice");
         alert.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
+        alert.getDialogPane().setStyle(
+            "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+            "-fx-background-radius: 10;" +
+            "-fx-padding: 20;"
+        );
+
         Label content = new Label(message);
         content.setWrapText(true);
         content.setMaxWidth(300);
         content.setMinHeight(100);
-        content.setStyle("-fx-text-alignment: center; -fx-alignment: center; -fx-font-size: 14px;");
+        content.setStyle(
+            "-fx-text-alignment: center;" +
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: white;"
+        );
 
         VBox wrapper = new VBox(content);
         wrapper.setAlignment(Pos.CENTER);
@@ -533,7 +543,6 @@ public class ManagementController implements BaseController{
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
     }
-    
     
     /**
      * Handles the submission of the "Register New Member" form.
@@ -735,7 +744,6 @@ public class ManagementController implements BaseController{
             sb.append("Expected Exit Time: ").append(rec.getExpectedExitTime()).append("\n");
             sb.append("Parking Spot: ").append(rec.getParkingSpot()).append("\n");
             sb.append("Extended: ").append(rec.isExtended() ? "Yes" : "No").append("\n");
-            sb.append("----------------------------------------------------\n");
         }
 
         // Set the formatted string to the TextArea

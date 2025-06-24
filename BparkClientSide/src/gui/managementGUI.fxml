@@ -46,9 +46,11 @@
       maxWidth="250"
       visible="false" managed="false">
 
-    <Label text="Reset Password:" style="-fx-font-size:24px;"/>
+     <Label text="Reset Password:" styleClass="title-label"/>
 
-    <Label text="Enter your email:" />
+
+     <Label text="Enter your email:" styleClass="subtitle-label"/>
+
     <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180" onAction="#handleSendReset"/>
 
     <Button text="Send password to mail" onAction="#handleSendReset"
@@ -65,12 +67,12 @@
             <font><Font size="24" /></font>
         </Label>
         <VBox alignment="CENTER" spacing="30" >
-		<Button fx:id="btnmemberdetails" text="View member details" onAction="#handleViewMemberDetails" prefWidth="200" />
-		<Button fx:id="btnparkingdetails" text="View active parking" onAction="#handleViewParkingDetails" prefWidth="200" />
+		<Button fx:id="btnmemberdetails" text="member details" onAction="#handleViewMemberDetails" prefWidth="200" />
+		<Button fx:id="btnparkingdetails" text="active parking" onAction="#handleViewParkingDetails" prefWidth="200" />
 		<Button fx:id="btnregisternewmember" text="Register new member" onAction="#handleRegisterNewMember" prefWidth="200" />
-		<Button fx:id="btnparkingduration" text="View Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
-		<Button fx:id="btnmemberstatusreport" text="View member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
-		<Button fx:id="btnViewSiteActivity" text="View Site Activity" onAction="#handleViewSiteActivity" prefWidth="200" />
+		<Button fx:id="btnparkingduration" text="Parking Duration Report" onAction="#handleViewParkingDuration" prefWidth="200" />
+		<Button fx:id="btnmemberstatusreport" text="member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
+		<Button fx:id="btnViewSiteActivity" text="Site Activity" onAction="#handleViewSiteActivity" prefWidth="200" />
  	   </VBox> 
     </VBox>
 
