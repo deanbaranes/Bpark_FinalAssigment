@@ -9,6 +9,7 @@ import common.LoginManagement;
 import common.LoginRequest;
 import common.MemberStatusReportRequest;
 import common.MemberStatusReportResponse;
+import common.ParkingDurationRecord;
 import common.ParkingDurationRequest;
 import common.ParkingDurationResponse;
 import common.RegisterMemberRequest;
@@ -16,6 +17,7 @@ import common.Reservation;
 import common.Subscriber;
 import common.UpdateReservationRequest;
 import common.ActiveParking;
+import common.DailySubscriberCount;
 import common.EmailSender;
 import common.GetSiteActivityRequest;
 import common.GetSiteActivityResponse;
@@ -642,15 +644,19 @@ public class EchoServer extends AbstractServer {
      * @param req    The request containing year and month filters.
      */
     private void handleParkingDurationRequest(ParkingDurationRequest req, ConnectionToClient client) {
-        MonthlyReportHandler handler = new MonthlyReportHandler();
-        ParkingDurationResponse response = handler.handleParkingDurationRequest(req);
-        
+        int year = req.getYear();
+        int month = req.getMonth();
+
+        List<ParkingDurationRecord> records = mysqlConnection.loadParkingDurationReport(year, month);
+        ParkingDurationResponse response = new ParkingDurationResponse(records);
+
         try {
             client.sendToClient(response);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     /**
      * Handles a request from the client to generate a member status report.
@@ -661,8 +667,11 @@ public class EchoServer extends AbstractServer {
      * @param client The client that sent the request and will receive the response.
      */
     private void handleMemberStatusReportRequest(MemberStatusReportRequest req, ConnectionToClient client) {
-        MonthlyReportHandler handler = new MonthlyReportHandler();
-        MemberStatusReportResponse response = handler.handleMemberStatusRequest(req);
+        int year = req.getYear();
+        int month = req.getMonth();
+
+        List<DailySubscriberCount> records = mysqlConnection.loadMemberStatusReport(year, month);
+        MemberStatusReportResponse response = new MemberStatusReportResponse(records);
 
         try {
             client.sendToClient(response);
@@ -670,6 +679,7 @@ public class EchoServer extends AbstractServer {
             e.printStackTrace();
         }
     }
+
 
 
 }

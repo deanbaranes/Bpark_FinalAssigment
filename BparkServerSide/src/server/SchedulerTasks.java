@@ -1,5 +1,7 @@
 package server;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +22,7 @@ public class SchedulerTasks {
     public static void startAll() {
         startTowingCheck(); 
         startExpiredReservationCleaner();
+        startMonthlyParkingReportGenerator();
     }   
        
     /**
@@ -49,4 +52,34 @@ public class SchedulerTasks {
             }
         }, 0, 60 * 1000);
     }
+    
+    private static void startMonthlyParkingReportGenerator() {
+        Timer timer = new Timer(true);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime firstOfNextMonth = now.withDayOfMonth(1).plusMonths(1).withHour(1).withMinute(0).withSecond(0).withNano(0);
+        long initialDelay = Duration.between(now, firstOfNextMonth).toMillis();
+
+        long oneMonthInMillis = 1000L * 60 * 60 * 24 * 30; // Approximate monthly interval
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                int year = now.getYear();
+                int month = now.getMonthValue();
+
+                if (month == 1) {
+                    year -= 1;
+                    month = 12;
+                } else {
+                    month -= 1;
+                }
+
+                System.out.println("Generating monthly reports for " + month + "/" + year);
+                mysqlConnection.generateAndStoreParkingDurationReport();
+                mysqlConnection.generateAndStoreMemberStatusReport();
+            }
+        }, initialDelay, oneMonthInMillis);
+    }
+
+
 }

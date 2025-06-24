@@ -810,6 +810,7 @@ public class ManagementController implements BaseController{
         String monthStr = parkingDurationMonthField.getText().trim();
 
         if (yearStr.isEmpty() || monthStr.isEmpty()) {
+        	parkingDurationBarChart.setVisible(false);
             showPopup("Please enter both year and month.");
             return;
         }
@@ -819,10 +820,12 @@ public class ManagementController implements BaseController{
             int month = Integer.parseInt(monthStr);
             
             if (year < 2025) {
+            	parkingDurationBarChart.setVisible(false);
                 showPopup("Year must be 2025 or later.");
                 return;
             }
             if (month < 1 || month > 12) {
+            	parkingDurationBarChart.setVisible(false);
                 showPopup("Month must be between 1 and 12.");
                 return;
             }
@@ -833,7 +836,7 @@ public class ManagementController implements BaseController{
 
             if (!today.isAfter(lastDayOfInput)) {
                 // Clear existing chart and input fields
-            	parkingDurationBarChart.getData().clear();
+            	parkingDurationBarChart.setVisible(false);
                 parkingDurationYearField.clear();
                 parkingDurationMonthField.clear();
                 
@@ -844,6 +847,7 @@ public class ManagementController implements BaseController{
             ParkingDurationRequest request = new ParkingDurationRequest(year, month);
             client.sendToServer(request);
         } catch (NumberFormatException e) {
+        	parkingDurationBarChart.setVisible(false);
             showPopup("Invalid input: Year and Month must be numbers.");
         } catch (Exception e) {
             e.printStackTrace();
@@ -876,7 +880,14 @@ public class ManagementController implements BaseController{
 
             double maxHours = 0;
 
+            System.out.println("Records size: " + records.size());
+
             for (ParkingDurationRecord record : records) {
+            	System.out.println("Day: " + record.getDayOfMonth() +
+                        ", Actual: " + record.getDuration() +
+                        ", Late: " + record.getLateDuration() +
+                        ", Extended: " + record.getExtendedDuration());
+
                 String label = String.valueOf(record.getDayOfMonth());
 
                 double actualHours = Math.round(record.getDuration() / 60.0 * 10.0) / 10.0;
@@ -918,6 +929,7 @@ public class ManagementController implements BaseController{
         String monthStr = statusReportMonthField.getText().trim();
 
         if (yearStr.isEmpty() || monthStr.isEmpty()) {
+        	memberStatusBarChart.setVisible(false);
             showPopup("Please enter both year and month.");
             return;
         }
@@ -927,10 +939,12 @@ public class ManagementController implements BaseController{
             int month = Integer.parseInt(monthStr);
             
             if (year < 2025) {
+            	memberStatusBarChart.setVisible(false);
                 showPopup("Year must be 2025 or later.");
                 return;
             }
             if (month < 1 || month > 12) {
+            	memberStatusBarChart.setVisible(false);
                 showPopup("Month must be between 1 and 12.");
                 return;
             }
@@ -941,7 +955,7 @@ public class ManagementController implements BaseController{
 
             if (!today.isAfter(lastDayOfInput)) {
                 // Clear existing chart and input fields
-                memberStatusBarChart.getData().clear();
+            	memberStatusBarChart.setVisible(false);
                 statusReportYearField.clear();
                 statusReportMonthField.clear();
                 
@@ -952,6 +966,7 @@ public class ManagementController implements BaseController{
             MemberStatusReportRequest request = new MemberStatusReportRequest(year, month);
             client.sendToServer(request);
         } catch (NumberFormatException e) {
+        	memberStatusBarChart.setVisible(false);
             showPopup("Invalid input: Year and Month must be numbers.");
         } catch (Exception e) {
             e.printStackTrace();

@@ -12,15 +12,26 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import common.ParkingHistory;
 import common.Reservation;
 import common.Subscriber;
 import common.ActiveParking;
+import common.DailySubscriberCount;
 import common.EmailSender;
+import common.ParkingDurationRecord;
+
+
 
 /**
  * This class provides database-related utility methods for managing BPARK system data,
@@ -1852,6 +1863,187 @@ public class mysqlConnection {
 	        } catch (SQLException e) {
 	            e.printStackTrace();
 	        }
+	    });
+	}
+
+	public static void generateAndStoreParkingDurationReport() {
+	    YearMonth lastMonth = YearMonth.now().minusMonths(1);
+	    int year = lastMonth.getYear();
+	    int month = lastMonth.getMonthValue();
+
+	    DBExecutor.executeVoid(conn -> {
+	        List<ParkingDurationRecord> records = new ArrayList<>();
+
+	        String selectQuery = "SELECT " +
+	                "DAY(entry_date) AS day, " +
+	                "SUM(TIMESTAMPDIFF(MINUTE, entry_time, exit_time)) AS duration, " +
+	                "SUM(late_duration) AS lateDuration, " +
+	                "SUM(extended_duration) AS extendedDuration " +
+	                "FROM parking_history " +
+	                "WHERE YEAR(entry_date) = ? AND MONTH(entry_date) = ? " +
+	                "GROUP BY day " +
+	                "ORDER BY day";
+
+	        try (PreparedStatement stmt = conn.prepareStatement(selectQuery)) {
+	            stmt.setInt(1, year);
+	            stmt.setInt(2, month);
+
+	            try (ResultSet rs = stmt.executeQuery()) {
+	                while (rs.next()) {
+	                    int day = rs.getInt("day");
+	                    int duration = rs.getInt("duration");
+	                    int late = rs.getInt("lateDuration");
+	                    int extended = rs.getInt("extendedDuration");
+
+	                    records.add(new ParkingDurationRecord(day, duration, late, extended));
+	                }
+	            }
+
+	            Gson gson = new Gson();
+	            String jsonData = gson.toJson(records);
+
+	            String insertQuery = "INSERT INTO monthly_reports (report_type, month, year, data) VALUES (?, ?, ?, ?)";
+
+	            try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
+	                insertStmt.setString(1, "ParkingDuration");
+	                insertStmt.setInt(2, month);
+	                insertStmt.setInt(3, year);
+	                insertStmt.setString(4, jsonData);
+	                insertStmt.executeUpdate();
+	                System.out.println("Stored ParkingDuration report for " + month + "/" + year);
+	            }
+
+	        } catch (SQLException e) {
+	            System.err.println("Error generating report: " + e.getMessage());
+	            e.printStackTrace();
+	        }
+	    });
+	}
+
+	public static List<ParkingDurationRecord> loadParkingDurationReport(int year, int month) {
+        return DBExecutor.execute(conn -> {
+            List<ParkingDurationRecord> records = new ArrayList<>();
+            String sql = "SELECT data FROM monthly_reports WHERE report_type = 'ParkingDuration' AND year = ? AND month = ?";
+            
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, year);
+                stmt.setInt(2, month);
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    String json = rs.getString("data");
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<ParkingDurationRecord>>() {}.getType();
+                    records = gson.fromJson(json, listType);
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return records;
+        });
+    }
+
+	
+	/**
+	 * Generates and stores a monthly member status report as a JSON string in the database.
+	 *
+	 * @param year  The year for which the report is generated.
+	 * @param month The month for which the report is generated.
+	 */
+	public static void generateAndStoreMemberStatusReport() {
+		YearMonth lastMonth = YearMonth.now().minusMonths(1);
+	    int year = lastMonth.getYear();
+	    int month = lastMonth.getMonthValue();
+	    
+	    String sql = """
+	        SELECT entry_date, COUNT(DISTINCT subscriber_id) AS active_subscribers
+	        FROM parking_history
+	        WHERE MONTH(entry_date) = ? AND YEAR(entry_date) = ?
+	        GROUP BY entry_date ORDER BY entry_date
+	    """;
+
+	    DBExecutor.executeVoid(conn -> {
+	        List<DailySubscriberCount> report = new ArrayList<>();
+
+	        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+	            stmt.setInt(1, month);
+	            stmt.setInt(2, year);
+
+	            ResultSet rs = stmt.executeQuery();
+	            Map<Integer, Integer> countPerDay = new HashMap<>();
+
+	            while (rs.next()) {
+	                LocalDate date = rs.getDate("entry_date").toLocalDate();
+	                countPerDay.put(date.getDayOfMonth(), rs.getInt("active_subscribers"));
+	            }
+
+	            int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
+	            for (int day = 1; day <= daysInMonth; day++) {
+	                int count = countPerDay.getOrDefault(day, 0);
+	                report.add(new DailySubscriberCount(day, count));
+	            }
+
+	            Gson gson = new Gson();
+	            String json = gson.toJson(report);
+
+	            String insertSql = """
+	                INSERT INTO monthly_reports (report_type, year, month, data)
+	                VALUES ('member_status', ?, ?, ?)
+	            """;
+
+	            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+	                insertStmt.setInt(1, year);
+	                insertStmt.setInt(2, month);
+	                insertStmt.setString(3, json);
+	                insertStmt.executeUpdate();
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    });
+	}
+
+	/**
+	 * Loads a saved member status report from the database for a specific year and month.
+	 * The report is stored as JSON in the "monthly_reports" table.
+	 *
+	 * @param year  The year of the report.
+	 * @param month The month of the report.
+	 * @return A list of DailySubscriberCount records.
+	 */
+	public static List<DailySubscriberCount> loadMemberStatusReport(int year, int month) {
+	    String sql = """
+	        SELECT data FROM monthly_reports
+	        WHERE report_type = 'member_status' AND year = ? AND month = ?
+	    """;
+
+	    return DBExecutor.execute(conn -> {
+	    	try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+	    	    stmt.setInt(1, year);
+	    	    stmt.setInt(2, month);
+
+	    	    ResultSet rs = stmt.executeQuery();
+	    	    if (rs.next()) {
+	    	        String jsonData = rs.getString("data");
+
+	    	        if (jsonData != null && !jsonData.isEmpty()) {
+	    	            try {
+	    	                Gson gson = new Gson();
+	    	                Type listType = new TypeToken<List<DailySubscriberCount>>() {}.getType();
+	    	                return gson.fromJson(jsonData, listType);
+	    	            } catch (Exception parseEx) {
+	    	                parseEx.printStackTrace();
+	    	            }
+	    	        }
+	    	    }
+	    	} catch (Exception e) {
+	    	    e.printStackTrace();
+	    	}
+
+	        return Collections.emptyList();
 	    });
 	}
 
