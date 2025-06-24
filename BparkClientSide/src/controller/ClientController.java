@@ -765,11 +765,21 @@ public class ClientController implements BaseController {
         alert.setTitle("Notice");
         alert.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
 
+        alert.getDialogPane().setStyle(
+            "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+            "-fx-background-radius: 10;" +
+            "-fx-padding: 20;"
+        );
+
         Label content = new Label(message);
         content.setWrapText(true);
         content.setMaxWidth(300);
         content.setMinHeight(100);
-        content.setStyle("-fx-text-alignment: center; -fx-alignment: center; -fx-font-size: 14px;");
+        content.setStyle(
+            "-fx-text-alignment: center;" +
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: white;"
+        );
 
         VBox wrapper = new VBox(content);
         wrapper.setAlignment(Pos.CENTER);
@@ -778,7 +788,6 @@ public class ClientController implements BaseController {
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
     }
-     
      /**
       * Shows a confirmation popup with Yes and Cancel buttons in a consistent format.
       * @param message the content of the popup

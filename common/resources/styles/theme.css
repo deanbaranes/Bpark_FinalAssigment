@@ -8,11 +8,13 @@
 
 /* ========== Titles ========== */
 #title {
-    -fx-font-size: 40px;
+    -fx-font-size: 42px;
     -fx-font-weight: bold;
-    -fx-text-fill: #2288dd;
-    -fx-effect: dropshadow(gaussian, #147ad6, 4, 0.2, 0, 1);
+    -fx-text-fill: #00aaff; /* כחול ניאון מודרני */
+    -fx-effect: dropshadow(gaussian, #005f99, 10, 0.3, 0, 2);
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
 }
+
 
 .subtitle-label {
     -fx-font-size: 15px;
@@ -146,14 +148,76 @@ rt-legend {
     -fx-background-color: rgba(255, 255, 255, 0.3);
 }
 
+/* ========== Styling for memberStatusBarChart ========== */
+#memberStatusBarChart {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 12;
+    -fx-padding: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 12;
+}
+
+#memberStatusBarChart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+#memberStatusBarChart .chart-legend {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+#memberStatusBarChart .chart-title {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+#memberStatusBarChart .axis-label,
+#memberStatusBarChart .axis-tick-mark,
+#memberStatusBarChart .chart-axis {
+    -fx-text-fill: white;
+}
 
 
+/* ========== Styling for parkingDurationBarChart ========== */
+#parkingDurationBarChart {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 12;
+    -fx-padding: 10;
+    -fx-border-color: rgba(255, 255, 255, 0.2);
+    -fx-border-radius: 12;
+}
 
+#parkingDurationBarChart .chart-plot-background {
+    -fx-background-color: transparent;
+}
 
-/*drop off screen */
+#parkingDurationBarChart .chart-legend {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
 
+#parkingDurationBarChart .chart-title {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
 
-/*pick up screen */
+#parkingDurationBarChart .axis-label,
+#parkingDurationBarChart .axis-tick-mark,
+#parkingDurationBarChart .chart-axis {
+    -fx-text-fill: white;
+}
+
+#parkingDurationBarChart .chart-vertical-grid-lines,
+#parkingDurationBarChart .chart-horizontal-grid-lines {
+    -fx-stroke: transparent;
+}
+
+#memberStatusBarChart .chart-vertical-grid-lines,
+#memberStatusBarChart .chart-horizontal-grid-lines {
+    -fx-stroke: transparent;
+}
 
 
 
@@ -185,16 +249,6 @@ rt-legend {
 /* Buttons (hover) */
 .button:hover {
     -fx-background-color: linear-gradient(to bottom, #0072ff, #0055cc);
-}
-
-/* Purple variant (used manually with styleClass="purple-button") */
-.purple-button {
-    -fx-background-color: linear-gradient(to bottom, #a64bf4, #6a30c9);
-}
-
-/* Purple hover */
-.purple-button:hover {
-    -fx-background-color: linear-gradient(to bottom, #6a30c9, #4d1e9c);
 }
 
 
@@ -263,4 +317,15 @@ rt-legend {
     -fx-text-fill: white;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 5, 0.2, 0, 2);
     -fx-alignment: center;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 8;
+}
+
+.chart-legend-item {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
 }

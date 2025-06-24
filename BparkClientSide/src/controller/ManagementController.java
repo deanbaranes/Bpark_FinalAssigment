@@ -877,6 +877,11 @@ public class ManagementController implements BaseController{
      */
     @SuppressWarnings("unchecked")
     public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
+        if (records == null) {
+            System.err.println("[ERROR] records is null in displayParkingDurationBarChart");
+            return;
+        }
+    	
         Platform.runLater(() -> {
             parkingDurationBarChart.setVisible(true);
             parkingDurationBarChart.setManaged(true);
@@ -892,9 +897,6 @@ public class ManagementController implements BaseController{
             extendedSeries.setName("Extended Duration (hours)");
 
             double maxHours = 0;
-
-            System.out.println("Records size: " + records.size());
-
             for (ParkingDurationRecord record : records) {
             	System.out.println("Day: " + record.getDayOfMonth() +
                         ", Actual: " + record.getDuration() +
