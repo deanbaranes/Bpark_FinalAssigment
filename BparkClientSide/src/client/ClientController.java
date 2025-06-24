@@ -450,12 +450,19 @@ public class ClientController implements BaseController {
                 reservationsView.getChildren().add(0, greetingLabelReservations);
             }
             showOnly(reservationsView);
-
             reservationListView.getItems().clear();
-
+            editReservationButton.setVisible(false);
+            editReservationButton.setManaged(false);
+            cancelReservationButton.setVisible(false);
+            cancelReservationButton.setManaged(false);
+            
             if (reservationList.isEmpty()) {
                 reservationListView.setPlaceholder(new Label("No existing reservations found."));
             } else {
+            	editReservationButton.setVisible(true);
+                editReservationButton.setManaged(true);
+                cancelReservationButton.setVisible(true);
+                cancelReservationButton.setManaged(true);
                 reservationListView.getItems().addAll(reservationList);
                 reservationListView.setCellFactory(listView -> new ListCell<>() {
                     @Override
