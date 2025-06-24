@@ -877,11 +877,12 @@ public class ManagementController implements BaseController{
      */
     @SuppressWarnings("unchecked")
     public void displayParkingDurationBarChart(List<ParkingDurationRecord> records) {
-        if (records == null) {
-            System.err.println("[ERROR] records is null in displayParkingDurationBarChart");
-            return;
-        }
-    	
+    	if (records == null || records.isEmpty()) {
+    	    showPopup("No parking data found for the selected month.");
+    	    parkingDurationBarChart.setVisible(false);
+    	    parkingDurationBarChart.setManaged(false);
+    	  return;
+    	}
         Platform.runLater(() -> {
             parkingDurationBarChart.setVisible(true);
             parkingDurationBarChart.setManaged(true);
