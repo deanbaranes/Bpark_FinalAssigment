@@ -23,20 +23,7 @@
     -fx-wrap-text: true;
 }
 
-
-/* ========== Welcome Screen Buttons ========== */
-#clientsButton {
-    -fx-background-color: linear-gradient(to right, #2ebeff, #3a62f1);
-}
-
-#managementButton {
-    -fx-background-color: linear-gradient(to right, #3a62f1, #5f38ff);
-}
-
-
-
 /* ========== Management Screen Buttons ========== */
-
 /* ========== Text Fields ========== */
 .text-field,
 .password-field {
@@ -82,11 +69,6 @@ rt-legend {
     -fx-border-radius: 12;
     -fx-padding: 8;
 }
-
-
-
-
-
 /* View member details */
 
 .list-view {
@@ -219,15 +201,11 @@ rt-legend {
     -fx-stroke: transparent;
 }
 
-
-
 /*APP Screen */
 /* General background for AnchorPane */
 .anchor-pane {
     -fx-background-color: linear-gradient(to bottom right, #f9f9f9, #e8e8f0);
 }
-
-
 
 /* Big Titles */
 .label:has-font[font-size="24"] {
