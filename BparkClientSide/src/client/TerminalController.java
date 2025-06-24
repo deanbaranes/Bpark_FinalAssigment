@@ -571,7 +571,15 @@ public class TerminalController implements BaseController {
     	 parkingCodeField.clear();
          if (code.isEmpty()) {
              showPopup("Please enter the parking code.");
-         } try {
+             return;
+         }
+         
+         if (client == null || !client.isConnected()) {
+             showPopup("Connection to server lost. Please restart the terminal.");
+             return;
+         }
+         
+         try {
         	    client.sendToServer("CHECK_PICKUP_CODE|" + code);
          } catch (IOException e) {
              e.printStackTrace();
