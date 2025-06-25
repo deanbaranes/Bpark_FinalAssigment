@@ -372,8 +372,12 @@ public class TerminalController implements BaseController {
                 Parent root = loader.load();
                 MainWelcomeController controller = loader.getController();
                 controller.showClientSubMenu();
+                
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+
                 Stage stage = (Stage) backButton.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(scene);
                 stage.setTitle("BPARK - Welcome");
             } catch (IOException e) {
                 e.printStackTrace();

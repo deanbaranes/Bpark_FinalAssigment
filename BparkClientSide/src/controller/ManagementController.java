@@ -410,7 +410,11 @@ public class ManagementController implements BaseController{
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/mainWelcome.fxml"));
                 Parent root = loader.load();
                 Stage stage = (Stage) btnback.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+                
+                stage.setScene(scene);
                 stage.setTitle("BPARK - Welcome");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -422,7 +426,11 @@ public class ManagementController implements BaseController{
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/mainWelcome.fxml"));
                 Parent root = loader.load();
                 Stage stage = (Stage) btnback.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+                
+                stage.setScene(scene);
                 stage.setTitle("BPARK - Welcome");
             } catch (IOException e) {
                 e.printStackTrace();

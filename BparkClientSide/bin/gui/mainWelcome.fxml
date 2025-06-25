@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.MainWelcomeController"
+            prefWidth="900" prefHeight="700" styleClass="root">
+
+    <!-- Main Welcome Menu -->
+    <VBox fx:id="mainMenu" alignment="CENTER" spacing="20"
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
+          AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+
+        <Label fx:id="title" text="Welcome to BPARK"/>
+		<Label fx:id="subtitle" text="Please select your role:" styleClass="subtitle-label"/>
+
+
+        <HBox alignment="CENTER" spacing="30">
+            <Button fx:id="clientsButton" text="Clients" onAction="#handleClients" prefWidth="160"/>
+            <Button fx:id="managementButton" text="Management" onAction="#handleManagement" prefWidth="160"/>
+        </HBox>
+
+        <Button fx:id="exitButton" text="Exit" onAction="#handleExit" prefWidth="120"/>
+    </VBox>
+
+    <!-- Clients Sub-Menu -->
+    <VBox fx:id="clientSubMenu" alignment="CENTER" spacing="20"
+          visible="false" managed="false"
+          AnchorPane.topAnchor="50" AnchorPane.bottomAnchor="50"
+          AnchorPane.leftAnchor="100" AnchorPane.rightAnchor="100">
+
+        <Label text="Where are you logging in from?" styleClass="title-label"  style="-fx-text-fill: white;"/>
+
+        <HBox alignment="CENTER" spacing="30">
+            <Button fx:id="terminalButton" text="Terminal" onAction="#handleTerminalAccess" prefWidth="160"/>
+            <Button fx:id="appButton" text="App (Remote)" onAction="#handleAppAccess" prefWidth="160"/>
+        </HBox>
+
+        <Button fx:id="backButton" text="Back" onAction="#handleBackToMain" prefWidth="120"/>
+    </VBox>
+
+</AnchorPane>

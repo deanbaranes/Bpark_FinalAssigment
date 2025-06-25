@@ -307,3 +307,7 @@ rt-legend {
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
+
+#connectButton {
+    -fx-font-size: 11.7px;
+}

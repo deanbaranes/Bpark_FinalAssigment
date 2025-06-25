@@ -23,8 +23,12 @@ public class ServerMain extends Application {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/serverGUI.fxml"));
             Parent root = loader.load();
 
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+            
             primaryStage.setTitle("Server");
-            primaryStage.setScene(new Scene(root));
+            primaryStage.setScene(scene);
             primaryStage.show();
             
             System.out.println("[ServerMain] ✅ Starting scheduled tasks...");
