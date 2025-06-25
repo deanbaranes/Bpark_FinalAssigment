@@ -19,6 +19,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import java.util.List;
@@ -133,7 +134,11 @@ public class ManagementController implements BaseController{
         parkingDurationBarChart.setManaged(false);
         memberStatusBarChart.setVisible(false);
         memberStatusBarChart.setManaged(false);
-
+        ((NumberAxis) parkingDurationBarChart.getYAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
+        ((CategoryAxis) parkingDurationBarChart.getXAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
+        ((NumberAxis) memberStatusBarChart.getYAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
+        ((CategoryAxis) memberStatusBarChart.getXAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
+    
     }
     
     /**
