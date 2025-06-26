@@ -471,7 +471,7 @@ public class ManagementController implements BaseController{
         String id = searchbyidtext.getText().trim();
 
         if (id.isEmpty()) {
-            showPopup("Please enter an ID.");
+        	console_memberdeatils.setText("Please enter an ID.");
             return;
         }
 

@@ -553,7 +553,7 @@ public class TerminalController implements BaseController {
                           "you can do so through the app.");
             } else if (cleanResult.equals("ARRIVE_EARLY")) {
             	showPopup(
-            		    "You may park your car up to 15 minutes before your reserved time based on your existing reservation.\n\n" +
+            		    "You may park your car up to 15 minutes before your reserved time based on your existing reservation.\n" +
             		    "If you choose to park earlier based on availability, please note that it is your responsibility to cancel your existing reservation via the app.\n" +
             		    "Failing to do so may result in a fine."
             		);

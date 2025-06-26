@@ -804,7 +804,10 @@ public class ClientController implements BaseController {
      boolean showConfirmationPopup(String message) {
          Alert alert = new Alert(Alert.AlertType.NONE);
          alert.setTitle("Confirmation");
-
+         alert.getDialogPane().setStyle(
+        		    "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+        		    "-fx-background-radius: 10;" +
+        		    "-fx-padding: 20;");
          ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
          ButtonType cancelButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
          alert.getDialogPane().getButtonTypes().addAll(yesButton, cancelButton);
@@ -813,7 +816,7 @@ public class ClientController implements BaseController {
          content.setWrapText(true);
          content.setMaxWidth(300);
          content.setMinHeight(100);
-         content.setStyle("-fx-text-alignment: center; -fx-alignment: center; -fx-font-size: 14px;");
+         content.setStyle("-fx-text-alignment: center; -fx-alignment: center; -fx-font-size: 14px; -fx-text-fill: white;");
 
          VBox wrapper = new VBox(content);
          wrapper.setAlignment(Pos.CENTER);
