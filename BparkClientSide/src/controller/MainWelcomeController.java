@@ -50,7 +50,7 @@ public class MainWelcomeController {
     @FXML
     public void initialize() {
         try {
-            client = new ChatClient("localhost", 5555, null);
+            client = new ChatClient("25.8.14.135", 5555, null);
             client.openConnection(); 
         } catch (IOException e) {
             e.printStackTrace();

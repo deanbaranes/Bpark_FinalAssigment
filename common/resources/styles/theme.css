@@ -10,7 +10,7 @@
 #title {
     -fx-font-size: 42px;
     -fx-font-weight: bold;
-    -fx-text-fill: #00aaff; /* כחול ניאון מודרני */
+    -fx-text-fill: #00aaff;
     -fx-effect: dropshadow(gaussian, #005f99, 10, 0.3, 0, 2);
     -fx-font-family: "Segoe UI", "Arial", sans-serif;
 }
@@ -96,7 +96,7 @@ rt-legend {
     -fx-background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* שקיפות רקע כללי של ListView */
+
 .glass-list {
     -fx-background-color: transparent;
     -fx-control-inner-background: transparent;
@@ -106,12 +106,12 @@ rt-legend {
     -fx-border-width: 1.2;
 }
 
-/* הסרת רקע פנימי של viewport */
+
 .glass-list .viewport {
     -fx-background-color: transparent;
 }
 
-/* עיצוב תאים */
+
 .glass-list .list-cell {
     -fx-background-color: rgba(255, 255, 255, 0.08);
     -fx-text-fill: white;
@@ -119,13 +119,13 @@ rt-legend {
     -fx-padding: 8 12;
 }
 
-/* עיצוב תא נבחר */
+
 .glass-list .list-cell:filled:selected,
 .glass-list .list-cell:filled:selected:hover {
     -fx-background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* פס גלילה */
+
 .glass-list .scroll-bar:vertical .thumb {
     -fx-background-color: rgba(255, 255, 255, 0.3);
 }
@@ -251,26 +251,26 @@ rt-legend {
     -fx-border-width: 1.2;
 }
 
-/* החלק הפנימי שמכיל את הטקסט */
+
 .text-area .content {
     -fx-background-color: rgba(255, 255, 255, 0.08); /* כאן הקסם */
     -fx-background-radius: 10;
     -fx-padding: 8;
 }
 
-/* הסרת רקע מה-scroll pane */
+
 .text-area .scroll-pane {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
 
-/* הסרת רקע מאזור התוכן */
+
 .text-area .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
 
-/* עיצוב של פס הגלילה */
+
 .scroll-bar:vertical {
     -fx-background-color: transparent;
 }

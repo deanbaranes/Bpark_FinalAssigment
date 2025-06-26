@@ -83,7 +83,7 @@
         </Label>
         <Label text="ID Number:" style="-fx-text-fill: white;"/>
         <TextField fx:id="idField" maxWidth="180"/>
-        <Label text="Subscriber Code:"  style="-fx-text-fill: white;"/>
+        <Label text="Password:"  style="-fx-text-fill: white;"/>
         <PasswordField fx:id="codeField" maxWidth="180" onAction="#handleSubmitLogin"/>
         <Hyperlink fx:id="forgotPasswordLink" text="Forgot my password" onAction="#handleShowForgot" />
         <Button fx:id="submitButton" text="Submit" onAction="#handleSubmitLogin" prefWidth="100"/>
