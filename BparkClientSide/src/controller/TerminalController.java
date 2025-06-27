@@ -13,6 +13,10 @@ import javafx.stage.Stage;
 import request.LoginRequest;
 import request.PasswordResetRequest;
 import response.PasswordResetResponse;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 import java.io.IOException;
 import java.util.List;
@@ -482,6 +486,64 @@ public class TerminalController implements BaseController {
         alert.getDialogPane().setContent(wrapper);
         alert.showAndWait();
     }
+    
+    /**
+     * Displays a dark-styled popup with a parking code message and a "Copy Code" button.
+     * The message is shown in white over a blue gradient background.
+     *
+     * @param parkingCode the parking code to display and copy (e.g., "BPARK0953")
+     */
+    public void showCodePopup(String parkingCode) {
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        alert.setTitle("Notice");
+
+        // Define buttons
+        ButtonType copyButton = new ButtonType("Copy Code", ButtonBar.ButtonData.OK_DONE);
+        ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alert.getDialogPane().getButtonTypes().addAll(copyButton, closeButton);
+
+        // Message content
+        String message = "Dropoff was successful.\n" +
+                         "Your parking code is: " + parkingCode + "\n" +
+                         "If you would like to extend your parking time\n" +
+                         "by up to 4 additional hours,\n" +
+                         "you can do so through the app.";
+
+        Label messageLabel = new Label(message);
+        messageLabel.setWrapText(true);
+        messageLabel.setMaxWidth(260);
+        messageLabel.setStyle(
+            "-fx-font-size: 13px;" +
+            "-fx-text-fill: white;" +               
+            "-fx-text-alignment: center;"
+        );
+
+        VBox vbox = new VBox(messageLabel);
+        vbox.setSpacing(10);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setPrefSize(500, 180);
+        alert.getDialogPane().setContent(vbox);
+
+        alert.getDialogPane().setStyle(
+            "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+            "-fx-background-radius: 10;" +
+            "-fx-padding: 20;"
+        );
+
+        // Handle copy action
+        alert.showAndWait().ifPresent(response -> {
+            if (response == copyButton) {
+                Clipboard clipboard = Clipboard.getSystemClipboard();
+                ClipboardContent content = new ClipboardContent();
+                content.putString(parkingCode);
+                clipboard.setContent(content);
+            }
+        });
+    }
+
+
+    
+    
     /**
      * Handles a successful dropoff operation by displaying a confirmation popup.
      * 
@@ -496,7 +558,8 @@ public class TerminalController implements BaseController {
     {
     	showOnly(mainMenu);
         navigationStack.clear();
-    	showPopup("Dropoff was successful.\n your parking code is: "+ parkingCode +"\n If you would like to extend your parking time by up to 4 additional hours,\n you can do so through the app. ");
+    	//showPopup("Dropoff was successful.\n your parking code is: "+ parkingCode +"\n If you would like to extend your parking time by up to 4 additional hours,\n you can do so through the app. ");
+        showCodePopup(parkingCode);
     }
     
     
