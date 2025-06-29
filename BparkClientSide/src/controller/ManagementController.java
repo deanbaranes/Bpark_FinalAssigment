@@ -34,7 +34,21 @@ import entities.Reservation;
 
 
 
-
+/**
+ * ManagementController is the main JavaFX controller responsible for the
+ * administrative interface in the BPARK system.
+ * This controller handles the UI logic and server interaction for management-level users,
+ * including managers and attendants. It provides tools for:
+ * User authentication and role-based access control (manager vs attendant).
+ * Viewing and managing subscriber details and active parking sessions.
+ * Registering new subscribers with client-side validation.
+ * Generating visual reports.
+ * Password reset requests for employees.
+ * Screen navigation and history using a managed navigation stack.
+ * All UI updates are safely executed on the JavaFX Application Thread using Platform.runLater(Runnable).
+ * This class follows the singleton pattern to allow global access via getInstance().
+ * It also implements the BaseController interface for consistency across controller types.
+ */
 public class ManagementController implements BaseController{
 
     private final Stack<Pane> navigationStack = new Stack<>();
@@ -525,9 +539,14 @@ public class ManagementController implements BaseController{
 
     
     
-    /*
-    Displays a styled popup alert with a custom message, centered text, and fixed size for user notifications.
-    */
+    /**
+     * Displays a styled popup alert with a given message.
+     * The popup uses centered text, fixed size, and no icon or alert type
+     * (other than a close button) for a neutral and consistent user experience.
+     * It is used throughout the management UI to notify the user about actions,
+     * validation results, or server-related feedback.
+     * @param message the message to display in the popup alert
+     */
     public void showPopup(String message) {
         Alert alert = new Alert(Alert.AlertType.NONE);
         alert.setTitle("Notice");

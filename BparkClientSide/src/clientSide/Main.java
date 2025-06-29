@@ -9,11 +9,18 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 
 /**
- * Main class for launching the JavaFX client application.
- * Loads the welcome screen GUI and defers connection logic to next screens..
+ * Main class for launching the JavaFX client application of the BPARK system.
+ * This class initializes the JavaFX runtime and displays the main welcome screen
+ * (role selection). The connection to the server is handled later, depending on the selected role.
  */
 public class Main extends Application {
 
+    /**
+     * Starts the JavaFX application by loading the main welcome screen.
+     * This method sets up the primary stage, loads the FXML layout for the welcome screen,
+     * applies the application's CSS theme, and displays the window.
+     * @param primaryStage the main stage provided by the JavaFX runtime.
+     */
     @Override
     public void start(Stage primaryStage) {
         try {
@@ -34,6 +41,12 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * The application's main entry point.
+     * This method is required to launch the JavaFX application. It delegates control to
+     * the JavaFX runtime, which will then call the start(Stage) method.
+     * @param args command-line arguments passed to the application (unused).
+     */
     public static void main(String[] args) {
         launch(args);
     }

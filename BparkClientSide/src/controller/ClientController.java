@@ -34,6 +34,19 @@ import entities.ParkingHistory;
 import entities.Reservation;
 import entities.Subscriber;
 
+/**
+ * ClientController manages the flow, logic, and UI interaction for the client-side
+ * of the BPARK application.
+ * This controller is responsible for:
+ * Handling navigation between different screens (panes) in the client app.
+ * Processing user actions such as login, password reset, viewing parking history and reservations, editing details, and making or canceling reservations.
+ * Communicating with the server via the ChatClient to send requests and receive responses.
+ * Maintaining session-specific state, such as the currently logged-in subscriber and their data.
+ * Ensuring that all UI updates are performed safely on the JavaFX Application Thread.
+ * This controller supports both navigation using a stack (for back/forward behavior)
+ * and direct screen switching via showOnly(Pane).
+ * It implements BaseController, allowing unified handling across multiple controller types.
+ */
 public class ClientController implements BaseController {
 
     private ChatClient client;
@@ -83,10 +96,21 @@ public class ClientController implements BaseController {
     @FXML private ListView<ParkingHistory> historyListView;
 
 
+    /**
+     * Constructs a new instance of ClientController and sets it as the singleton instance.
+     * This constructor is typically invoked by the JavaFX framework when loading the FXML file.
+     * It ensures that a reference to the controller is globally accessible via getInstance().
+     */
     public ClientController() {
         instance = this;
     }
 
+    /**
+     * Returns the singleton instance of the ClientController.
+     * This allows other parts of the application to access the currently active
+     * controller and interact with its methods or UI elements.
+     * @return the current instance of ClientController, or null if it has not yet been initialized.
+     */
     public static ClientController getInstance() {
         return instance;
     }
@@ -489,6 +513,17 @@ public class ClientController implements BaseController {
         return reservationsView.isVisible();
     }
     @FXML
+    
+    /**
+     * Handles the "Edit Reservation" button click event.
+     * This method performs the following steps:
+     * Retrieves the selected reservation from the reservation list view.
+     * If no reservation is selected, displays a popup prompting the user to select one.
+     * If a reservation is selected, stores it in reservationBeingEdited.
+     * Populates the reservation form fields dateField, timeField with the existing values.
+     * Navigates the user to the reservation form for editing.
+     * This method prepares the UI for updating an existing reservation rather than creating a new one.
+     */
     public void handleEditReservation() {
         Reservation selected = reservationListView.getSelectionModel().getSelectedItem();
 

@@ -55,6 +55,14 @@ public class SchedulerController {
         }, 0, 60 * 1000);
     }
     
+    /**
+     * Starts a scheduled task that generates monthly reports on the 1st of each month at 01:00 AM.
+     * This task performs two main actions:
+     * Generates and stores a parking duration report for the previous month.
+     * Generates and stores a member status report for the previous month.
+     * The task is first scheduled to run at the beginning of the next month at 01:00,
+     * and then continues to repeat approximately every 30 days.
+     */
     private static void startMonthlyParkingReportGenerator() {
         Timer timer = new Timer(true);
 
@@ -62,7 +70,7 @@ public class SchedulerController {
         LocalDateTime firstOfNextMonth = now.withDayOfMonth(1).plusMonths(1).withHour(1).withMinute(0).withSecond(0).withNano(0);
         long initialDelay = Duration.between(now, firstOfNextMonth).toMillis();
 
-        long oneMonthInMillis = 1000L * 60 * 60 * 24 * 30; // Approximate monthly interval
+        long oneMonthInMillis = 1000L * 60 * 60 * 24 * 30; 
 
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {

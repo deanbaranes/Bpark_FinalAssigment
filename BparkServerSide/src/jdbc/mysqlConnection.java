@@ -57,7 +57,13 @@ import response.ParkingDurationRecord;
  */
 public class mysqlConnection {
 
-
+    /**
+     * Retrieves a database connection from the connection pool.
+     * This method delegates the request to the ConnectionPool singleton,
+     * which manages a pool of reusable database connections for efficiency and performance.
+     * @return a  Connection object ready for database operations,
+     *         or  null if the pool fails to provide a connection
+     */
 	public static Connection connectToDB() {
 		return ConnectionPool.getInstance().getConnection();
 	}
@@ -695,16 +701,16 @@ public class mysqlConnection {
 	}
 	
 	
-	/*
-	 * Checks if a subscriber with the provided full name and subscription code
-	 * exists in the database.
-	 * 
-	 * @param fullName The full name of the subscriber.
-	 * 
-	 * @param code The subscription code associated with the subscriber.
-	 * 
-	 * @return true if a matching subscriber is found, false otherwise.
-	 */
+    /**
+     * Verifies the login credentials of a subscriber against the database.
+     * This method checks whether there exists a subscriber in the database
+     * whose  subscriber_id and  subscription_code match the given input.
+     * It uses a prepared SQL statement to prevent SQL injection.
+     * @param ID   the subscriber's ID to authenticate
+     * @param code the subscriber's subscription code
+     * @return true if the credentials are valid and a match is found in the database,
+     *         false otherwise or if a database error occurs
+     */
 	public static boolean checkLogin(String ID, String code) {
 	    return DBExecutor.execute(conn -> {
 	        String query = "SELECT * FROM subscribers WHERE subscriber_id = ? AND subscription_code = ?";
@@ -724,16 +730,17 @@ public class mysqlConnection {
 	    });
 	}
 
-	/*
-	 * Validates login credentials for a management user by checking the 'employees'
-	 * table.
-	 * 
-	 * @param username The username entered by the manager.
-	 * 
-	 * @param password The password entered by the manager.
-	 * 
-	 * @return true if credentials are valid, false otherwise.
-	 */
+	
+    /**
+     * Verifies management login credentials and retrieves the user's role from the database.
+     * This method checks whether a user with the given username and password exists
+     * in th  employees table. If found, it returns the user's role ("manager" or "attendant")
+     * as a lowercase string. Otherwise, it returns null.
+     * The query uses a prepared statement to prevent SQL injection attacks.
+     * @param username the username of the employee attempting to log in
+     * @param password the password of the employee
+     * @return the employee's role in lowercase if the credentials are valid;  null otherwise
+     */
 	public static String checkLoginManagement(String username, String password) {
 	    return DBExecutor.execute(conn -> {
 	        String query = "SELECT role FROM employees WHERE username = ? AND password = ?";
@@ -758,12 +765,15 @@ public class mysqlConnection {
 	    });
 	}
 
-	/*
-	 * Retrieves all parking spots marked as 'available' from the database.
-	 *
-	 * @return A list of strings describing each available parking spot.
-	 */
+    /**
+     * Retrieves a list of currently available parking spots from the database.
+     * This method queries the parking_spots table for all spots
+     * where status = 'available', formats each result into a user-friendly string,
+     * and returns the list.
 
+     * @return a list of formatted strings describing each available parking spot;
+     *         if none are available or a database error occurs, returns an empty list
+     */
 	public static List<String> getAvailableSpots() {
 	    return DBExecutor.execute(conn -> {
 	        List<String> availableSpots = new ArrayList<>();
@@ -1318,6 +1328,18 @@ public class mysqlConnection {
 	    });
 	}
 
+    /**
+     * Updates the entry and exit date/time of an existing reservation.
+     * This method modifies a reservation record in the reservations}table
+     * based on its unique reservation_id. It sets the new entry date and time,
+     * and automatically calculates the exit date and time as 4 hours after the new entry.
+     * The method uses a prepared statement for security and executes the update via DBExecutor.
+     * @param reservationId the unique ID of the reservation to update
+     * @param newDate       the new entry date (in LocalDate)
+     * @param newTime       the new entry time (in LocalTime)
+     * @return true if the reservation was successfully updated (a row was affected),
+     *         false if no row was updated or if an SQL exception occurred
+     */
 	public static boolean updateReservationDateTime(int reservationId, LocalDate newDate, LocalTime newTime) {
 	    return DBExecutor.execute(conn -> {
 	        String query = "UPDATE reservations SET entry_date = ?, entry_time = ?, exit_date = ?, exit_time = ? WHERE reservation_id = ?";
@@ -1868,6 +1890,20 @@ public class mysqlConnection {
 	    });
 	}
 
+	
+	 /**
+     * Generates and stores a monthly parking duration report for the previous month.
+     * This method performs the following steps:
+     * Queries the parking_history table to calculate daily totals for: 
+     * actual parking duration (in minutes),late duration,extended duration grouped by day of the month.
+     * Converts the result into a list of ParkingDurationRecord objects.
+     * Serializes the data to JSON using Gson.
+     * Inserts the report into the monthly_reports table, with report type "ParkingDuration".
+     * The method targets the *previous* calendar month and assumes all required data
+     * already exists in the parking_history table for that period.
+     * This task is usually scheduled to run at the beginning of each month as part of
+     * the controller.SchedulerController.
+     */
 	public static void generateAndStoreParkingDurationReport() {
 	    YearMonth lastMonth = YearMonth.now().minusMonths(1);
 	    int year = lastMonth.getYear();
@@ -1922,6 +1958,19 @@ public class mysqlConnection {
 	    });
 	}
 
+    /**
+     * Loads a stored parking duration report for a specific month and year.
+     * This method queries the  monthly_reports table for a report with:
+     * report_type = 'ParkingDuration', the specified year and code month.
+     * If a matching report is found, the method:
+     * Retrieves the JSON-encoded report data from the data column.
+     * Deserializes it into a list of ParkingDurationRecord objects using Gson.
+     * Returns the resulting list.
+     * @param year  the year of the report to load
+     * @param month the month of the report to load (1–12)
+     * @return a list of ParkingDurationRecord objects representing the report,
+     *         or an empty list if no report is found or a database error occurs
+     */
 	public static List<ParkingDurationRecord> loadParkingDurationReport(int year, int month) {
         return DBExecutor.execute(conn -> {
             List<ParkingDurationRecord> records = new ArrayList<>();

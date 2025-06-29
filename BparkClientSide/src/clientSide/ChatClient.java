@@ -47,6 +47,12 @@ public class ChatClient extends AbstractClient {
         openConnection();
     }
 
+    /**
+     * Returns the singleton instance of the ChatClient.
+     * This method provides global access to the single ChatClient instance,
+     * ensuring that only one client is used throughout the application.
+     * @return the existing instance of ChatClient, or  null if it has not been initialized yet.
+     */
     public static ChatClient getInstance() {
         return instance;
     }

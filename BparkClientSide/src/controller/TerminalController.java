@@ -26,10 +26,38 @@ import java.util.Stack;
 import clientSide.ChatClient;
 import entities.Subscriber;
 
+
+/**
+ * TerminalController manages the terminal interface in the BPARK system.
+ * This controller handles all user interactions occurring at a physical parking terminal,
+ * including logging in, dropping off and picking up a vehicle, viewing available spots,
+ * and handling forgotten credentials.
+ * Core responsibilities include:
+ * Managing screen navigation and UI transitions using a stack-based system.
+ * Interacting with the server through the ChatClient to perform operations such as login, 
+ *       parking code validation, reservation activation, and data fetching.
+ * Supporting both manual login and simulated scanner-based login for testing or automation.
+ * Handling password and parking code reset requests via email, including visual feedback in the UI.
+ * Displaying available parking spots and providing feedback to users on their actions.
+ * This controller uses JavaFX annotations to bind UI components defined in FXML files
+ * and integrates with the broader BPARK architecture via the BaseController interface.
+ * It also supports both subscriber-side logic (such as drop-off with reservation) and error handling scenarios.
+ */
 public class TerminalController implements BaseController {
 
+    /**
+     * Predefined subscriber ID used for simulating a successful login via scanner.
+     * This ID is used in conjunction with SCAN_LOG_PW to simulate a real subscriber
+     * when demonstrating scanner-based login at the terminal.
+     */
 	final public static String SCAN_LOG_ID = "211273813";
+    /**
+     * Predefined subscriber password used for scanner-based login simulation.
+     * This password is paired with SCAN_LOG_ID to authenticate a  subscriber
+     * during simulated scans at the terminal.
+     */
 	final public static String SCAN_LOG_PW = "SUB1005";
+	
 	private ChatClient client;
     private final Stack<VBox> navigationStack = new Stack<>();
     private static TerminalController instance;
@@ -113,10 +141,23 @@ public class TerminalController implements BaseController {
         showOnly(next);
     }
     
+    /**
+     * Constructs a new instance of TerminalController and sets it as the singleton instance.
+     * This constructor is typically invoked automatically by the JavaFX framework
+     * during FXML loading. It allows other parts of the system to access this controller
+     * statically using getInstance().
+     */
     public TerminalController() {
         instance = this;
     }
 
+    /**
+     * Returns the singleton instance of the TerminalController.
+     * This method provides global access to the currently loaded controller,
+     * enabling other classes (such as the client or main app controller) to call
+     * public methods and interact with the terminal UI logic.
+     * @return the currently active TerminalController instance, or null if not initialized.
+     */
     public static TerminalController getInstance() {
         return instance;
     }
@@ -320,9 +361,15 @@ public class TerminalController implements BaseController {
         }
     }
 
+    /**
+     * Handles the case where a subscriber was not found during login or scanning.
+     * This method resets the  currentSubscriber to a default placeholder instance,
+     * allowing the system to recover gracefully without leaving an invalid or partial state.
+     * Typically used when the scan or login fails and the application needs to
+     * discard any previously attempted subscriber data.
+     */
     public void subscriberNotFoundCase()
     {
-    	//System.out.println(currentSubscriber.getSubscriber_id());
     	currentSubscriber =  new Subscriber("000000000","DefultUserPassword");
     }
     
@@ -642,7 +689,12 @@ public class TerminalController implements BaseController {
         });
     }
 
-
+    /**
+     * Handles the scenario where a drop-off attempt is made but the car is already parked.
+     * This method is typically called after receiving a response from the server indicating that
+     * the subscriber already has an active parking session. It simply navigates the UI back
+     * to the previous screen by invoking handleBack().
+     */
     public void handleCarAlreadyParked() 
     {
     	handleBack();
