@@ -421,7 +421,7 @@ public class TerminalController implements BaseController {
             alert.setHeaderText(null); // removes the default "Confirmation" header
 
             // Styled message content
-            Label content = new Label("Are you sure you want to log out?\nThis will return you to the main menu.");
+            Label content = new Label("Are you sure you want to log out?.");
             content.setWrapText(true);
             content.setMaxWidth(360);
             content.setMinHeight(100);

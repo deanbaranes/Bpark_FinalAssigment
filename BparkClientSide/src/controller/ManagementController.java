@@ -24,6 +24,7 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import java.util.List;
+import java.util.Optional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -326,7 +327,6 @@ public class ManagementController implements BaseController{
         console_memberdeatils.setVisible(true);
         console_memberdeatils.setManaged(true);
 
-        navigateTo(memberDetailsView);
     }
 
     
@@ -420,7 +420,7 @@ public class ManagementController implements BaseController{
     	       tableParkingHistory.setManaged(false);
     	       console_memberdeatils.setVisible(true);
     	       console_memberdeatils.setManaged(true);
-    	       return;
+    	       
     	   }
         // 0. If we're on the Forgot-Password screen, just clear it and go back
         if (forgotView.isVisible()) {
@@ -464,11 +464,43 @@ public class ManagementController implements BaseController{
             showOnly(previous);
             
         } else if (managerMenuView.isVisible()) {
-            // We're in manager menu, go back to login
-            usernametextfield.clear();   
-            passwordfeild.clear();
-            showOnly(loginView);
-            
+            // We're in manager menu, show confirmation popup before logging out
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Logout Confirmation");
+            alert.setHeaderText(null); // No default header
+
+            // Styled message
+            Label content = new Label("Are you sure you want to log out?");
+            content.setWrapText(true);
+            content.setMaxWidth(360);
+            content.setMinHeight(100);
+            content.setStyle(
+                "-fx-text-alignment: center;" +
+                "-fx-font-size: 16px;" +
+                "-fx-text-fill: white;"
+            );
+
+            VBox wrapper = new VBox(content);
+            wrapper.setAlignment(Pos.CENTER);
+            wrapper.setPrefSize(400, 150);
+
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.setContent(wrapper);
+            dialogPane.setStyle(
+                "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+                "-fx-background-radius: 10;" +
+                "-fx-padding: 20;"
+            );
+
+            dialogPane.getButtonTypes().setAll(ButtonType.CANCEL, ButtonType.OK);
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                usernametextfield.clear();   
+                passwordfeild.clear();
+                showOnly(loginView);
+            }
+                  
         } else if (loginView.isVisible()) {
             // We're in login view, go back to mainWelcome.fxml
             try {

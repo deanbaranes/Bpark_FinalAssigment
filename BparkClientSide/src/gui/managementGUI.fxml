@@ -66,6 +66,7 @@
         <Label fx:id="labelwelcome" alignment="CENTER" >
             <font><Font size="24" /></font>
         </Label>
+        
         <VBox alignment="CENTER" spacing="30" >
 		<Button fx:id="btnmemberdetails" text="member details" onAction="#handleViewMemberDetails" prefWidth="200" />
 		<Button fx:id="btnparkingdetails" text="active parking" onAction="#handleViewParkingDetails" prefWidth="200" />
@@ -74,6 +75,12 @@
 		<Button fx:id="btnmemberstatusreport" text="member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
 		<Button fx:id="btnViewSiteActivity" text="Site Activity" onAction="#handleViewSiteActivity" prefWidth="200" />
  	   </VBox> 
+ 	       <Label text="Note: Clicking 'Back' will log you out "
+           wrapText="true"
+           textAlignment="CENTER"
+           alignment="CENTER"
+           maxWidth="400"
+           style="-fx-text-fill: white; -fx-font-size: 12px;" />
     </VBox>
 
 
@@ -234,6 +241,7 @@
 	</BarChart>
 	<Region prefHeight="40"/> 
 </VBox>
+
 
 <!-- Global Back & Exit Buttons (in a row) -->
 <HBox spacing="20" alignment="CENTER"
