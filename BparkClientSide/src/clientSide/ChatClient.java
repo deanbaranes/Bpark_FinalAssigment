@@ -167,6 +167,25 @@ public class ChatClient extends AbstractClient {
             case "EXTEND_ALREADY_DONE" -> Platform.runLater(() -> ClientController.getInstance().showPopup("Sorry, this parking session has already been extended.\nFurther extensions are not allowed."));
             case "EXTEND_FAILED_NO_ACTIVE_PARKING" -> Platform.runLater(() -> ClientController.getInstance().showPopup("Hi, no active parking was found."));
             case "EXTEND_FAILED_DB", "EXTEND_FAILED_UNKNOWN" -> Platform.runLater(() -> ClientController.getInstance().showPopup("Sorry, an error occurred.\nPlease try again."));
+            
+            
+            
+            case "EXTEND_SUCCESS_TERMINAL" -> {
+                String[] parts = message.split("\\|");
+                String newTime = parts.length > 1 ? parts[1] : "";
+                Platform.runLater(() -> TerminalController.getInstance().showPopup(
+                    "Parking duration was successfully extended.\nPickup time has been updated to: " + newTime));
+            }
+
+            case "EXTEND_ALREADY_DONE_TERMINAL" -> Platform.runLater(() ->
+                TerminalController.getInstance().showPopup("Sorry, this parking session has already been extended.\nFurther extensions are not allowed."));
+
+            case "EXTEND_FAILED_NO_ACTIVE_PARKING_TERMINAL" -> Platform.runLater(() ->
+                TerminalController.getInstance().showPopup("Hi, no active parking was found."));
+
+            case "EXTEND_FAILED_DB_TERMINAL", "EXTEND_FAILED_UNKNOWN_TERMINAL" -> Platform.runLater(() ->
+                TerminalController.getInstance().showPopup("Sorry, an error occurred.\nPlease try again."));
+
             case "CANCEL_SUCCESS" -> Platform.runLater(() -> {
                 ClientController.getInstance().showPopup("Reservation was successfully cancelled.");
                 ClientController.getInstance().refreshReservationList();

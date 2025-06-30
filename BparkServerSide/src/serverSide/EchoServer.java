@@ -185,37 +185,70 @@ public class EchoServer extends AbstractServer {
                 client.sendToClient(results);
             }
 
-        } else if (command.startsWith("EXTEND_PARKING|")) {
+        } else if (command.contains("EXTEND_PARKING")) {
             String subscriberIdStr = command.split("\\|")[1];
+            String currentCommand = command.split("\\|")[0];
+            if (currentCommand.contains("TERMINAL")) {
+            	try {
+                    int subscriberId = Integer.parseInt(subscriberIdStr);
 
-            try {
-                int subscriberId = Integer.parseInt(subscriberIdStr);
+                    List<ActiveParking> list = mysqlConnection.searchActiveParkingByMemberId(subscriberId);
 
-                List<ActiveParking> list = mysqlConnection.searchActiveParkingByMemberId(subscriberId);
+                    if (list == null || list.isEmpty()) {
+                        client.sendToClient("EXTEND_FAILED_NO_ACTIVE_PARKING_TERMINAL");
+                        return;
+                    }
 
-                if (list == null || list.isEmpty()) {
-                    client.sendToClient("EXTEND_FAILED_NO_ACTIVE_PARKING");
-                    return;
+                    ActiveParking ap = list.get(0);
+
+                    if (ap.isExtended()) {
+                        client.sendToClient("EXTEND_ALREADY_DONE_TERMINAL");
+                        return;
+                    }
+                    boolean success = mysqlConnection.extendParkingTime(ap);
+                    if (success) {
+                        client.sendToClient("EXTEND_SUCCESS_TERMINAL|" + ap.getExpectedExitTime());
+                    } else {
+                        client.sendToClient("EXTEND_FAILED_DB_TERMINAL");
+                    }
+
+                }  catch (Exception e) {
+                    e.printStackTrace();
+                    client.sendToClient("EXTEND_FAILED_UNKNOWN_TERMINAL");
                 }
-
-                ActiveParking ap = list.get(0);
-
-                if (ap.isExtended()) {
-                    client.sendToClient("EXTEND_ALREADY_DONE");
-                    return;
-                }
-
-                boolean success = mysqlConnection.extendParkingTime(ap);
-                if (success) {
-                    client.sendToClient("EXTEND_SUCCESS|" + ap.getExpectedExitTime());
-                } else {
-                    client.sendToClient("EXTEND_FAILED_DB");
-                }
-
-            }  catch (Exception e) {
-                e.printStackTrace();
-                client.sendToClient("EXTEND_FAILED_UNKNOWN");
             }
+            else
+            {
+            	try {
+                    int subscriberId = Integer.parseInt(subscriberIdStr);
+
+                    List<ActiveParking> list = mysqlConnection.searchActiveParkingByMemberId(subscriberId);
+
+                    if (list == null || list.isEmpty()) {
+                        client.sendToClient("EXTEND_FAILED_NO_ACTIVE_PARKING");
+                        return;
+                    }
+
+                    ActiveParking ap = list.get(0);
+
+                    if (ap.isExtended()) {
+                        client.sendToClient("EXTEND_ALREADY_DONE");
+                        return;
+                    }
+
+                    boolean success = mysqlConnection.extendParkingTime(ap);
+                    if (success) {
+                        client.sendToClient("EXTEND_SUCCESS|" + ap.getExpectedExitTime());
+                    } else {
+                        client.sendToClient("EXTEND_FAILED_DB");
+                    }
+
+                }  catch (Exception e) {
+                    e.printStackTrace();
+                    client.sendToClient("EXTEND_FAILED_UNKNOWN");
+                }
+            }
+            
         
         } else if (command.startsWith("CANCEL_RESERVATION|")) {
         	int reservationId = Integer.parseInt(command.split("\\|")[1]);

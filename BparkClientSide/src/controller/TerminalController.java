@@ -20,6 +20,7 @@ import javafx.scene.input.ClipboardContent;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Stack;
 
@@ -400,20 +401,62 @@ public class TerminalController implements BaseController {
         });
     }
 
-
     /**
      * Handles the "Back" button navigation behavior within the terminal client.
-     * 
-     * If there is a previous screen in the navigation stack, pops back to that screen.
-     * Otherwise, if the stack is empty, returns the user to the main welcome screen
-     * by loading the MainWelcome.fxml layout and switching the scene.
-     * 
-     * This method ensures proper screen navigation both for in-session transitions
-     * and for returning fully to the application’s main menu.
+     *
+     * If the current visible screen is the selectServicePane (service selection view),
+     * a styled confirmation popup is shown asking the user whether they wish to log out.
+     * - If the user confirms, they are returned to the main welcome screen or previous screen.
+     * - If the user cancels, the navigation is aborted and the user remains on the same screen.
+     *
+     * Otherwise, the default navigation stack behavior is applied:
+     * - If there is a previous screen in the navigation stack, pops back to that screen.
+     * - If the stack is empty, returns the user to the main welcome screen by loading MainWelcome.fxml.
      */
-
     @FXML
     private void handleBack() {
+        if (selectServicePane.isVisible()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Logout Confirmation");
+            alert.setHeaderText(null); // removes the default "Confirmation" header
+
+            // Styled message content
+            Label content = new Label("Are you sure you want to log out?\nThis will return you to the main menu.");
+            content.setWrapText(true);
+            content.setMaxWidth(360);
+            content.setMinHeight(100);
+            content.setStyle(
+                "-fx-text-alignment: center;" +
+                "-fx-font-size: 16px;" +
+                "-fx-text-fill: white;"
+            );
+
+            VBox wrapper = new VBox(content);
+            wrapper.setAlignment(Pos.CENTER);
+            wrapper.setPrefSize(420, 200);
+
+            alert.getDialogPane().setContent(wrapper);
+
+            alert.getDialogPane().setStyle(
+                "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+                "-fx-background-radius: 12;" +
+                "-fx-padding: 25;" +
+                "-fx-min-width: 420px;" +
+                "-fx-min-height: 200px;"
+            );
+
+            // Define custom buttons to avoid spacing issue
+            ButtonType yesButton = new ButtonType("Yes");
+            ButtonType noButton = new ButtonType("No");
+
+            alert.getButtonTypes().setAll(yesButton, noButton);
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == noButton) {
+                return;
+            }
+        }
+
         if (!navigationStack.isEmpty()) {
             VBox previous = navigationStack.pop();
             showOnly(previous);
@@ -423,7 +466,7 @@ public class TerminalController implements BaseController {
                 Parent root = loader.load();
                 MainWelcomeController controller = loader.getController();
                 controller.showClientSubMenu();
-                
+
                 Scene scene = new Scene(root);
                 scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
 
@@ -435,6 +478,8 @@ public class TerminalController implements BaseController {
             }
         }
     }
+
+
 
 
     /**
@@ -581,6 +626,19 @@ public class TerminalController implements BaseController {
         }
     }
     
+    /**
+     * Sends a request to extend the current parking session for the logged-in subscriber.
+     * If no subscriber is loaded, displays an error popup.
+     */
+    @FXML
+    private void handleExtend() {
+        if (currentSubscriber != null) {
+            client.sendToServerSafe("EXTEND_PARKING_TERMINAL|" + currentSubscriber.getSubscriber_id());
+        } else {
+            ClientController.getInstance().showPopup("Subscriber not loaded.");
+        }
+    }
+
     	
     /**
      * Handles the result of reservation activation received from the server.

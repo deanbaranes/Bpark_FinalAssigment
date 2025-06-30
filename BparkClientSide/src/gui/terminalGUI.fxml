@@ -158,6 +158,8 @@
 	    <Label fx:id="errorMessageLabel" text="" style="-fx-text-fill: red;" />
 	    <Hyperlink fx:id="forgotPasswordLink" text="forgot my parking code" onAction="#handleForgotCode"/>
 	    <Button fx:id="submitPickupCodeButton" text="Submit" onAction="#handleSubmitPickupCode"/>
+	    <Button fx:id="extendButton" text="Extend Parking" onAction="#handleExtend" />
+	    
 	</VBox>
 
 		<!-- scanner Screen -->
