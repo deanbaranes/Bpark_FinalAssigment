@@ -20,7 +20,7 @@ import javafx.application.Platform;
 /**
  * ChatClient represents the client-side connection to the server in the BPARK system.
  * It handles communication over the OCSF framework, dispatches messages to relevant controllers,
- * and manages user-specific session context such as active subscriber or controller.
+ * and manages user-specific session context such as active subscriber or controller..
  */
 public class ChatClient extends AbstractClient {
 

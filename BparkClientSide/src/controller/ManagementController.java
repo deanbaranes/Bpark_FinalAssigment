@@ -337,6 +337,11 @@ public class ManagementController implements BaseController{
     @FXML
     private void handleViewParkingDetails() {
         navigateTo(parkingDetailsView);
+        try {
+            client.sendToServer("GET_ALL_ACTIVE_PARKINGS");
+        } catch (IOException e) {
+            showPopup("Failed to fetch active parkings.");
+        }
     }
 
     
@@ -808,30 +813,29 @@ public class ManagementController implements BaseController{
      * @param records The list of matching active parking records.
      */
     public void displayActiveParkingDetails(List<ActiveParking> records) {
-        // Handle empty result
         if (records == null || records.isEmpty()) {
-            console_parkingdetails.setText("No active parking records found for the given member number / parking number.");
+            console_parkingdetails.setText("No active parking records found.");
             return;
         }
 
-        // Use StringBuilder for efficient output construction
         StringBuilder sb = new StringBuilder();
+        int counter = 1;
 
-        // Loop through all records
         for (ActiveParking rec : records) {
-            sb.append("Parking Code: ").append(rec.getParkingCode()).append("\n");
-            sb.append("Subscriber ID: ").append(rec.getSubscriberId()).append("\n");
-            sb.append("Entry Date: ").append(rec.getEntryDate()).append("\n");
-            sb.append("Entry Time: ").append(rec.getEntryTime()).append("\n");
-            sb.append("Expected Exit Date: ").append(rec.getExpectedExitDate()).append("\n");
-            sb.append("Expected Exit Time: ").append(rec.getExpectedExitTime()).append("\n");
-            sb.append("Parking Spot: ").append(rec.getParkingSpot()).append("\n");
-            sb.append("Extended: ").append(rec.isExtended() ? "Yes" : "No").append("\n");
+            sb.append(counter++).append(". ")
+              .append("Parking Code: ").append(rec.getParkingCode())
+              .append(" | Subscriber ID: ").append(rec.getSubscriberId())
+              .append(" | Entry: ").append(rec.getEntryDate()).append(" at ").append(rec.getEntryTime())
+              .append(" | Expected Exit: ").append(rec.getExpectedExitDate()).append(" at ").append(rec.getExpectedExitTime())
+              .append(" | Spot: ").append(rec.getParkingSpot())
+              .append(" | Extended: ").append(rec.isExtended() ? "Yes" : "No")
+              .append("\n");
         }
 
-        // Set the formatted string to the TextArea
         console_parkingdetails.setText(sb.toString());
     }
+
+
 
     
     /**

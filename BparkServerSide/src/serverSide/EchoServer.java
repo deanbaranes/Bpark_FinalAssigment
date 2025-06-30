@@ -267,9 +267,14 @@ public class EchoServer extends AbstractServer {
                 client.sendToClient("CANCEL_FAILED");
         } else if (command.equals("GET_SITE_ACTIVITY")) {
             	handleSiteActivityRequest(client);
-    } else {
+    }else if (command.equals("GET_ALL_ACTIVE_PARKINGS")) {
+        List<ActiveParking> allActive = mysqlConnection.getActiveParkings();
+        client.sendToClient(allActive);
+    }
+        else {
         client.sendToClient("Unrecognized command.");
     }
+        
 }
 
 
