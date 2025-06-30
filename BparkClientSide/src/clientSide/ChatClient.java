@@ -294,7 +294,9 @@ public class ChatClient extends AbstractClient {
                     }
                 });
             } else if (controller instanceof ManagementController mgr) {
-                Platform.runLater(() -> mgr.showPopup("No active parking records found for the given member number / parking number."));
+                Platform.runLater(() -> mgr.showPopup(
+                    "No active parking records found for the given member number / parking number."
+                ));
             }
             return;
         }
@@ -306,16 +308,26 @@ public class ChatClient extends AbstractClient {
             } else if (controller instanceof ClientController clientController) {
                 clientController.handleAvailableSpots((List<String>) list);
             }
-        } else if (first instanceof ParkingHistory) {
-            ClientController.getInstance().displayHistory((List<ParkingHistory>) list);
-        } else if (first instanceof Reservation) {
+        }
+        else if (first instanceof ParkingHistory) {
+            List<ParkingHistory> historyList = (List<ParkingHistory>) list;
+
+            if (controller instanceof ManagementController mgr) {
+                Platform.runLater(() -> mgr.displayParkingHistory(historyList));
+            } else if (controller instanceof ClientController clientController) {
+                Platform.runLater(() -> clientController.displayHistory(historyList));
+            }
+        }
+        else if (first instanceof Reservation) {
             ClientController.getInstance().displayReservations((List<Reservation>) list);
-        } else if (first instanceof ActiveParking) {
+        }
+        else if (first instanceof ActiveParking) {
             if (controller instanceof ManagementController mgr) {
                 Platform.runLater(() -> mgr.displayActiveParkingDetails((List<ActiveParking>) list));
             }
         }
     }
+
 
     /**
      * Sends a message to the server with internal exception handling.

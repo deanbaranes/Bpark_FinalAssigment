@@ -8,6 +8,7 @@ import java.util.List;
 
 import controller.NotificationController;
 import entities.ActiveParking;
+import entities.ParkingHistory;
 import entities.Reservation;
 import entities.Subscriber;
 import jdbc.mysqlConnection;
@@ -103,10 +104,12 @@ public class EchoServer extends AbstractServer {
             else {
                 client.sendToClient("Unsupported message format.");
             	 }
+            
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
     }
 
  
@@ -126,6 +129,11 @@ public class EchoServer extends AbstractServer {
         } else if (command.startsWith("GET_HISTORY|")) {
             String id = command.split("\\|")[1];
             client.sendToClient(mysqlConnection.getHistoryForSubscriber(id));
+        }
+        else if (command.startsWith("GET_PARKING_HISTORY|")) {
+            String id = command.split("\\|")[1];
+            List<ParkingHistory> history = mysqlConnection.getHistoryForSubscriber(id);
+            client.sendToClient(history);
         }
     	  else if (command.startsWith("CHECK_IF_ACTIVE_PARKING|")) {
 	        String id = command.split("\\|")[1];

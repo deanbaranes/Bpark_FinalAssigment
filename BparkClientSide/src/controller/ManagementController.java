@@ -3,6 +3,7 @@ package controller;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -30,6 +31,7 @@ import java.util.Stack;
 
 import clientSide.ChatClient;
 import entities.ActiveParking;
+import entities.ParkingHistory;
 import entities.Reservation;
 
 
@@ -56,6 +58,7 @@ public class ManagementController implements BaseController{
     private static ManagementController instance;
     private String currentRole;
     private String currentUsername;
+    private String lastSearchedId;
 
 
 
@@ -87,6 +90,17 @@ public class ManagementController implements BaseController{
     @FXML private TextField searchbyidtext;
     @FXML private Button btnsearch_memberdetails;
     @FXML private TextArea console_memberdeatils;
+    @FXML private Button btnViewHistory;
+    @FXML private TableView<ParkingHistory> tableParkingHistory;
+    @FXML private TableColumn<ParkingHistory, String> entryDateCol;
+    @FXML private TableColumn<ParkingHistory, String> entryTimeCol;
+    @FXML private TableColumn<ParkingHistory, String> exitDateCol;
+    @FXML private TableColumn<ParkingHistory, String> exitTimeCol;
+    @FXML private TableColumn<ParkingHistory, String> vehicleNumberCol;
+
+    @FXML private VBox subscriberDetailsBox; // הקופסה שמכילה את פרטי המנוי (שאותה נסתיר)
+
+    
 
     // === Parking Details ===
     @FXML private Label label_parking_details, label_parkingdetails_search;
@@ -143,6 +157,8 @@ public class ManagementController implements BaseController{
     @FXML
     private void initialize() {
         instance = this;
+        ChatClient.getInstance().setController(this);
+
         showOnly(loginView);
         parkingDurationBarChart.setVisible(false);
         parkingDurationBarChart.setManaged(false);
@@ -152,7 +168,16 @@ public class ManagementController implements BaseController{
         ((CategoryAxis) parkingDurationBarChart.getXAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
         ((NumberAxis) memberStatusBarChart.getYAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
         ((CategoryAxis) memberStatusBarChart.getXAxis()).setTickLabelFill(javafx.scene.paint.Color.WHITE);
-    
+        
+        entryDateCol.setCellValueFactory(new PropertyValueFactory<>("entryDate"));
+        entryTimeCol.setCellValueFactory(new PropertyValueFactory<>("entryTime"));
+        exitDateCol.setCellValueFactory(new PropertyValueFactory<>("exitDate"));
+        exitTimeCol.setCellValueFactory(new PropertyValueFactory<>("exitTime"));
+        vehicleNumberCol.setCellValueFactory(new PropertyValueFactory<>("vehicleNumber"));
+
+        
+        tableParkingHistory.setVisible(false);
+        tableParkingHistory.setManaged(false);
     }
     
     /**
@@ -294,6 +319,14 @@ public class ManagementController implements BaseController{
     @FXML
     private void handleViewMemberDetails() {
         navigateTo(memberDetailsView);
+        searchbyidtext.clear();
+        console_memberdeatils.clear();
+        tableParkingHistory.setVisible(false);
+        tableParkingHistory.setManaged(false);
+        console_memberdeatils.setVisible(true);
+        console_memberdeatils.setManaged(true);
+
+        navigateTo(memberDetailsView);
     }
 
     
@@ -315,9 +348,6 @@ public class ManagementController implements BaseController{
         navigateTo(registerMemberView);
     }
 
-    /**
-     * Navigates to the Forgot Password screen from the Login screen.
-     */
 
     /**
      * Navigates to the Forgot Password screen.
@@ -380,6 +410,13 @@ public class ManagementController implements BaseController{
      */
     @FXML
     private void handleBack() {
+    	   if (memberDetailsView.isVisible() && tableParkingHistory.isVisible()) {
+    	       tableParkingHistory.setVisible(false);
+    	       tableParkingHistory.setManaged(false);
+    	       console_memberdeatils.setVisible(true);
+    	       console_memberdeatils.setManaged(true);
+    	       return;
+    	   }
         // 0. If we're on the Forgot-Password screen, just clear it and go back
         if (forgotView.isVisible()) {
             // Clear the forgot-password fields
@@ -399,8 +436,17 @@ public class ManagementController implements BaseController{
 
             if (memberDetailsView.isVisible()) {
                 searchbyidtext.clear();              
-                console_memberdeatils.clear();      
+                console_memberdeatils.clear();     
+                btnViewHistory.setVisible(false);
+                btnViewHistory.setManaged(false);
+
+                tableParkingHistory.setVisible(false);
+                tableParkingHistory.setManaged(false);
+
+                console_memberdeatils.setVisible(true);
+                console_memberdeatils.setManaged(true);
             }
+            
             if (parkingDurationView.isVisible()) {
             	parkingDurationYearField.clear();
             	parkingDurationMonthField.clear();
@@ -491,10 +537,13 @@ public class ManagementController implements BaseController{
 
         try {
             client.sendToServer("REQUEST_ID_DETAILS|" + id);
+            lastSearchedId = id;
         } catch (IOException e) {
             e.printStackTrace();
             showPopup("Failed to send request.");
         }
+
+
     }
     
     
@@ -508,6 +557,8 @@ public class ManagementController implements BaseController{
     public void displaySubscriberInfo(String info) {
         Platform.runLater(() -> {
             console_memberdeatils.setText(info);
+            btnViewHistory.setVisible(true);
+            btnViewHistory.setManaged(true);
         });
     }
 
@@ -1058,6 +1109,54 @@ public class ManagementController implements BaseController{
             yAxis.setUpperBound(maxCount + 1); 
         });
     }
+    
+    /**
+     * Handles the click on the "Show History" button in the Member Details screen.
+     * 
+     * This method checks whether a valid ID was previously searched.
+     * If so, it sends a request to the server to retrieve the parking history
+     * for that subscriber from the `parking_history` table.
+     * 
+     * The request is formatted as: "GET_PARKING_HISTORY|<subscriber_id>".
+     * If no valid ID is available or if an error occurs during transmission,
+     * an appropriate popup message is displayed to the user.
+     */
+    @FXML
+    private void handleViewHistory() {
+        if (lastSearchedId == null || lastSearchedId.isEmpty()) {
+            showPopup("No ID available. Please search for a member first.");
+            return;
+        }
+
+        try {
+            client.sendToServer("GET_PARKING_HISTORY|" + lastSearchedId);
+        } catch (IOException e) {
+            showPopup("Failed to send history request.");
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Displays the parking history of a subscriber in the management interface.
+     * 
+     * @param historyList The list of ParkingHistory records to show.
+     */
+    public void displayParkingHistory(List<ParkingHistory> historyList) {
+        Platform.runLater(() -> {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Parking History:\n\n");
+            for (ParkingHistory h : historyList) {
+                sb.append(h.toString()).append("\n");
+            }
+
+            console_memberdeatils.setText(sb.toString());
+            console_memberdeatils.setVisible(true);
+            console_memberdeatils.setManaged(true);
+
+            tableParkingHistory.setVisible(false);
+            tableParkingHistory.setManaged(false);
+        });
+    }
+
 
 
 }

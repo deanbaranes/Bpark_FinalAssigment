@@ -53,7 +53,7 @@
 
     <TextField fx:id="resetEmailField" promptText="you@example.com" prefWidth="180" maxWidth="180" onAction="#handleSendReset"/>
 
-    <Button text="Send password to mail" onAction="#handleSendReset"
+    <Button text="Send password" onAction="#handleSendReset"
             prefWidth="140"/>
 
 <Label fx:id="resetMessage" wrapText="true" maxWidth="250" alignment="CENTER" textAlignment="CENTER" style="-fx-text-fill: green;" />
@@ -86,9 +86,24 @@
             <Label fx:id="labelsearchby_id" text="Search by ID:" />
             <TextField fx:id="searchbyidtext" onAction="#handleSearchMemberDetails"/>
 		<Button fx:id="btnsearch_memberdetails" text="Search" onAction="#handleSearchMemberDetails" />
+         <Button fx:id="btnViewHistory" text="Parking history" onAction="#handleViewHistory"
+        prefWidth="140" visible="false" managed="false" />
+        
         </HBox>
+
 <TextArea fx:id="console_memberdeatils" id="console_memberdeatils"
           prefHeight="180.0" prefWidth="500.0" />
+          <TableView fx:id="tableParkingHistory" prefWidth="600" prefHeight="200"
+           visible="false" managed="false">
+    <columns>
+        <TableColumn fx:id="entryDateCol" text="Entry Date" prefWidth="100" />
+        <TableColumn fx:id="entryTimeCol" text="Entry Time" prefWidth="100" />
+        <TableColumn fx:id="exitDateCol" text="Exit Date" prefWidth="100" />
+        <TableColumn fx:id="exitTimeCol" text="Exit Time" prefWidth="100" />
+        <TableColumn fx:id="vehicleNumberCol" text="Parking Code" prefWidth="100" />
+    </columns>
+</TableView>
+          
     </VBox>
 
 
