@@ -18,7 +18,7 @@
 		        <Button fx:id="showSpotsButton" text="Available Parking Spots" onAction="#handleShowSpotsClick" prefWidth="200"/>
 		    </HBox>
 		</VBox>
-
+ 
 
     <!-- Sign In -->
     <VBox fx:id="signInForm" alignment="CENTER" spacing="10" 

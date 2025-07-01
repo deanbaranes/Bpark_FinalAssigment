@@ -40,7 +40,7 @@ import entities.Subscriber;
  * It also supports both subscriber-side logic (such as drop-off with reservation) and error handling scenarios.
  */
 public class TerminalController implements BaseController {
-
+ 
     /**
      * Predefined subscriber ID used for simulating a successful login via scanner.
      * This ID is used in conjunction with SCAN_LOG_PW to simulate a real subscriber

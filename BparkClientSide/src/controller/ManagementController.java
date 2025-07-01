@@ -55,7 +55,7 @@ import entities.Reservation;
  * It also implements the BaseController interface for consistency across controller types.
  */
 public class ManagementController implements BaseController{
-
+ 
     private final Stack<Pane> navigationStack = new Stack<>();
     private ChatClient client;
     private static ManagementController instance;

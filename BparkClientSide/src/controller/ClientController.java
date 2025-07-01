@@ -806,7 +806,7 @@ public class ClientController implements BaseController {
             }
         }
     }
-
+ 
     /**
      * Utility method to show popup alerts in a consistent format.
      * @param message the content of the popup
