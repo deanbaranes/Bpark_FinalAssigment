@@ -13,11 +13,6 @@ import javafx.stage.Stage;
 import request.LoginRequest;
 import request.PasswordResetRequest;
 import response.PasswordResetResponse;
-import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -421,7 +416,7 @@ public class TerminalController implements BaseController {
             alert.setHeaderText(null); // removes the default "Confirmation" header
 
             // Styled message content
-            Label content = new Label("Are you sure you want to log out?.");
+            Label content = new Label("Are you sure you want to log out?");
             content.setWrapText(true);
             content.setMaxWidth(360);
             content.setMinHeight(100);

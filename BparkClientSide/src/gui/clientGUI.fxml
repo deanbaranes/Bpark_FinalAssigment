@@ -80,7 +80,7 @@
     <Button fx:id="extendButton" text="Extend Parking Time" onAction="#handleExtend" prefWidth="200"/>
         </VBox>
 
-        <Label fx:id="LogOutLabel" text="To log out and return to Main Menu press the 'back' button"/>
+        <Label fx:id="LogOutLabel" text="Note: Clicking 'Back' will log you out"/>
     </VBox>
 
     <!-- Personal Info -->

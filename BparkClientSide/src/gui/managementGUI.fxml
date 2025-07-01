@@ -75,7 +75,7 @@
 		<Button fx:id="btnmemberstatusreport" text="member Status Report" onAction="#handleViewMemberStatusReport" prefWidth="200" />
 		<Button fx:id="btnViewSiteActivity" text="Site Activity" onAction="#handleViewSiteActivity" prefWidth="200" />
  	   </VBox> 
- 	       <Label text="Note: Clicking 'Back' will log you out "
+ 	       <Label text="Note: Clicking 'Back' will log you out"
            wrapText="true"
            textAlignment="CENTER"
            alignment="CENTER"
@@ -149,7 +149,9 @@
 	    <TextField fx:id="textfield_creditcard" promptText="Credit card" maxWidth="250" />
 	    <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" maxWidth="250" onAction="#handleSubmitNewMember"/>
 	    <VBox spacing="10" alignment="CENTER">
-			<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="100" />
+	   		<Hyperlink fx:id="linkToTerms" text="Read Terms and Conditions" onAction="#handleShowTermsPopup" />
+	    	<CheckBox fx:id="acceptTermsCheckBox" text="I have read and agree to the Terms and Conditions" />
+	    	<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="100" />
 
 	    </VBox>
 	</VBox>

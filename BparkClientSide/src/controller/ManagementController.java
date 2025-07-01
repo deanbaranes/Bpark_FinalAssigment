@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import request.LoginManagementRequest;
 import request.MemberStatusReportRequest;
@@ -16,6 +17,7 @@ import response.DailySubscriberCount;
 import response.ParkingDurationRecord;
 import response.PasswordResetResponse;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -116,6 +118,8 @@ public class ManagementController implements BaseController{
     @FXML private Label label_register_member;
     @FXML private TextField textfield_creditcard,label_vehiclenumber_register2,textfield_firstname, textfield_lastname, textfield_id1, textfield_email, textfiled_phonenumber, label_vehiclenumber_register;
     @FXML private Button btnsignup;
+    @FXML private CheckBox acceptTermsCheckBox;
+    @FXML private Hyperlink linkToTerms;
 
  // === Site Activity View ===
     @FXML private VBox siteActivityView;
@@ -719,8 +723,12 @@ public class ManagementController implements BaseController{
             showPopup("Credit card must be exactly 16 digits.");
             return;
         }
-
         
+        if (!acceptTermsCheckBox.isSelected()) {
+            showPopup("You must accept the Terms and Conditions to sign up.");
+            return;
+        }
+
         RegisterMemberRequest request = new RegisterMemberRequest(
                 firstName, lastName, id, email, phone, vehicle, creditCard);
 
@@ -731,6 +739,75 @@ public class ManagementController implements BaseController{
             showPopup("Failed to send registration request.");
         }
     }
+    
+    
+    /**
+     * Opens a popup window showing the terms and conditions.
+     */
+    @FXML
+    private void handleShowTermsPopup() {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Terms and Conditions");
+
+        Label titleLabel = new Label("Parking Terms and Conditions");
+        titleLabel.setStyle(
+            "-fx-font-size: 20px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: white;" +
+            "-fx-text-alignment: center;"
+        );
+
+        
+        Label termsText = new Label(
+            "1. Each parking session is limited to 4 hours by default.\n" +
+            "2. A single extension of 4 additional hours is allowed via terminal or app.\n" +
+            "3. Vehicles may be retrieved at any time within the allocated time.\n" +
+            "4. Late pickup (after 4h without extension or 8h total) leads to towing + fine.\n" +
+            "5. On the 3rd late pickup, extra fine applies and the count resets.\n" +
+            "6. Reservations must be made 24h to 7 days in advance.\n" +
+            "   Only allowed if 40% of spots are free.\nArriving 15+ mins late cancels the reservation."
+        );
+        termsText.setWrapText(true);
+        termsText.setMaxWidth(500);
+        termsText.setStyle(
+            "-fx-text-alignment: center;" +
+            "-fx-font-size: 14px;" +
+            "-fx-text-fill: white;"
+        );
+
+        Button agreeBtn = new Button("I Agree");
+        agreeBtn.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #00c6ff, #0072ff);" +
+            "-fx-text-fill: white;" +
+            "-fx-font-weight: bold;" +
+            "-fx-padding: 8 20;" +
+            "-fx-background-radius: 20;" +
+            "-fx-cursor: hand;"
+        );
+        agreeBtn.setOnAction(e -> {
+            acceptTermsCheckBox.setSelected(true);
+            popupStage.close();
+        });
+
+        VBox layout = new VBox(20, titleLabel, termsText, agreeBtn);
+        layout.setAlignment(Pos.CENTER);
+        layout.setPadding(new Insets(25));
+        layout.setPrefSize(550, 420);
+        layout.setStyle(
+            "-fx-background-color: linear-gradient(to right, #041958, #0458c0);" +
+            "-fx-background-radius: 15;" +
+            "-fx-border-radius: 15;" +
+            "-fx-border-color: rgba(255,255,255,0.3);" +
+            "-fx-border-width: 1.5;"
+        );
+
+        Scene scene = new Scene(layout);
+        popupStage.setScene(scene);
+        popupStage.showAndWait();
+    }
+
+    
     
     /**
      * Adjusts the UI elements in the manager menu view based on the user's role.

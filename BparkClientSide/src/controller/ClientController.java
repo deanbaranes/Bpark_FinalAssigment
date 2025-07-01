@@ -26,7 +26,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.Optional;
 import java.util.Stack;
 
 import clientSide.ChatClient;
@@ -563,14 +562,14 @@ public class ClientController implements BaseController {
 
         String message = "Are you sure you want to cancel this reservation?\n\n" + selected.toString();
 
-        if (showConfirmationPopup(message)) {
+        showConfirmationPopup(message, () -> {
             try {
                 client.sendToServer("CANCEL_RESERVATION|" + selected.getReservationId());
             } catch (IOException e) {
                 e.printStackTrace();
                 showPopup("Error sending cancel request.");
             }
-        }
+        });
     }
 
     /**
@@ -758,45 +757,54 @@ public class ClientController implements BaseController {
      */
     @FXML
     private void handleBack() {
-        if (!navigationStack.isEmpty()) {
-            Pane previous = navigationStack.pop();
-            showOnly(previous);
+        if (postLoginMenu.isVisible()) {
+            showConfirmationPopup("Are you sure you want to log out?", () -> {
+                if (!navigationStack.isEmpty()) {
+                    Pane previous = navigationStack.pop();
+                    showOnly(previous);
+                } else {
+                    if (isLoggedIn) {
+                        isLoggedIn = false; // end log-in session
+                        try {
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
+                            Parent root = loader.load();
+                            MainWelcomeController controller = loader.getController();
+                            controller.showClientSubMenu(); // ⬅️ Choose Access Type
+
+                            Scene scene = new Scene(root);
+                            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+
+                            Stage stage = (Stage) backButton.getScene().getWindow();
+                            stage.setScene(scene);
+                            stage.setTitle("BPARK - Welcome");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        try {
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
+                            Parent root = loader.load();
+                            MainWelcomeController controller = loader.getController();
+                            controller.showClientSubMenu();
+
+                            Scene scene = new Scene(root);
+                            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+
+                            Stage stage = (Stage) backButton.getScene().getWindow();
+                            stage.setScene(scene);
+                            stage.setTitle("BPARK - Welcome");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
         } else {
-            if (isLoggedIn) {
-                isLoggedIn = false; //end log-in session
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
-                    Parent root = loader.load();
-                    MainWelcomeController controller = loader.getController();
-                    controller.showClientSubMenu(); // ⬅️ Choose Access Type
-                    
-                    Scene scene = new Scene(root);
-                    scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
-                    
-                    Stage stage = (Stage) backButton.getScene().getWindow();
-                    stage.setScene(scene);
-                    stage.setTitle("BPARK - Welcome");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
-                    Parent root = loader.load();
-                    MainWelcomeController controller = loader.getController();
-                    controller.showClientSubMenu(); 
-                    
-                    Scene scene = new Scene(root);
-                    scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
-                    
-                    Stage stage = (Stage) backButton.getScene().getWindow();
-                    stage.setScene(scene);
-                    stage.setTitle("BPARK - Welcome");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if (!navigationStack.isEmpty()) {
+                Pane previous = navigationStack.pop();
+                showOnly(previous);
             }
-        } 
+        }
     }
 
     /**
@@ -836,7 +844,7 @@ public class ClientController implements BaseController {
       * @param message the content of the popup
       * @return true if user confirmed (clicked Yes), false otherwise
       */
-     boolean showConfirmationPopup(String message) {
+     public void showConfirmationPopup(String message,Runnable onConfirm) {
          Alert alert = new Alert(Alert.AlertType.NONE);
          alert.setTitle("Confirmation");
          alert.getDialogPane().setStyle(
@@ -859,8 +867,11 @@ public class ClientController implements BaseController {
 
          alert.getDialogPane().setContent(wrapper);
 
-         Optional<ButtonType> result = alert.showAndWait();
-         return result.isPresent() && result.get() == yesButton;
+         alert.showAndWait().ifPresent(result -> {
+             if (result == yesButton) {
+                 onConfirm.run();  
+             }
+         });
      }
 
 
