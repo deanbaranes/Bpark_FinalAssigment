@@ -294,9 +294,8 @@ public class ChatClient extends AbstractClient {
                     }
                 });
             } else if (controller instanceof ManagementController mgr) {
-                Platform.runLater(() -> mgr.showPopup(
-                    "No active parking records found for the given member number / parking number."
-                ));
+            	Platform.runLater(() -> mgr.getConsoleParkingDetails().setText("No active parking records found."));
+
             }
             return;
         }

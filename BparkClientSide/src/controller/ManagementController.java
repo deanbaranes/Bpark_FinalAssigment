@@ -597,9 +597,15 @@ public class ManagementController implements BaseController{
 
     public void displaySubscriberInfo(String info) {
         Platform.runLater(() -> {
-            console_memberdeatils.setText(info);
-            btnViewHistory.setVisible(true);
-            btnViewHistory.setManaged(true);
+            if (info == null || info.isBlank() || info.equalsIgnoreCase("Subscriber not found.")) {
+                console_memberdeatils.setText("Subscriber not found.");
+                btnViewHistory.setVisible(false);
+                btnViewHistory.setManaged(false);
+            } else {
+                console_memberdeatils.setText(info);
+                btnViewHistory.setVisible(true);
+                btnViewHistory.setManaged(true);
+            }
         });
     }
 
