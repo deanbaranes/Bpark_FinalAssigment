@@ -1,8 +1,3 @@
-/**
- * ClientController manages the flow and UI of the remote client app.
- * It switches between views using visibility toggles and handles user input,
- * form submissions, and mock data logic until database integration.
- */
 package controller;
 
 import javafx.application.Platform;
@@ -145,7 +140,7 @@ public class ClientController implements BaseController {
      *
      * @param target the pane to show
      */
-    private void showOnly(Pane target) {
+     private void showOnly(Pane target) {
         for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, forgotPasswordView, postLoginMenu, personalInfoView,
                 editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
             if (pane != null) {
@@ -157,6 +152,7 @@ public class ClientController implements BaseController {
         target.setManaged(true);
     }
 
+    
     /**
      * Navigates to the given pane by saving the current visible pane into the navigation stack.
      * Use this method when you want the 'Back' button to return to the current screen.
@@ -166,7 +162,7 @@ public class ClientController implements BaseController {
      *
      * @param next the next pane to show
      */
-    private void navigateTo(Pane next) {
+     private void navigateTo(Pane next) {
         for (Pane pane : new Pane[]{mainMenu, signInForm, spotsView, postLoginMenu, personalInfoView,
                 editInfoForm, activityMenu, historyView, reservationsView, reservationForm, extendInfo}) {
             if (pane != null && pane.isVisible()) {
@@ -177,13 +173,14 @@ public class ClientController implements BaseController {
         showOnly(next);
     }
 
+    
     /**
      * Handles the "Sign In" button click from the welcome screen.
      *
      * Clears the ID and code input fields, then navigates to the sign-in form.
      * This is the entry point for subscriber login.
      */
-    @FXML 
+     @FXML 
     private void handleSignInClick() {
     	idField.clear();
         codeField.clear();
@@ -403,8 +400,11 @@ public class ClientController implements BaseController {
             creditCardLabel.setText("Credit Card Number: " + subscriber.getCredit_card());
             
             welcomeLabel.setText("Welcome, " + subscriber.getFull_name() + "!");
+
             navigationStack.clear();
+            navigationStack.push(mainMenu);
             navigationStack.push(signInForm);
+
             showOnly(postLoginMenu);
         });
     }
@@ -755,7 +755,7 @@ public class ClientController implements BaseController {
      * Handles the back button. Navigates to the last screen if available.
      * If the stack is empty, returns to the welcome screen.
      */
-    @FXML
+     @FXML
     private void handleBack() {
         if (postLoginMenu.isVisible()) {
             showConfirmationPopup("Are you sure you want to log out?", () -> {
@@ -765,23 +765,7 @@ public class ClientController implements BaseController {
                 } else {
                     if (isLoggedIn) {
                         isLoggedIn = false; // end log-in session
-                        try {
-                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
-                            Parent root = loader.load();
-                            MainWelcomeController controller = loader.getController();
-                            controller.showClientSubMenu(); // ⬅️ Choose Access Type
-
-                            Scene scene = new Scene(root);
-                            scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
-
-                            Stage stage = (Stage) backButton.getScene().getWindow();
-                            stage.setScene(scene);
-                            stage.setTitle("BPARK - Welcome");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        try {
+                    }   try {
                             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
                             Parent root = loader.load();
                             MainWelcomeController controller = loader.getController();
@@ -796,17 +780,35 @@ public class ClientController implements BaseController {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    }
                 }
             });
         } else {
             if (!navigationStack.isEmpty()) {
                 Pane previous = navigationStack.pop();
                 showOnly(previous);
+            } else {
+                if (isLoggedIn) {
+                    isLoggedIn = false; // end log-in session
+                }   try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
+                        Parent root = loader.load();
+                        MainWelcomeController controller = loader.getController();
+                        controller.showClientSubMenu();
+
+                        Scene scene = new Scene(root);
+                        scene.getStylesheets().add(getClass().getResource("/styles/theme.css").toExternalForm());
+
+                        Stage stage = (Stage) backButton.getScene().getWindow();
+                        stage.setScene(scene);
+                        stage.setTitle("BPARK - Welcome");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                
             }
         }
     }
- 
+
     /**
      * Utility method to show popup alerts in a consistent format.
      * @param message the content of the popup

@@ -8,7 +8,6 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.IOException;
-
 import clientSide.ChatClient;
 
 /**
@@ -50,7 +49,7 @@ public class MainWelcomeController {
     @FXML
     public void initialize() {
         try {
-            client = new ChatClient("25.8.14.135", 5555, null);
+            client = new ChatClient("localhost", 5555, null);
             client.openConnection(); 
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,6 +69,7 @@ public class MainWelcomeController {
         clientSubMenu.setManaged(true);
     }
 
+
     /**
      * Handles the "Back" button in the client sub-menu.
      * Returns to the main menu.
@@ -82,6 +82,7 @@ public class MainWelcomeController {
         mainMenu.setManaged(true);
         
     }
+
 
     /**
      * Handles the "Management" button click.
@@ -186,7 +187,5 @@ public class MainWelcomeController {
         clientSubMenu.setVisible(true);
         clientSubMenu.setManaged(true);
     }
-    
-
     
 }
