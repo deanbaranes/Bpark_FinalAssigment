@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import request.LoginManagementRequest;
@@ -771,15 +772,19 @@ public class ManagementController implements BaseController{
             "3. Vehicles may be retrieved at any time within the allocated time.\n" +
             "4. Late pickup (after 4h without extension or 8h total) leads to towing + fine.\n" +
             "5. On the 3rd late pickup, extra fine applies and the count resets.\n" +
-            "6. Reservations must be made 24h to 7 days in advance.\n" +
-            "   Only allowed if 40% of spots are free.\nArriving 15+ mins late cancels the reservation."
+            "6. Reservations must be made 24h to 7 days in advance " +
+            "and are only allowed if at least 40% of the parking spots are available.\n" +
+            "7. Arriving more than 15 minutes late cancels the reservation automatically."
         );
         termsText.setWrapText(true);
         termsText.setMaxWidth(500);
+        termsText.setTextAlignment(TextAlignment.LEFT);
+        termsText.setAlignment(Pos.TOP_LEFT);  // זו פעולת יישור של הטקסט בתוך ה־Label
+
         termsText.setStyle(
-            "-fx-text-alignment: center;" +
             "-fx-font-size: 14px;" +
-            "-fx-text-fill: white;"
+            "-fx-text-fill: white;" +
+            "-fx-font-family: 'Segoe UI';"
         );
 
         Button agreeBtn = new Button("I Agree");
