@@ -883,6 +883,7 @@ public class ManagementController implements BaseController{
         textfiled_phonenumber.clear();
         label_vehiclenumber_register.clear();
         textfield_creditcard.clear();
+        acceptTermsCheckBox.setSelected(false);
     }
     
     /**

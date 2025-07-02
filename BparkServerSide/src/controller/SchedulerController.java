@@ -75,7 +75,10 @@ public class SchedulerController {
      * This method should be called once during system startup.
      */
     private static void startMonthlyParkingReportGenerator() {
+    	
         Runnable reportTask = () -> {
+        	System.out.println("Monthly report task triggered at: " + LocalDateTime.now());
+        	
             LocalDateTime now = LocalDateTime.now();
             int year = now.minusMonths(1).getYear();
             int month = now.minusMonths(1).getMonthValue();
@@ -83,7 +86,8 @@ public class SchedulerController {
             System.out.println("Generating monthly reports for " + month + "/" + year);
             mysqlConnection.generateAndStoreParkingDurationReport();
             mysqlConnection.generateAndStoreMemberStatusReport();
-
+            System.out.println("Monthly reports generated");
+            
             scheduleNextMonthlyReport(SchedulerController::startMonthlyParkingReportGenerator);
         };
 
@@ -109,5 +113,7 @@ public class SchedulerController {
 
         long delay = Duration.between(now, nextRun).toMillis();
         scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);
+        System.out.println("Next report scheduled for: " + nextRun);
+
     }
 }
