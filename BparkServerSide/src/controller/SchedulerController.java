@@ -4,6 +4,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import jdbc.mysqlConnection;
 
@@ -14,6 +17,13 @@ import jdbc.mysqlConnection;
  * Cleaning up expired reservations that were not used.
  */
 public class SchedulerController {
+	
+	/**
+	 * A single-threaded scheduled executor used to run the monthly report generator task
+	 * on the 1st of each month at 01:00 AM.
+	 */
+	private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
 
 	/**
      * Starts all background scheduled tasks.
@@ -56,40 +66,48 @@ public class SchedulerController {
     }
     
     /**
-     * Starts a scheduled task that generates monthly reports on the 1st of each month at 01:00 AM.
-     * This task performs two main actions:
-     * Generates and stores a parking duration report for the previous month.
-     * Generates and stores a member status report for the previous month.
-     * The task is first scheduled to run at the beginning of the next month at 01:00,
-     * and then continues to repeat approximately every 30 days.
+     * Initializes the scheduling of the monthly report generator task.
+     * This task is designed to run exactly on the 1st day of each month at 01:00 AM.
+     * The method calculates the delay until the next 1st of the month at 01:00,
+     * and schedules a Runnable that:
+     * Generates the parking duration and member status reports for the previous month.
+     * Reschedules itself for the following month.
+     * This method should be called once during system startup.
      */
     private static void startMonthlyParkingReportGenerator() {
-        Timer timer = new Timer(true);
+        Runnable reportTask = () -> {
+            LocalDateTime now = LocalDateTime.now();
+            int year = now.minusMonths(1).getYear();
+            int month = now.minusMonths(1).getMonthValue();
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime firstOfNextMonth = now.withDayOfMonth(1).plusMonths(1).withHour(1).withMinute(0).withSecond(0).withNano(0);
-        long initialDelay = Duration.between(now, firstOfNextMonth).toMillis();
+            System.out.println("Generating monthly reports for " + month + "/" + year);
+            mysqlConnection.generateAndStoreParkingDurationReport();
+            mysqlConnection.generateAndStoreMemberStatusReport();
 
-        long oneMonthInMillis = 1000L * 60 * 60 * 24 * 30; 
+            scheduleNextMonthlyReport(SchedulerController::startMonthlyParkingReportGenerator);
+        };
 
-        timer.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                int year = now.getYear();
-                int month = now.getMonthValue();
-
-                if (month == 1) {
-                    year -= 1;
-                    month = 12;
-                } else {
-                    month -= 1;
-                }
-
-                System.out.println("Generating monthly reports for " + month + "/" + year);
-                mysqlConnection.generateAndStoreParkingDurationReport();
-                mysqlConnection.generateAndStoreMemberStatusReport();
-            }
-        }, initialDelay, oneMonthInMillis);
+        scheduleNextMonthlyReport(reportTask);
     }
 
+    
+    /**
+     * Schedules the given task to run at the next 1st of the month at 01:00 AM.
+     * This method calculates the exact delay in milliseconds from the current time
+     * until the desired execution time and schedules the task accordingly
+     * using the ScheduledExecutorService.
+     * @param task The Runnable to be executed at the scheduled time.
+     */
+    private static void scheduleNextMonthlyReport(Runnable task) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime nextRun = now.withDayOfMonth(1)
+                                   .plusMonths(1)
+                                   .withHour(1)
+                                   .withMinute(0)
+                                   .withSecond(0)
+                                   .withNano(0);
 
+        long delay = Duration.between(now, nextRun).toMillis();
+        scheduler.schedule(task, delay, TimeUnit.MILLISECONDS);
+    }
 }

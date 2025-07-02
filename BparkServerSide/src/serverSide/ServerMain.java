@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import jdbc.mysqlConnection;
 import javafx.scene.Parent;
 
 /**
@@ -31,8 +32,9 @@ public class ServerMain extends Application {
             primaryStage.setScene(scene);
             primaryStage.show();
             
-            System.out.println("[ServerMain] ✅ Starting scheduled tasks...");
+            System.out.println("[ServerMain] Starting scheduled tasks...");
             SchedulerController.startAll();
+            
 
         } catch (Exception e) {
             e.printStackTrace();
