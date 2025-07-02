@@ -150,7 +150,7 @@
 	    <TextField fx:id="label_vehiclenumber_register" promptText="Vehicle number" maxWidth="250" onAction="#handleSubmitNewMember"/>
 	    <VBox spacing="10" alignment="CENTER">
 	   		<Hyperlink fx:id="linkToTerms" text="Read Terms and Conditions" onAction="#handleShowTermsPopup" />
-	    	<CheckBox fx:id="acceptTermsCheckBox" text="I have read and agree to the Terms and Conditions" />
+	    	<CheckBox fx:id="acceptTermsCheckBox" text="I have read and agree to the Terms and Conditions" style="-fx-text-fill: white;" />
 	    	<Button fx:id="btnsignup" text="Sign up" onAction="#handleSubmitNewMember" maxWidth="100" />
 
 	    </VBox>
