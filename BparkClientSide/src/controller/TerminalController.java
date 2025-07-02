@@ -450,6 +450,10 @@ public class TerminalController implements BaseController {
             if (result.isPresent() && result.get() == noButton) {
                 return;
             }
+            navigationStack.clear();
+            currentSubscriber = new Subscriber("000000000", "DefultUserPassword");
+            showOnly(signInChoice);
+            return;
         }
 
         if (!navigationStack.isEmpty()) {
@@ -473,8 +477,6 @@ public class TerminalController implements BaseController {
             }
         }
     }
-
-
 
 
     /**
