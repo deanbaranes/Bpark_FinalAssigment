@@ -673,7 +673,8 @@ public class TerminalController implements BaseController {
             }
 
             if (cleanResult.equals("SUCCESS")) {
-                navigateTo(signInChoice);
+            	navigationStack.clear();
+            	showOnly(mainMenu);
                 showPopup("Dropoff was successful.\nUse your reservation code to pick up your car.\n" +
                           "If you would like to extend your parking time by up to 4 additional hours,\n" +
                           "you can do so through the app.");
@@ -683,8 +684,8 @@ public class TerminalController implements BaseController {
             		    "If you choose to park earlier based on availability, please note that it is your responsibility to cancel your existing reservation via the app.\n" +
             		    "Failing to do so may result in a fine."
             		);
-
-                navigateTo(mainMenu);
+            	navigationStack.clear();
+            	showOnly(mainMenu);
             } else {
                 showPopup("There are no active reservations under this code.\n" +
                           "Please try again or press 'Forgot my password'\n" +
