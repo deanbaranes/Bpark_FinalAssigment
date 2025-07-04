@@ -75,7 +75,7 @@ public class TerminalController implements BaseController {
 
     // === Labels ===
     @FXML private Label welcomeLabelTerminal, chooseServiceLabel, dropoffCarLabel, pickupCarLabel, insertCodeLabel,
-    LogOutLabel,resetMessage,errorMessageLabel,parkingCodeMessage, loginlabel;
+    LogOutLabel,resetMessage,errorMessageLabel,parkingCodeMessage, loginlabel,targetLabel;
     
 
     // === Input Fields ===
@@ -425,7 +425,7 @@ public class TerminalController implements BaseController {
                 "-fx-font-size: 16px;" +
                 "-fx-text-fill: white;"
             );
-
+           
             VBox wrapper = new VBox(content);
             wrapper.setAlignment(Pos.CENTER);
             wrapper.setPrefSize(420, 200);
@@ -455,10 +455,26 @@ public class TerminalController implements BaseController {
             showOnly(signInChoice);
             return;
         }
-
+        
         if (!navigationStack.isEmpty()) {
             VBox previous = navigationStack.pop();
             showOnly(previous);
+            if (previous == signInForm) {
+                resetEmailField.setText("");
+                if (resetMessage != null) {
+                    resetMessage.setText("");
+                }
+            }
+            else if (previous == pickupPane) {
+            	 parkingCodeEmailField.setText("");
+            	    if (parkingCodeMessage != null) {
+            	        parkingCodeMessage.setText("");
+            	    }
+            	    if (parkingCodeField != null) {
+            	        parkingCodeField.setText("");
+            	    }
+            }
+
         } else {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
@@ -520,7 +536,8 @@ public class TerminalController implements BaseController {
     @FXML
     private void handleSendParkingCode() {
     	lastResetType = "pcode";
-       
+        System.out.println(">>> handleSendParkingCode - lastResetType = " + lastResetType);
+
         String emailInput = parkingCodeEmailField.getText().trim();
         if (emailInput.isEmpty()) {
             parkingCodeMessage.setText("Please enter your email.");
@@ -771,6 +788,11 @@ public class TerminalController implements BaseController {
         }
     }  
    
+    public void clearResetUI() {
+        resetMessage.setText("");
+        resetEmailField.setText("");
+    }
+
     /**
      * Handles the response from the server after a password or parking code reset request.
      * This method updates the appropriate message label in the UI (either for password reset or
@@ -783,8 +805,8 @@ public class TerminalController implements BaseController {
      */
     public void handlePasswordResetResponse(PasswordResetResponse resp) {
         Platform.runLater(() -> {
-            Label targetLabel;
-
+            System.out.println(">>> handlePasswordResetResponse - lastResetType = " + lastResetType);
+            System.out.println(">>> Server message: " + resp.getMessage());
             if ("pcode".equals(lastResetType)) {
                 targetLabel = parkingCodeMessage;
             } else {
@@ -794,12 +816,18 @@ public class TerminalController implements BaseController {
             if (resp.isSuccess()) {
                 targetLabel.setText(resp.getMessage());
                 targetLabel.setStyle("-fx-text-fill: green;");
+
+                if ("sub".equals(lastResetType)) {
+                    resetEmailField.setText("");
+                }
             } else {
                 targetLabel.setText(resp.getMessage());
                 targetLabel.setStyle("-fx-text-fill: red;");
+                resetEmailField.setText("");
             }
         });
     }
+
 
 
 }

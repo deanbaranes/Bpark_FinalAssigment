@@ -638,7 +638,7 @@ public class EchoServer extends AbstractServer {
             String parkingCode = mysqlConnection.parkingCodeForEmail(email);
 
             if (parkingCode == null) {
-                client.sendToClient(new PasswordResetResponse(false, "No reservation found for that email."));
+                client.sendToClient(new PasswordResetResponse(false, "No active parking found for that email."));
             } else {
                 System.out.println("[EchoServer] → About to call sendParkingCodeEmail()");
                 new NotificationController().sendParkingCodeEmail(email, parkingCode);
