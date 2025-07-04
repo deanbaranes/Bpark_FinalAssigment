@@ -477,7 +477,7 @@ public class TerminalController implements BaseController {
 
         } else {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/mainWelcome.fxml"));
                 Parent root = loader.load();
                 MainWelcomeController controller = loader.getController();
                 controller.showClientSubMenu();

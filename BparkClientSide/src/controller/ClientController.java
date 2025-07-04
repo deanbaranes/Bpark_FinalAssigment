@@ -766,7 +766,7 @@ public class ClientController implements BaseController {
                     if (isLoggedIn) {
                         isLoggedIn = false; // end log-in session
                     }   try {
-                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/mainWelcome.fxml"));
                             Parent root = loader.load();
                             MainWelcomeController controller = loader.getController();
                             controller.showClientSubMenu();
@@ -790,7 +790,7 @@ public class ClientController implements BaseController {
                 if (isLoggedIn) {
                     isLoggedIn = false; // end log-in session
                 }   try {
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/MainWelcome.fxml"));
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/mainWelcome.fxml"));
                         Parent root = loader.load();
                         MainWelcomeController controller = loader.getController();
                         controller.showClientSubMenu();
