@@ -651,7 +651,8 @@ public class TerminalController implements BaseController {
         } else {
             ClientController.getInstance().showPopup("Subscriber not loaded.");
         }
-        navigateTo(signInChoice);
+        navigationStack.clear();
+        showOnly(mainMenu);
     }
 
     	
