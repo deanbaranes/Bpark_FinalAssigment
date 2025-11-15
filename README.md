@@ -85,4 +85,3 @@ All database operations are handled via `mysqlConnection.java` using the `DBExec
 - **Carmel Peretz** — Server logic, MySQL integration, OCSF communication  
 
 
-### Project Structure
